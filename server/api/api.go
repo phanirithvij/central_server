@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	v1 "github.com/phanirithvij/btp/central/server/api/v1"
-	v2 "github.com/phanirithvij/btp/central/server/api/v2"
+	v1 "github.com/phanirithvij/central_server/server/api/v1"
+	v2 "github.com/phanirithvij/central_server/server/api/v2"
 )
 
 // RegisterEndPoints Registers all the /api endpoints

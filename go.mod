@@ -1,4 +1,4 @@
-module github.com/phanirithvij/btp/central
+module github.com/phanirithvij/central_server
 
 go 1.15
 

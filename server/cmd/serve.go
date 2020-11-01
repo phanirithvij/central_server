@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/phanirithvij/btp/central/server/serve"
+	"github.com/phanirithvij/central_server/server/serve"
 	"github.com/spf13/cobra"
 )
 

@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/phanirithvij/btp/central/server/cmd"
+import "github.com/phanirithvij/central_server/server/cmd"
 
 func main() {
 	cmd.Execute()
