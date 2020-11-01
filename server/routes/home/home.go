@@ -15,6 +15,7 @@ import (
 //go:generate pkger -o server
 
 // RegisterEndPoints Registers all the /api endpoints
+// Must call LoadTemplates before this if it exists
 func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	// log.SetFlags(log.Llongfile | log.Ltime)
 	log.Println("HERE")
@@ -23,12 +24,6 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	home := router.Group("/home")
 	{
 		// router.LoadHTMLGlob("templates/*")
-		tmpl, err := loadTemplate()
-		log.Println("After load")
-		if err != nil {
-			log.Fatalln(err)
-		}
-		router.SetHTMLTemplate(tmpl)
 		// router.LoadHTMLFiles("home.html")
 		home.GET("/", func(c *gin.Context) {
 			c.HTML(http.StatusOK, "home.html", gin.H{
@@ -42,15 +37,9 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	return home
 }
 
-func loadTemplate() (*template.Template, error) {
-	t := template.New("")
+// LoadTemplates loads the templates used by this package
+func LoadTemplates(t *template.Template) (*template.Template, error) {
 	var gblErr error
-	log.Println("Load template")
-	dd, err := pkger.Stat("/server/templates/")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Println(dd)
 	gblErr = pkger.Walk("/server/templates/", func(path string, info os.FileInfo, err error) error {
 		log.Println(path, err)
 		if info.IsDir() || !strings.HasSuffix(path, ".html") {

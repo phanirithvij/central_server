@@ -1,6 +1,8 @@
 package serve
 
 import (
+	"html/template"
+	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +13,14 @@ import (
 // Serve A function which serves the server
 func Serve(port int) {
 	router := gin.Default()
+	t := template.New("")
+
+	t, err := home.LoadTemplates(t)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	router.SetHTMLTemplate(t)
 
 	api.RegisterEndPoints(router)
 	home.RegisterEndPoints(router)
