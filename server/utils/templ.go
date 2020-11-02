@@ -15,6 +15,10 @@ import (
 // @t the template instance
 // @dirname the directory where templates are residing
 func LoadTemplates(t *template.Template, dirname string) (*template.Template, error) {
+
+	// https://gin-gonic.com/docs/examples/bind-single-binary-with-template/
+	// https://github.com/gin-gonic/examples/commit/c5a87f03d39fdb9e0f6312344c21ccdd55140293
+
 	err := pkger.Walk(dirname, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
