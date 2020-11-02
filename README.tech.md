@@ -12,3 +12,9 @@ Will add in details as I implement the features.
 The server uses [cobra](https://github.com/spf13/cobra/) cli tool for command generation
 
 Bash completions also work
+
+## Setup
+
+- Install go, setup $GOBIN, $GOPATH, $GOROOT etc..
+- `git clone https://github.com/phanirithvij/central_server`
+- `bash ./start.sh`

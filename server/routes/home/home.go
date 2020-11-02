@@ -64,17 +64,20 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 // https://gin-gonic.com/docs/examples/bind-single-binary-with-template/
 // https://github.com/gin-gonic/examples/commit/c5a87f03d39fdb9e0f6312344c21ccdd55140293
 
-// Template an alias of template.Template
+// Template a wrapper of template.Template
 type Template struct {
-	*template.Template
+	T *template.Template
 }
 
 // LoadTemplates loads the templates used by this package
-func (t *Template) LoadTemplates() {
-	templatesInitDone = true
-	var s interface{} = t
-	_, err := utils.LoadTemplates(s.(*template.Template), HomeAssetsPrefix)
+func (t Template) LoadTemplates() {
+	before := len(t.T.Templates())
+	_, err := utils.LoadTemplates(t.T, HomeAssetsPrefix)
 	if err != nil {
 		log.Fatalln(err)
+	}
+	after := len(t.T.Templates())
+	if before < after {
+		templatesInitDone = true
 	}
 }

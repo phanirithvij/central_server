@@ -23,7 +23,7 @@ func Serve(port int, debug bool) {
 	router := gin.Default()
 
 	t := template.New("")
-	ht := home.Template{t}
+	ht := home.Template{T: t}
 	ht.LoadTemplates()
 
 	router.SetHTMLTemplate(t)
