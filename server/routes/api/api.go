@@ -6,13 +6,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/phanirithvij/central_server/server/config"
+	"github.com/phanirithvij/central_server/server/routes"
 	v1 "github.com/phanirithvij/central_server/server/routes/api/v1"
 	v2 "github.com/phanirithvij/central_server/server/routes/api/v2"
-)
-
-var (
-	// EndpointsRegistered to keep track of whether the endpoints are registered for this route
-	EndpointsRegistered = false
 )
 
 // RegisterEndPoints Registers all the /api endpoints
@@ -39,7 +36,7 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			c.String(http.StatusOK, strings.Join(versions, "\n"))
 		})
 	}
-	EndpointsRegistered = true
+	routes.RegisterSelf(config.API)
 	return apiG
 }
 

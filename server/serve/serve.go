@@ -13,12 +13,13 @@ import (
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
+	"github.com/phanirithvij/central_server/server/utils"
 )
 
 // Serve A function which serves the server
 func Serve(port int, debug bool) {
 	if debug {
-		log.SetFlags(log.Ltime | log.Llongfile)
+		log.SetFlags(log.Ltime | log.Lshortfile)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -31,6 +32,25 @@ func Serve(port int, debug bool) {
 	register.RegisterEndPoints(router)
 
 	routes.CheckEndpoints()
+
+	// printStruct()
+
+	endless.ListenAndServe(":"+strconv.Itoa(port), router)
+}
+
+func registerTemplates(router *gin.Engine) {
+
+	t := template.New("")
+	ht := home.Template{T: t}
+	ht.LoadTemplates()
+
+	rt := register.Template{T: t}
+	rt.LoadTemplates()
+
+	router.SetHTMLTemplate(t)
+}
+
+func printStruct() {
 
 	o := models.Organization{
 		OrgID:        "org-oror",
@@ -50,19 +70,5 @@ func Serve(port int, debug bool) {
 			},
 		},
 	}
-	models.PrintStruct(o)
-
-	endless.ListenAndServe(":"+strconv.Itoa(port), router)
-}
-
-func registerTemplates(router *gin.Engine) {
-
-	t := template.New("")
-	ht := home.Template{T: t}
-	ht.LoadTemplates()
-
-	rt := register.Template{T: t}
-	rt.LoadTemplates()
-
-	router.SetHTMLTemplate(t)
+	utils.PrintStruct(o)
 }
