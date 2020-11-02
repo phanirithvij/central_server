@@ -15,7 +15,8 @@ import (
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
-	"github.com/phanirithvij/central_server/server/utils"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // Serve A function which serves the server
@@ -35,7 +36,23 @@ func Serve(port int, debug bool) {
 
 	routes.CheckEndpoints()
 
-	// printStruct()
+	o := printStruct()
+	o.Print()
+	o.Validate()
+
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	// Migrate the schema
+	err = db.AutoMigrate(&models.Organization{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	db.Create(&o)
+	db.Save(&o)
 
 	endless.ListenAndServe(":"+strconv.Itoa(port), router)
 }
@@ -52,25 +69,25 @@ func registerTemplates(router *gin.Engine) {
 	router.SetHTMLTemplate(t)
 }
 
-func printStruct() {
+func printStruct() models.Organization {
 
 	o := models.Organization{
-		OrgID:        "org-oror",
-		Capabilities: []models.Capability{},
+		OrgID: "org-oror",
 		OrganizationPublic: models.OrganizationPublic{
-			Alias: "oror",
-			Emails: []string{
-				"hello@kk",
-				"hello@kk",
-				"hello@kk",
-				"hello@kk",
-				"hello@kk",
-			},
-			Name: "Or Or Organization",
+			Alias:  "oror",
+			Emails: []models.Email{{Email: "email@email.email"}},
+			Name:   "Or Or Organization",
 			OrgDetails: models.OrgDetails{
-				Location: "Hyd",
+				LocationStr: "Hyderabad",
+				// 17.235650, 79.124817
+				LocationLL: models.LongLat{
+					Latitude:  "17.235650",
+					Longitude: "79.124817",
+				},
+				Description: "string",
 			},
 		},
 	}
-	utils.PrintStruct(o)
+	// utils.PrintStruct(o)
+	return o
 }

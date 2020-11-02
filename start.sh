@@ -7,5 +7,6 @@ exe(){
 # exe go generate -x ./...
 cd server
 exe go build
+# exe go build -x
 cd ..
 exe ./server/server serve $@
