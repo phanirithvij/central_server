@@ -8,8 +8,11 @@ import (
 
 	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
-	api "github.com/phanirithvij/central_server/server/api"
+	"github.com/phanirithvij/central_server/server/models"
+	routes "github.com/phanirithvij/central_server/server/routes"
+	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
+	register "github.com/phanirithvij/central_server/server/routes/register"
 )
 
 // Serve A function which serves the server
@@ -21,15 +24,45 @@ func Serve(port int, debug bool) {
 	}
 
 	router := gin.Default()
+	registerTemplates(router)
+
+	api.RegisterEndPoints(router)
+	home.RegisterEndPoints(router)
+	register.RegisterEndPoints(router)
+
+	routes.CheckEndpoints()
+
+	o := models.Organization{
+		OrgID:        "org-oror",
+		Capabilities: []models.Capability{},
+		OrganizationPublic: models.OrganizationPublic{
+			Alias: "oror",
+			Emails: []string{
+				"hello@kk",
+				"hello@kk",
+				"hello@kk",
+				"hello@kk",
+				"hello@kk",
+			},
+			Name: "Or Or Organization",
+			OrgDetails: models.OrgDetails{
+				Location: "Hyd",
+			},
+		},
+	}
+	models.PrintStruct(o)
+
+	endless.ListenAndServe(":"+strconv.Itoa(port), router)
+}
+
+func registerTemplates(router *gin.Engine) {
 
 	t := template.New("")
 	ht := home.Template{T: t}
 	ht.LoadTemplates()
 
+	rt := register.Template{T: t}
+	rt.LoadTemplates()
+
 	router.SetHTMLTemplate(t)
-
-	api.RegisterEndPoints(router)
-	home.RegisterEndPoints(router)
-
-	endless.ListenAndServe(":"+strconv.Itoa(port), router)
 }

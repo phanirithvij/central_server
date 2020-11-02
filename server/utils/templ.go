@@ -4,7 +4,6 @@ package utils
 import (
 	"html/template"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -34,7 +33,7 @@ func LoadTemplates(t *template.Template, dirname string) (*template.Template, er
 		if err != nil {
 			return err
 		}
-		log.Println("Regster templ", path)
+		// log.Println("Regster templ", path)
 		// templates can be chained together
 		t, err = t.New(path).Parse(string(h))
 		if err != nil {

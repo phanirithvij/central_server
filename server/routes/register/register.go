@@ -1,5 +1,5 @@
-// Package home Home routes
-package home
+// Package register Home routes
+package register
 
 import (
 	"errors"
@@ -23,7 +23,7 @@ var (
 
 // PkgerPrefix the prefix and the top level dir for all the assets
 const (
-	HomeAssetsPrefix = config.PkgerPrefix + `/server/routes/home/`
+	registerAssetsPrefix = config.PkgerPrefix + `/server/routes/register/`
 )
 
 var usage string = fmt.Sprintf(`[Error] templates are uninitialized for the %[1]s route
@@ -38,11 +38,11 @@ call %[1]s.LoadTemplates(t *template.Template) BEFORE any endpoint registrations
 
 	router.SetHTMLTemplate(t)
 
-`, `home`)
+`, `register`)
 
 func init() {
 	// include dirs for pkger parser to pickup
-	pkger.Include("/server/routes/home/home.html")
+	pkger.Include("/server/routes/register/register.html")
 }
 
 // TemplateParams for this route
@@ -57,17 +57,18 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
-	home := router.Group("/home")
+	EndpointsRegistered = true
+	register := router.Group("/register")
 	{
-		home.GET("/", func(c *gin.Context) {
-			params := TemplateParams{Title: "Home page"}
-			c.HTML(http.StatusOK, HomeAssetsPrefix+"home.html", params)
+		register.GET("/", func(c *gin.Context) {
+			params := TemplateParams{Title: "register page"}
+			c.HTML(http.StatusOK, registerAssetsPrefix+"register.html", params)
 		})
-		home.GET("/hello", func(c *gin.Context) {
+		register.GET("/hello", func(c *gin.Context) {
 			c.String(http.StatusOK, `strings.Join(versions, "\n")`)
 		})
 	}
-	return home
+	return register
 }
 
 // Template a wrapper of template.Template
@@ -78,7 +79,7 @@ type Template struct {
 // LoadTemplates loads the templates used by this package
 func (t Template) LoadTemplates() {
 	before := len(t.T.Templates())
-	_, err := utils.LoadTemplates(t.T, HomeAssetsPrefix)
+	_, err := utils.LoadTemplates(t.T, registerAssetsPrefix)
 	if err != nil {
 		log.Fatalln(err)
 	}
