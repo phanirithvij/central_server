@@ -1,3 +1,4 @@
+// Package serve serves the server
 package serve
 
 import (
@@ -20,12 +21,10 @@ func Serve(port int, debug bool) {
 	}
 
 	router := gin.Default()
-	t := template.New("")
 
-	t, err := home.LoadTemplates(t)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	t := template.New("")
+	ht := home.Template{t}
+	ht.LoadTemplates()
 
 	router.SetHTMLTemplate(t)
 

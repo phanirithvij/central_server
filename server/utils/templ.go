@@ -1,3 +1,4 @@
+// Package utils a utility package
 package utils
 
 import (
@@ -11,6 +12,8 @@ import (
 )
 
 // LoadTemplates loads the templates used by this package
+// @t the template instance
+// @dirname the directory where templates are residing
 func LoadTemplates(t *template.Template, dirname string) (*template.Template, error) {
 	err := pkger.Walk(dirname, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -20,6 +23,9 @@ func LoadTemplates(t *template.Template, dirname string) (*template.Template, er
 			return nil
 		}
 		file, err := pkger.Open(path)
+		if err != nil {
+			return err
+		}
 		h, err := ioutil.ReadAll(file)
 		if err != nil {
 			return err
