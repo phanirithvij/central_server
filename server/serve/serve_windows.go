@@ -1,4 +1,4 @@
-// +build !windows
+// +build windows
 
 // Package serve serves the server
 package serve
@@ -6,16 +6,14 @@ package serve
 import (
 	"html/template"
 	"log"
+	"net/http"
 	"strconv"
 
-	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
-	"github.com/phanirithvij/central_server/server/models"
 	routes "github.com/phanirithvij/central_server/server/routes"
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
-	"github.com/phanirithvij/central_server/server/utils"
 )
 
 // Serve A function which serves the server
@@ -35,9 +33,7 @@ func Serve(port int, debug bool) {
 
 	routes.CheckEndpoints()
 
-	// printStruct()
-
-	endless.ListenAndServe(":"+strconv.Itoa(port), router)
+	http.ListenAndServe(":"+strconv.Itoa(port), router)
 }
 
 func registerTemplates(router *gin.Engine) {
@@ -50,27 +46,4 @@ func registerTemplates(router *gin.Engine) {
 	rt.LoadTemplates()
 
 	router.SetHTMLTemplate(t)
-}
-
-func printStruct() {
-
-	o := models.Organization{
-		OrgID:        "org-oror",
-		Capabilities: []models.Capability{},
-		OrganizationPublic: models.OrganizationPublic{
-			Alias: "oror",
-			Emails: []string{
-				"hello@kk",
-				"hello@kk",
-				"hello@kk",
-				"hello@kk",
-				"hello@kk",
-			},
-			Name: "Or Or Organization",
-			OrgDetails: models.OrgDetails{
-				Location: "Hyd",
-			},
-		},
-	}
-	utils.PrintStruct(o)
 }
