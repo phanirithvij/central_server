@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	api "github.com/phanirithvij/central_server/server/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
@@ -12,6 +13,8 @@ import (
 
 // Serve A function which serves the server
 func Serve(port int) {
+	// log.SetFlags(log.LstdFlags)
+	// log.SetFlags(log.Ltime | log.Llongfile)
 	router := gin.Default()
 	t := template.New("")
 
@@ -25,5 +28,5 @@ func Serve(port int) {
 	api.RegisterEndPoints(router)
 	home.RegisterEndPoints(router)
 
-	router.Run(":" + strconv.Itoa(port))
+	endless.ListenAndServe(":"+strconv.Itoa(port), router)
 }

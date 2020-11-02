@@ -1,0 +1,39 @@
+package utils
+
+import (
+	"html/template"
+	"io/ioutil"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/markbates/pkger"
+)
+
+// LoadTemplates loads the templates used by this package
+func LoadTemplates(t *template.Template, dirname string) (*template.Template, error) {
+	err := pkger.Walk(dirname, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() || !strings.HasSuffix(path, ".html") {
+			return nil
+		}
+		file, err := pkger.Open(path)
+		h, err := ioutil.ReadAll(file)
+		if err != nil {
+			return err
+		}
+		log.Println("Regster templ", path)
+		// templates can be chained together
+		t, err = t.New(path).Parse(string(h))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
+}
