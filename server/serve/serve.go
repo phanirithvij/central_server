@@ -12,9 +12,13 @@ import (
 )
 
 // Serve A function which serves the server
-func Serve(port int) {
-	// log.SetFlags(log.LstdFlags)
-	// log.SetFlags(log.Ltime | log.Llongfile)
+func Serve(port int, debug bool) {
+	if debug {
+		log.SetFlags(log.Ltime | log.Llongfile)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.Default()
 	t := template.New("")
 
