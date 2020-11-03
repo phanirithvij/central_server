@@ -1,5 +1,5 @@
-// Package register Home routes
-package register
+// Package status Status routes
+package status
 
 import (
 	"errors"
@@ -13,6 +13,7 @@ import (
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/routes"
 	"github.com/phanirithvij/central_server/server/utils"
+	"github.com/phanirithvij/central_server/server/utils/sysinfo"
 )
 
 var (
@@ -22,7 +23,7 @@ var (
 
 // PkgerPrefix the prefix and the top level dir for all the assets
 const (
-	registerAssetsPrefix = config.PkgerPrefix + `/server/routes/` + config.Register
+	statusAssets = config.PkgerPrefix + `/server/routes/` + config.Status
 )
 
 var usage string = fmt.Sprintf(`[Error] templates are uninitialized for the %[1]s route
@@ -37,11 +38,11 @@ call %[1]s.LoadTemplates(t *template.Template) BEFORE any endpoint registrations
 
 	router.SetHTMLTemplate(t)
 
-`, config.Register)
+`, config.Status)
 
 func init() {
 	// include dirs for pkger parser to pickup
-	pkger.Include("/server/routes/register/register.html")
+	pkger.Include("/server/routes/status/status.html")
 }
 
 // TemplateParams for this route
@@ -49,25 +50,29 @@ type TemplateParams struct {
 	Title string
 }
 
-// RegisterEndPoints Registers all the /register endpoints
+// RegisterEndPoints Registers all the /status endpoints
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
 func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
-	register := router.Group("/register")
+	status := router.Group("/status")
 	{
-		register.GET("/", func(c *gin.Context) {
-			params := TemplateParams{Title: "register page"}
-			c.HTML(http.StatusOK, registerAssetsPrefix+"/register.html", params)
+		status.GET("/", func(c *gin.Context) {
+			params := TemplateParams{Title: "status page"}
+			c.HTML(http.StatusOK, statusAssets+"/status.html", params)
 		})
-		register.GET("/hello", func(c *gin.Context) {
-			c.String(http.StatusOK, `strings.Join(versions, "\n")`)
+		status.GET("/json", func(c *gin.Context) {
+			inf, err := sysinfo.SysInfo()
+			if err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+			}
+			c.JSON(http.StatusOK, inf)
 		})
 	}
-	routes.RegisterSelf(config.Register)
-	return register
+	routes.RegisterSelf(config.Status)
+	return status
 }
 
 // Template a wrapper of template.Template
@@ -78,7 +83,7 @@ type Template struct {
 // LoadTemplates loads the templates used by register package
 func (t Template) LoadTemplates() {
 	before := len(t.T.Templates())
-	_, err := utils.LoadTemplates(t.T, registerAssetsPrefix)
+	_, err := utils.LoadTemplates(t.T, statusAssets)
 	if err != nil {
 		log.Fatalln(err)
 	}

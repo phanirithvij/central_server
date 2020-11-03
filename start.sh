@@ -4,7 +4,7 @@ exe(){
     "$@"
     { set +x; } 2>/dev/null
 }
-# exe go generate -x ./...
+exe go generate -x ./...
 cd server
 exe go build
 # exe go build -x

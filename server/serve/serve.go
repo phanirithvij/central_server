@@ -15,6 +15,7 @@ import (
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
+	status "github.com/phanirithvij/central_server/server/routes/status"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -33,6 +34,7 @@ func Serve(port int, debug bool) {
 	api.RegisterEndPoints(router)
 	home.RegisterEndPoints(router)
 	register.RegisterEndPoints(router)
+	status.RegisterEndPoints(router)
 
 	routes.CheckEndpoints()
 
@@ -46,7 +48,7 @@ func Serve(port int, debug bool) {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&models.Organization{})
+	err = db.AutoMigrate(&models.Organization{}, models.Email{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -66,28 +68,23 @@ func registerTemplates(router *gin.Engine) {
 	rt := register.Template{T: t}
 	rt.LoadTemplates()
 
+	st := status.Template{T: t}
+	st.LoadTemplates()
+
 	router.SetHTMLTemplate(t)
 }
 
-func printStruct() models.Organization {
+func printStruct() *models.Organization {
 
-	o := models.Organization{
-		OrgID: "org-oror",
-		OrganizationPublic: models.OrganizationPublic{
-			Alias:  "oror",
-			Emails: []models.Email{{Email: "email@email.email"}},
-			Name:   "Or Or Organization",
-			OrgDetails: models.OrgDetails{
-				LocationStr: "Hyderabad",
-				// 17.235650, 79.124817
-				LocationLL: models.LongLat{
-					Latitude:  "17.235650",
-					Longitude: "79.124817",
-				},
-				Description: "string",
-			},
-		},
-	}
+	o := models.NewOrganization()
+	o.OrgID = "org-oror"
+	o.Alias = "oror"
+	o.Emails = []models.Email{{Email: "email@email.email", Private: false}}
+	o.Name = "Or Or Organization"
+	o.OrgDetails.LocationStr = "Hyderabad"
+	o.OrgDetails.LocationLL.Latitude = "17.235650"
+	o.OrgDetails.LocationLL.Longitude = "79.124817"
+	o.OrgDetails.Description = "string"
 	// utils.PrintStruct(o)
 	return o
 }

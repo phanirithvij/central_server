@@ -21,15 +21,16 @@ type Organization struct {
 type OrganizationPublic struct {
 	Name   string  `validate:"required,printascii"`
 	Emails []Email `validate:"required,min=1,dive,required" gorm:"ForeignKey:ID"`
-	// A slug
+	// A slug which will be auto assigned if not chosen by them
 	Alias      string `validate:"alphanum"`
 	OrgDetails `validate:"required"`
 }
 
-// Email type
+// Email type it can be either public/private so we or others can contact them via email
 type Email struct {
 	gorm.Model
-	Email string `validate:"email"`
+	Email   string `validate:"email"`
+	Private bool   `default:"true"`
 }
 
 // OrgDetails the details of the organization
@@ -37,12 +38,14 @@ type OrgDetails struct {
 	LocationStr string  `validate:"printascii"`
 	LocationLL  LongLat `validate:"required" gorm:"embedded;embeddedPrefix:location_"`
 	Description string  `validate:"required,alphanumunicode"`
+	Private     bool    `default:"false"`
 }
 
 // LongLat longitude and lattitude
 type LongLat struct {
 	Longitude string `validate:"longitude"`
 	Latitude  string `validate:"latitude"`
+	Private   bool   `default:"true"`
 }
 
 // NewOrganization returns a new empty organization

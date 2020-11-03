@@ -11,18 +11,13 @@ var (
 	// Endpoints ...
 	endpoints = map[string]bool{}
 	// EndPointStrings ...
-	EndPointStrings = []string{
-		config.API,
-		config.Home,
-		config.Register,
-	}
 )
 
 // CheckEndpoints checks whether each route's endpoints are initialized
 func CheckEndpoints() {
 	done := true
 	notDone := []string{}
-	for _, v := range EndPointStrings {
+	for _, v := range config.EndPointStrings {
 		if c, ok := endpoints[v]; ok {
 			done = done && c
 		} else {
