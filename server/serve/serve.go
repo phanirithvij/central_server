@@ -1,5 +1,3 @@
-// +build !windows
-
 // Package serve serves the server
 package serve
 
