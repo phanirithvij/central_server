@@ -18,6 +18,15 @@ Bash completions also work
 - Install go, setup $GOBIN, $GOPATH, \$GOROOT etc..
 - `git clone https://github.com/phanirithvij/central_server`
 - `bash ./start.sh`
+- `bash ./start.sh -d` for debug
+
+Or
+
+```sh
+go generate ./...
+go build
+./server/server serve # -d
+```
 
 ## Routes
 

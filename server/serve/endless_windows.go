@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// On window endless library will not build so we use normal http server
 func serve(router *gin.Engine, port int) {
 	log.Println("Serving on Port", port)
 	http.ListenAndServe(":"+strconv.Itoa(port), router)
