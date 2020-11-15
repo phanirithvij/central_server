@@ -1,5 +1,3 @@
-// +build !windows
-
 // Package serve serves the server
 package serve
 
@@ -8,7 +6,6 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/models"
 	routes "github.com/phanirithvij/central_server/server/routes"
@@ -19,6 +16,7 @@ import (
 	"github.com/phanirithvij/central_server/server/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"net/http"
 )
 
 // Serve A function which serves the server
@@ -58,7 +56,7 @@ func Serve(port int, debug bool) {
 	db.Create(&o)
 	db.Save(&o)
 
-	endless.ListenAndServe(":"+strconv.Itoa(port), router)
+	http.ListenAndServe(":"+strconv.Itoa(port), router)
 }
 
 func registerTemplates(router *gin.Engine) {

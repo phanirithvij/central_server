@@ -19,26 +19,29 @@ func PrintStruct(o interface{}) {
 	t := reflect.TypeOf(o)
 	v := reflect.ValueOf(o)
 	if v.Kind() != reflect.Struct {
-		fmt.Println("Not a struct")
+		fmt.Println("Not a struct", v.Kind())
 		return
 	}
 	printSubTags(v, t, reflect.StructField{}, []int{}, t.Name())
 }
 
+// a recursive function which prints the structure of the struct
 func printSubTags(val reflect.Value, t reflect.Type, field reflect.StructField, index []int, parentName string) {
+	// for every field of the struct
 	for x := 0; x < val.NumField(); x++ {
 		var findex []int
 		if len(index) == 0 {
-			// Top level => fieild is empty
+			// Top level => feild is empty
 			findex = append(field.Index, x)
 		} else {
+			// nested feilds
 			findex = append(index, x)
 		}
 		sfield := t.FieldByIndex(findex)
 		sval := val.Field(x)
 		var parname string = parentName
 		if field.Name != "" {
-			parname = fmt.Sprintf("%s.%s", parentName, field.Name)
+			parname = fmt.Sprintf("%s.%s", parname, field.Name)
 		}
 		indent := strings.Repeat(indentChars, strings.Count(parname, "."))
 		if indent != "" {
@@ -63,7 +66,12 @@ func printSubTags(val reflect.Value, t reflect.Type, field reflect.StructField, 
 			if sval.Len() > 0 {
 				fmt.Println(indent, "[")
 				for x := 0; x < sval.Len(); x++ {
-					fmt.Println(indent+indentChars, sval.Index(x))
+					elem := sval.Index(x)
+					if elem.Kind() == reflect.Struct {
+						PrintStruct(elem)
+					} else {
+						fmt.Println(indent+indentChars, elem)
+					}
 				}
 				fmt.Println(indent, "]")
 			} else {
