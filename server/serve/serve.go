@@ -6,9 +6,7 @@ package serve
 import (
 	"html/template"
 	"log"
-	"strconv"
 
-	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/models"
 	routes "github.com/phanirithvij/central_server/server/routes"
@@ -58,7 +56,7 @@ func Serve(port int, debug bool) {
 	db.Create(&o)
 	db.Save(&o)
 
-	endless.ListenAndServe(":"+strconv.Itoa(port), router)
+	serve(router, port)
 }
 
 func registerTemplates(router *gin.Engine) {

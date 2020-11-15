@@ -1,5 +1,3 @@
-// +build !windows
-
 // Package sysinfo system information
 package sysinfo
 
@@ -8,7 +6,6 @@ import (
 
 	elastic "github.com/elastic/go-sysinfo"
 	"github.com/elastic/go-sysinfo/types"
-	info "github.com/zcalusic/sysinfo"
 )
 
 // XSysInfoS data
@@ -23,7 +20,6 @@ type memoryX struct {
 	Process types.MemoryInfo
 }
 type infoX struct {
-	Info       info.SysInfo
 	Host       types.HostInfo
 	Process    types.ProcessInfo
 	Processess []types.ProcessInfo
@@ -32,8 +28,6 @@ type infoX struct {
 // SysInfo info
 func SysInfo() (*XSysInfoS, error) {
 	s := new(XSysInfoS)
-	var si info.SysInfo
-	si.GetSysInfo()
 
 	host, err := elastic.Host()
 	if err != nil {
@@ -56,7 +50,6 @@ func SysInfo() (*XSysInfoS, error) {
 	}
 	s.Memory.Host = memH
 
-	s.Info.Info = si
 	s.Info.Host = host.Info()
 	s.Info.Process, err = process.Info()
 	if err != nil {
@@ -70,12 +63,12 @@ func SysInfo() (*XSysInfoS, error) {
 	}
 	for _, p := range cc {
 		dd, err1 := p.Info()
-		u, err := p.User()
+		_, err := p.User()
 		if err1 != nil || err != nil {
 			log.Println(err)
 			continue
 		}
-		log.Println(u)
+		// log.Println(u)
 		s.Info.Processess = append(s.Info.Processess, dd)
 	}
 	return s, nil
