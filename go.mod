@@ -9,12 +9,14 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
+	github.com/gorilla/mux v1.8.0
 	github.com/markbates/pkger v0.17.1
 	github.com/mattn/go-sqlite3 v1.14.4 // indirect
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
+	github.com/tus/tusd v1.4.0
 	github.com/zcalusic/sysinfo v0.0.0-20200820110305-ef1bb2697bc2
 	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
 	golang.org/x/text v0.3.4 // indirect
