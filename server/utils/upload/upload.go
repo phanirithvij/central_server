@@ -15,7 +15,10 @@ import (
 	tusd "github.com/tus/tusd/pkg/handler"
 )
 
+//go:generate pwd
+//go:generate rm -f pkged.go
 //go:generate pkger -o server/utils/upload
+//go:generate mv pkged.go pkged_g.go
 
 // spaHandler implements the http.Handler interface, so we can use it
 // to respond to HTTP requests. The path to the static directory and
