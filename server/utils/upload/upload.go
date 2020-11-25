@@ -15,6 +15,8 @@ import (
 	tusd "github.com/tus/tusd/pkg/handler"
 )
 
+//go:generate pkger -o server/utils/upload
+
 // spaHandler implements the http.Handler interface, so we can use it
 // to respond to HTTP requests. The path to the static directory and
 // path to the index file within that static directory are used to
@@ -42,6 +44,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if os.IsNotExist(err) {
 		// file does not exist, serve index.html
 		// http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
+		log.Println("File", h.indexPath)
 		file, err := pkger.Open(h.indexPath)
 		if err != nil {
 			http.Error(w, "file "+r.URL.Path+" does not exist", http.StatusNotFound)
@@ -114,11 +117,10 @@ func main() {
 	// https://github.com/gorilla/mux#serving-single-page-applications
 	spa := &spaHandler{
 		staticPath: "/server/utils/upload/assets",
-		indexPath:  "/server/utils/upload/index.html",
+		indexPath:  "/server/utils/upload/assets/index.html",
 	}
 
 	pkger.Include("/server/utils/upload/assets")
-	pkger.Include("/server/utils/upload/index.html")
 
 	r.PathPrefix("/upload/").Handler(http.StripPrefix("/upload/", spa))
 	r.PathPrefix("/files/").Handler(http.StripPrefix("/files/", uploadHandler))
