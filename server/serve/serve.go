@@ -40,7 +40,6 @@ func Serve(port int, debug bool) {
 	// https://stackoverflow.com/a/55854101/8608146
 	// router.Static("/web", "./client/web/build")
 	box := packr.New("web", "../../client/web/build")
-	log.Println(box.List())
 	router.StaticFS("/web", box)
 
 	o := newOrg()
