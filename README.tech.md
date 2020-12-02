@@ -16,6 +16,18 @@ Bash completions also work for linux systems
 ## TODO
 - [ ] Remove pkger and use packr2 because pkger slow
 
+## Dev notes
+- Using client/web a react app might change it to Vue
+- React subroute serving [package.json:homepage](https://stackoverflow.com/a/55854101/8608146)
+- Use build.sh, start.sh
+- `go generate ./server/...` not `go generate ./...` in pwd:central_server
+  - Because `central_server` is not package main but `server` is
+- `central.go` file should exist if go get needs to work properly
+- [filebrowser](https://github.com/phanirithvij/filebrowser) has go rice use along with vue static serving under subroute
+  - [fate](https://github.com/phanirithvij/fate) has filebrowser embedded
+  - [ ] TODO move it to this
+  - [ ] `browser` build tag in `fate` for inbuilt filebrowser support not useful when using s3 or other cloud providers
+
 ## Setup
 
 - Install go, setup $GOBIN, $GOPATH, \$GOROOT etc..
