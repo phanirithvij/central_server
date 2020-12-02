@@ -6,16 +6,18 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/packr/v2"
 	"github.com/phanirithvij/central_server/server/models"
-	routes "github.com/phanirithvij/central_server/server/routes"
+	"github.com/phanirithvij/central_server/server/routes"
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
 	status "github.com/phanirithvij/central_server/server/routes/status"
-	"github.com/phanirithvij/central_server/server/utils"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
+
+//go:generate packr2
 
 // Serve A function which serves the server
 func Serve(port int, debug bool) {
@@ -35,8 +37,14 @@ func Serve(port int, debug bool) {
 
 	routes.CheckEndpoints()
 
+	// https://stackoverflow.com/a/55854101/8608146
+	// router.Static("/web", "./client/web/build")
+	box := packr.New("web", "../../client/web/build")
+	log.Println(box.List())
+	router.StaticFS("/web", box)
+
 	o := newOrg()
-	utils.PrintStruct(*o)
+	// utils.PrintStruct(*o)
 	// o.Print()
 	o.Validate()
 
@@ -46,7 +54,7 @@ func Serve(port int, debug bool) {
 	}
 
 	// Migrate the schema
-	err = db.AutoMigrate(&models.Organization{}, models.Email{})
+	err = db.AutoMigrate(&models.Organization{}, &models.Email{})
 	if err != nil {
 		log.Fatalln(err)
 	}

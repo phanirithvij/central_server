@@ -4,9 +4,13 @@ exe(){
     "$@"
     { set +x; } 2>/dev/null
 }
-exe go generate -x ./...
+if ! command -v packr2
+then
+    exe go get -u -v github.com/gobuffalo/packr/v2/packr2
+fi
+exe go generate ./...
 cd server
-exe go build
-# exe go build -x
+# exe go build
+exe go build -x
 cd ..
 exe ./server/server serve $@

@@ -11,7 +11,9 @@ Will add in details as I implement the features.
 
 The server uses [cobra](https://github.com/spf13/cobra/) cli tool for command generation
 
-Bash completions also work
+Bash completions also work for linux systems
+
+
 
 ## Setup
 
@@ -89,3 +91,4 @@ go build
   - Usage mode
     - Guest
     - Login via different providers (default)
+- File upload with https://github.com/jjmutumi/tus_client.git

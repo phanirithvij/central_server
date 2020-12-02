@@ -18,3 +18,4 @@ server/server
 *.db
 # generated go files
 *_g.go
+*-packr.go

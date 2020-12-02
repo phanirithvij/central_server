@@ -65,15 +65,16 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		// if we got an error (that wasn't that the file doesn't exist) stating the
 		// file, return a 500 internal server error and stop
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		log.Println(err)
-		return
+		// http.Error(w, err.Error(), http.StatusInternalServerError)
+		// log.Println(err)
+		// return
 	}
 
 	// otherwise, use http.FileServer to serve the static dir
 	http.FileServer(pkger.Dir(h.staticPath)).ServeHTTP(w, r)
 }
 
+// https://github.com/tus/tusd/blob/master/docs/usage-package.md
 func main() {
 	// https://github.com/gorilla/mux/#graceful-shutdown
 	var wait time.Duration
@@ -133,7 +134,8 @@ func main() {
 
 	pkger.Include("/server/utils/upload/assets")
 
-	r.PathPrefix("/upload/").Handler(http.StripPrefix("/upload/", spa))
+	// https://stackoverflow.com/a/27946132/8608146
+	r.PathPrefix("/upload").Handler(http.StripPrefix("/upload", spa))
 	r.PathPrefix("/files/").Handler(http.StripPrefix("/files/", uploadHandler))
 
 	log.Println("Starting on localhost:8080")
@@ -151,7 +153,7 @@ func main() {
 			if errors.Is(http.ErrServerClosed, err) {
 				return
 			}
-			panic(fmt.Errorf("Unable to listen: %s", err))
+			log.Panicln(fmt.Errorf("Unable to listen: %s", err))
 		}
 	}()
 
