@@ -47,6 +47,7 @@ buildWebReact () {
 
 
 packAssets () {
+  echo "Packing assets..."
   if ! [ -x "$(command -v packr2)" ]
   then
     exe go get -u -v github.com/gobuffalo/packr/v2/packr2
@@ -55,6 +56,7 @@ packAssets () {
 }
 
 buildBin () {
+  echo "Building binary..."
   exe cd server
   exe go build
   exe cd ..
@@ -103,7 +105,6 @@ if [ "$WEB" = "true" ]; then
 fi
 
 if [ "$PACK" = "true" ]; then
-  echo "Waiting for assets..."
   wait
   packAssets
 fi
