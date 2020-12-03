@@ -16,7 +16,8 @@ debugInfo () {
 }
 
 buildWeb () {
-  exe cd client/web
+  exe cd client/vue
+  # exe cd client/web
 
   if [ ! -d "node_modules" ]; then
     if [ "$CI" = "true" ]; then

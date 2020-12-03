@@ -27,11 +27,11 @@ import (
 
 const (
 	fbBaseURL = "/web"
-	assetDir  = "/client/web/build"
+	assetDir  = "/client/vue/build"
 )
 
 func init() {
-	pkger.Include("/client/web/build")
+	pkger.Include("/client/vue/build")
 }
 
 // Serve A function which serves the server
