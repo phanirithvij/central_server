@@ -1,7 +1,8 @@
 {
   "name": "web",
   "version": "0.1.0",
-  "homepage": "/web",
+  "homepage": "/react",
+  "_homepage": "/web",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",

@@ -26,12 +26,14 @@ import (
 )
 
 const (
-	fbBaseURL = "/web"
-	assetDir  = "/client/vue/build"
+	fbBaseURL     = "/web"
+	vueAssetDir   = "/client/vue/build"
+	reactAssetDir = "/client/react/build"
 )
 
 func init() {
 	pkger.Include("/client/vue/build")
+	pkger.Include("/client/react/build")
 }
 
 // Serve A function which serves the server
@@ -56,15 +58,24 @@ func Serve(port int, debug bool) {
 	// https://github.com/gin-gonic/gin/issues/293#issuecomment-103659145
 
 	// https://github.com/gorilla/mux#serving-single-page-applications
-	spa := &spaHandler{
-		staticPath: assetDir,
-		indexPath:  assetDir + "/index.html",
+	vueSPA := &spaHandler{
+		staticPath: vueAssetDir,
+		indexPath:  vueAssetDir + "/index.html",
 	}
 
 	// https://stackoverflow.com/a/34373030/8608146
-	gzHandler := gziphandler.GzipHandler(spa)
-	cacheH := http.StripPrefix(fbBaseURL, cache(gzHandler))
+	gzHandler := gziphandler.GzipHandler(vueSPA)
+	cacheH := http.StripPrefix(fbBaseURL, cache(gzHandler, vueAssetDir))
 	router.GET(fbBaseURL+"/*w", gin.WrapH(cacheH))
+
+	reactSPA := &spaHandler{
+		staticPath: reactAssetDir,
+		indexPath:  reactAssetDir + "/index.html",
+	}
+
+	rgzHandler := gziphandler.GzipHandler(reactSPA)
+	rcacheH := http.StripPrefix("/react", cache(rgzHandler, reactAssetDir))
+	router.GET("/react"+"/*w", gin.WrapH(rcacheH))
 
 	o := newOrg()
 	// utils.PrintStruct(*o)
@@ -137,7 +148,7 @@ var (
 // https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702
 
 // cache caching the public directory
-func cache(h http.Handler) http.Handler {
+func cache(h http.Handler, assetDir string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fname := r.URL.Path
 		if r.URL.Path == fbBaseURL {
