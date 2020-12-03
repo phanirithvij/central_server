@@ -7,10 +7,12 @@ exe(){
 
 WEB="false"
 PACK="false"
+BIN="false"
 
 debugInfo () {
   echo "Build web:          $WEB"
   echo "Pack bin assets:    $PACK"
+  echo "Build web:          $BIN"
 }
 
 buildWeb () {
@@ -34,30 +36,36 @@ packAssets () {
     exe go get -u -v github.com/gobuffalo/packr/v2/packr2
   fi
   exe go generate -x ./server/...
-  cd server
-  exe go build
-  cd ..
 }
 
+buildBin () {
+  exe cd server
+  exe go build
+  exe cd ..
+}
 
 usage() {
-  echo "Usage: $0 [-b web and pack] [-w web only] [-p pack only] [-d debug]" 1>&2;
+  echo "Usage: $0 [-a web,pack,build] [-w web only] [-p pack only] [-b build only] [-d debug]" 1>&2;
   exit 1;
 }
 
 DEBUG="false"
 
-while getopts "bwp:d" o; do
+while getopts "awpb:d" o; do
   case "${o}" in
-    b)
+    a)
       WEB="true"
       PACK="true"
+      BIN="true"
       ;;
     w)
       WEB="true"
       ;;
     p)
       PACK="true"
+      ;;
+    b)
+      BIN="true"
       ;;
     d)
       DEBUG="true"
@@ -79,4 +87,8 @@ fi
 
 if [ "$PACK" = "true" ]; then
   packAssets
+fi
+
+if [ "$BIN" = "true" ]; then
+  buildBin
 fi

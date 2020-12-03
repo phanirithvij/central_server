@@ -4,6 +4,9 @@ package serve
 import (
 	"html/template"
 	"log"
+	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/packr/v2"
@@ -16,6 +19,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
+
+const fbBaseURL = "/web"
 
 //go:generate packr2
 
@@ -39,8 +44,10 @@ func Serve(port int, debug bool) {
 
 	// https://stackoverflow.com/a/55854101/8608146
 	// router.Static("/web", "./client/web/build")
-	box := packr.New("web", "../../client/web/build")
-	router.StaticFS("/web", box)
+	box := packr.New(fbBaseURL, "../../client/web/build")
+	// router.StaticFS("/web", box)
+	// https://github.com/gin-gonic/gin/issues/293#issuecomment-103659145
+	router.Any(fbBaseURL+"*", gin.WrapH(cache(http.FileServer(box))))
 
 	o := newOrg()
 	// utils.PrintStruct(*o)
@@ -62,6 +69,40 @@ func Serve(port int, debug bool) {
 	db.Save(&o)
 
 	serve(router, port)
+}
+
+var (
+	// server start time
+	cacheSince    = time.Now()
+	cacheSinceStr = cacheSince.Format(http.TimeFormat)
+	cacheUntil    = cacheSince.AddDate(0, 0, 7)
+	cacheUntilStr = cacheUntil.Format(http.TimeFormat)
+)
+
+// https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702
+
+// cache caching the public directory
+func cache(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, fbBaseURL+"/static") {
+			modtime := r.Header.Get("If-Modified-Since")
+			if modtime != "" {
+				// TODO check if file is modified since time `t`
+				// t, _ := time.Parse(http.TimeFormat, modtime)
+				log.Println("[Warning] not checking if modified")
+				w.WriteHeader(http.StatusNotModified)
+				// no need to forward as cache
+				return
+			}
+
+			// 604800 -> one week
+			w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
+			w.Header().Set("Last-Modified", cacheSinceStr)
+			w.Header().Set("Expires", cacheUntilStr)
+		}
+		// forward
+		h.ServeHTTP(w, r)
+	})
 }
 
 func registerTemplates(router *gin.Engine) {
