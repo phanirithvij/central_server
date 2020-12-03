@@ -82,7 +82,7 @@ var (
 	// server start time
 	serverStart    = time.Now()
 	serverStartStr = serverStart.Format(http.TimeFormat)
-	expireDur      = time.Minute * 2
+	expireDur      = time.Minute * 10
 	expire         = serverStart.Add(expireDur)
 	expireStr      = expire.Format(http.TimeFormat)
 )
