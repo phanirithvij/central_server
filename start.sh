@@ -4,13 +4,10 @@ exe(){
     "$@"
     { set +x; } 2>/dev/null
 }
-if ! command -v packr2
-then
-    exe go get -u -v github.com/gobuffalo/packr/v2/packr2
+if [ ! -f "server/server" ] && [ ! -f "server/server.exe" ]; then
+    echo "Make sure to run"
+    echo -e "\tsh build.sh -b -d"
+    echo "before running start.sh"
+    exit 1
 fi
-exe go generate -x ./server/...
-cd server
-# exe go build
-exe go build -x
-cd ..
 exe ./server/server serve $@
