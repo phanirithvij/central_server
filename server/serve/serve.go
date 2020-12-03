@@ -2,14 +2,17 @@
 package serve
 
 import (
+	"encoding/hex"
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
+	"strconv"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
+
 	"github.com/gin-gonic/gin"
-	"github.com/gobuffalo/packr/v2"
+	"github.com/markbates/pkger"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
 	api "github.com/phanirithvij/central_server/server/routes/api"
@@ -20,9 +23,14 @@ import (
 	"gorm.io/gorm"
 )
 
-const fbBaseURL = "/web"
+const (
+	fbBaseURL = "/web"
+	assetDir  = "/client/web/build"
+)
 
-//go:generate packr2
+func init() {
+	pkger.Include("/client/web/build")
+}
 
 // Serve A function which serves the server
 func Serve(port int, debug bool) {
@@ -43,11 +51,10 @@ func Serve(port int, debug bool) {
 	routes.CheckEndpoints()
 
 	// https://stackoverflow.com/a/55854101/8608146
-	// router.Static("/web", "./client/web/build")
-	box := packr.New(fbBaseURL, "../../client/web/build")
-	// router.StaticFS("/web", box)
 	// https://github.com/gin-gonic/gin/issues/293#issuecomment-103659145
-	router.Any(fbBaseURL+"*", gin.WrapH(cache(http.FileServer(box))))
+	gzHandler := gziphandler.GzipHandler(http.FileServer(pkger.Dir(assetDir)))
+	statik := http.StripPrefix(fbBaseURL, cache(gzHandler))
+	router.GET(fbBaseURL+"/*w", gin.WrapH(statik))
 
 	o := newOrg()
 	// utils.PrintStruct(*o)
@@ -73,10 +80,11 @@ func Serve(port int, debug bool) {
 
 var (
 	// server start time
-	cacheSince    = time.Now()
-	cacheSinceStr = cacheSince.Format(http.TimeFormat)
-	cacheUntil    = cacheSince.AddDate(0, 0, 7)
-	cacheUntilStr = cacheUntil.Format(http.TimeFormat)
+	serverStart    = time.Now()
+	serverStartStr = serverStart.Format(http.TimeFormat)
+	expireDur      = time.Minute * 2
+	expire         = serverStart.Add(expireDur)
+	expireStr      = expire.Format(http.TimeFormat)
 )
 
 // https://medium.com/@matryer/the-http-handler-wrapper-technique-in-golang-updated-bc7fbcffa702
@@ -84,22 +92,38 @@ var (
 // cache caching the public directory
 func cache(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, fbBaseURL+"/static") {
-			modtime := r.Header.Get("If-Modified-Since")
-			if modtime != "" {
-				// TODO check if file is modified since time `t`
-				// t, _ := time.Parse(http.TimeFormat, modtime)
-				log.Println("[Warning] not checking if modified")
-				w.WriteHeader(http.StatusNotModified)
-				// no need to forward as cache
-				return
-			}
-
-			// 604800 -> one week
-			w.Header().Set("Cache-Control", "public, max-age=604800, immutable")
-			w.Header().Set("Last-Modified", cacheSinceStr)
-			w.Header().Set("Expires", cacheUntilStr)
+		fname := r.URL.Path
+		if r.URL.Path == fbBaseURL {
+			fname = "index.html"
 		}
+		fi, err := pkger.Stat(assetDir + fname)
+
+		if err != nil {
+			log.Println(err)
+			h.ServeHTTP(w, r)
+			return
+		}
+		modTime := fi.ModTime()
+
+		fhex := hex.EncodeToString([]byte(fname))
+		fmodTH := hex.EncodeToString([]byte(strconv.FormatInt(modTime.Unix(), 10)))
+		etagH := fhex + "." + fmodTH
+
+		etag := r.Header.Get("If-None-Match")
+		if etag != "" && etag == etagH {
+			w.WriteHeader(http.StatusNotModified)
+			w.Header().Set("Cache-Control", "public, max-age="+strconv.FormatInt(int64(expireDur.Seconds()), 10))
+			w.Header().Set("Expires", expireStr)
+			w.Header().Set("Etag", etagH)
+			return
+		}
+
+		// https://stackoverflow.com/a/48876760/8608146
+
+		w.Header().Set("Cache-Control", "public, max-age="+strconv.FormatInt(int64(expireDur.Seconds()), 10))
+		w.Header().Set("Expires", expireStr)
+		w.Header().Set("Etag", etagH)
+
 		// forward
 		h.ServeHTTP(w, r)
 	})

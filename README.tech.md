@@ -14,7 +14,8 @@ The server uses [cobra](https://github.com/spf13/cobra/) cli tool for command ge
 Bash completions also work for linux systems
 
 ## TODO
-- [ ] Remove pkger and use packr2 because pkger slow
+- [x] Remove pkger and use packr2 because pkger slow
+  - [x] Removed packr instead because file modtimes are not supported packr
 
 ## Dev notes
 - Using client/web a react app might change it to Vue
