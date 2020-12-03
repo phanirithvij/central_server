@@ -13,6 +13,7 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 
+	"github.com/didip/tollbooth/v6"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/pkger"
 	"github.com/phanirithvij/central_server/server/models"
@@ -21,6 +22,8 @@ import (
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
 	status "github.com/phanirithvij/central_server/server/routes/status"
+	"github.com/phanirithvij/central_server/server/utils/rate"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -77,6 +80,11 @@ func Serve(port int, debug bool) {
 	rgzHandler := gziphandler.GzipHandler(reactSPA)
 	rcacheH := http.StripPrefix("/react", cache(rgzHandler, reactAssetDir))
 	router.GET("/react"+"/*w", gin.WrapH(rcacheH))
+
+	promH := promhttp.Handler()
+	lmt := tollbooth.NewLimiter(3, nil)
+	rateF := rate.LimitHandler(lmt)
+	router.GET("/metrics", rateF, gin.WrapH(promH))
 
 	o := newOrg()
 	// utils.PrintStruct(*o)
