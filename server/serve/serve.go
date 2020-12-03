@@ -4,8 +4,10 @@ package serve
 import (
 	"encoding/hex"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -52,9 +54,17 @@ func Serve(port int, debug bool) {
 
 	// https://stackoverflow.com/a/55854101/8608146
 	// https://github.com/gin-gonic/gin/issues/293#issuecomment-103659145
-	gzHandler := gziphandler.GzipHandler(http.FileServer(pkger.Dir(assetDir)))
-	statik := http.StripPrefix(fbBaseURL, cache(gzHandler))
-	router.GET(fbBaseURL+"/*w", gin.WrapH(statik))
+
+	// https://github.com/gorilla/mux#serving-single-page-applications
+	spa := &spaHandler{
+		staticPath: assetDir,
+		indexPath:  assetDir + "/index.html",
+	}
+
+	// https://stackoverflow.com/a/34373030/8608146
+	gzHandler := gziphandler.GzipHandler(spa)
+	cacheH := http.StripPrefix(fbBaseURL, cache(gzHandler))
+	router.GET(fbBaseURL+"/*w", gin.WrapH(cacheH))
 
 	o := newOrg()
 	// utils.PrintStruct(*o)
@@ -78,6 +88,43 @@ func Serve(port int, debug bool) {
 	serve(router, port)
 }
 
+type spaHandler struct {
+	staticPath string
+	indexPath  string
+}
+
+func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// get the absolute path to prevent directory traversal
+	// TODO check if path has .. i.e relative routes and ban IP
+	// https://github.com/mrichman/godnsbl
+	// https://github.com/jpillora/ipfilter
+
+	// prepend the path with the path to the static directory
+	path := filepath.Join(h.staticPath, r.URL.Path)
+
+	// check whether a file exists at the given path
+	_, err := pkger.Stat(path)
+	if err != nil {
+		// file does not exist, serve index.html
+		// http.ServeFile(w, r, filepath.Join(h.staticPath, h.indexPath))
+		file, err := pkger.Open(h.indexPath)
+		if err != nil {
+			http.Error(w, "file "+r.URL.Path+" does not exist", http.StatusNotFound)
+			return
+		}
+		// lw := lhWriter{w}
+		lw := w
+		// r.URL.Path += "/index.html"
+		cont, err := ioutil.ReadAll(file)
+		lw.Header().Set("Content-Type", "text/html")
+		lw.Write(cont)
+		return
+	}
+
+	// otherwise, use http.FileServer to serve the static dir
+	http.FileServer(pkger.Dir(h.staticPath)).ServeHTTP(w, r)
+}
+
 var (
 	// server start time
 	serverStart    = time.Now()
@@ -96,13 +143,15 @@ func cache(h http.Handler) http.Handler {
 		if r.URL.Path == fbBaseURL {
 			fname = "index.html"
 		}
-		fi, err := pkger.Stat(assetDir + fname)
+		fi, err := pkger.Stat(filepath.Join(assetDir, fname))
 
 		if err != nil {
-			log.Println(err)
+			// spa route eg. /web/about
+			// let spa handle it, no need to cache
 			h.ServeHTTP(w, r)
 			return
 		}
+
 		modTime := fi.ModTime()
 
 		fhex := hex.EncodeToString([]byte(fname))
@@ -156,4 +205,21 @@ func newOrg() *models.Organization {
 	o.OrgDetails.LocationLL.Longitude = "79.124817"
 	o.OrgDetails.Description = "string"
 	return o
+}
+
+type lhWriter struct {
+	w http.ResponseWriter
+}
+
+func (w lhWriter) Write(b []byte) (int, error) {
+	log.Println(string(b))
+	return w.w.Write(b)
+}
+
+func (w lhWriter) WriteHeader(code int) {
+	w.w.WriteHeader(code)
+}
+
+func (w lhWriter) Header() http.Header {
+	return w.w.Header()
 }
