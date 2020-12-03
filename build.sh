@@ -15,9 +15,8 @@ debugInfo () {
   echo "Build web:          $BIN"
 }
 
-buildWeb () {
+buildWebVue () {
   exe cd client/vue
-  # exe cd client/web
 
   if [ ! -d "node_modules" ]; then
     if [ "$CI" = "true" ]; then
@@ -30,6 +29,22 @@ buildWeb () {
   exe npm run build
   exe cd ../..
 }
+
+buildWebReact () {
+  exe cd client/react
+
+  if [ ! -d "node_modules" ]; then
+    if [ "$CI" = "true" ]; then
+      exe npm ci
+    else
+      exe npm install
+    fi
+  fi
+
+  exe npm run build
+  exe cd ../..
+}
+
 
 packAssets () {
   if ! [ -x "$(command -v packr2)" ]
@@ -83,10 +98,13 @@ if [ "$DEBUG" = "true" ]; then
 fi
 
 if [ "$WEB" = "true" ]; then
-  buildWeb
+  buildWebReact &
+  buildWebVue &
 fi
 
 if [ "$PACK" = "true" ]; then
+  echo "Waiting for assets..."
+  wait
   packAssets
 fi
 
