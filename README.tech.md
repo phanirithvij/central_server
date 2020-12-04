@@ -39,8 +39,16 @@ Bash completions also work for linux systems
 Or
 
 ```sh
+# client
+cd client/react
+npm i
+npm run build
+cd ../..
+# server
+cd server
 go generate ./...
 go build
+cd ..
 ./server/server serve # -d
 ```
 

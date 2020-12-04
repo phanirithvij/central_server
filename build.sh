@@ -33,9 +33,9 @@ buildWebReact () {
 
 packAssets () {
   echo "Packing assets..."
-  if ! [ -x "$(command -v packr2)" ]
+  if ! [ -x "$(command -v pkger)" ]
   then
-    exe go get -u -v github.com/gobuffalo/packr/v2/packr2
+    exe go get -u -v github.com/markbates/pkger/cmd/pkger
   fi
   exe go generate -x ./server/...
 }
