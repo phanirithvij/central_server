@@ -58,7 +58,7 @@ packAssets () {
 buildBin () {
   echo "Building binary..."
   exe cd server
-  exe go build
+  exe go build -ldflags "-w -s"
   exe cd ..
 }
 

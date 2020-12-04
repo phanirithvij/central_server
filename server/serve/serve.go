@@ -118,6 +118,7 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO check if path has .. i.e relative routes and ban IP
 	// https://github.com/mrichman/godnsbl
 	// https://github.com/jpillora/ipfilter
+	// github.com/didip/tollbooth/v6
 
 	// prepend the path with the path to the static directory
 	path := filepath.Join(h.staticPath, r.URL.Path)
@@ -214,7 +215,6 @@ func registerTemplates(router *gin.Engine) {
 }
 
 func newOrg() *models.Organization {
-
 	o := models.NewOrganization()
 	o.OrgID = "org-oror"
 	o.Alias = "oror"

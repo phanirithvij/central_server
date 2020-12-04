@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/didip/tollbooth/v6 v6.0.2
 	github.com/elastic/go-sysinfo v1.4.0
 	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6
@@ -16,11 +15,9 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.4 // indirect
 	github.com/mcuadros/go-defaults v1.2.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/prometheus/client_golang v1.8.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
-	github.com/stretchr/testify v1.5.1 // indirect
 	github.com/tus/tusd v1.4.0
 	github.com/zcalusic/sysinfo v0.0.0-20200820110305-ef1bb2697bc2
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392 // indirect
