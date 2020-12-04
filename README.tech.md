@@ -14,10 +14,12 @@ The server uses [cobra](https://github.com/spf13/cobra/) cli tool for command ge
 Bash completions also work for linux systems
 
 ## TODO
+
 - [x] Remove pkger and use packr2 because pkger slow
   - [x] Removed packr instead because file modtimes are not supported packr
 
 ## Dev notes
+
 - Using client/web a react app might change it to Vue
 - React subroute serving [package.json:homepage](https://stackoverflow.com/a/55854101/8608146)
 - Use build.sh, start.sh
@@ -33,7 +35,7 @@ Bash completions also work for linux systems
 
 - Install go, setup $GOBIN, $GOPATH, \$GOROOT etc..
 - `git clone https://github.com/phanirithvij/central_server`
-- `bash ./start.sh`
+- `bash ./start.sh` or `sh ./start.sh`
 - `bash ./start.sh -d` for debug
 
 Or
@@ -50,6 +52,31 @@ go generate ./...
 go build
 cd ..
 ./server/server serve # -d
+```
+
+## Development
+
+Client
+
+```sh
+cd client/react
+npm start
+# code
+```
+
+Server
+
+```sh
+sh build.sh -b -d
+sh start.sh -d
+```
+
+## Deploy
+
+- [ ] TODO use go releaser ?
+
+```sh
+sh build.sh -a -d
 ```
 
 ## Routes
