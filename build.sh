@@ -15,21 +15,6 @@ debugInfo () {
   echo "Build web:          $BIN"
 }
 
-buildWebVue () {
-  exe cd client/vue
-
-  if [ ! -d "node_modules" ]; then
-    if [ "$CI" = "true" ]; then
-      exe npm ci
-    else
-      exe npm install
-    fi
-  fi
-
-  exe npm run build
-  exe cd ../..
-}
-
 buildWebReact () {
   exe cd client/react
 
@@ -100,12 +85,10 @@ if [ "$DEBUG" = "true" ]; then
 fi
 
 if [ "$WEB" = "true" ]; then
-  buildWebReact &
-  buildWebVue &
+  buildWebReact
 fi
 
 if [ "$PACK" = "true" ]; then
-  wait
   packAssets
 fi
 

@@ -30,12 +30,10 @@ import (
 
 const (
 	fbBaseURL     = "/web"
-	vueAssetDir   = "/client/vue/build"
 	reactAssetDir = "/client/react/build"
 )
 
 func init() {
-	pkger.Include("/client/vue/build")
 	pkger.Include("/client/react/build")
 }
 
@@ -62,16 +60,6 @@ func Serve(port int, debug bool) {
 	// https://create-react-app.dev/docs/adding-custom-environment-variables/
 
 	// https://github.com/gorilla/mux#serving-single-page-applications
-	vueSPA := &spaHandler{
-		staticPath: vueAssetDir,
-		indexPath:  vueAssetDir + "/index.html",
-	}
-
-	// https://stackoverflow.com/a/34373030/8608146
-	gzHandler := gziphandler.GzipHandler(vueSPA)
-	cacheH := http.StripPrefix(fbBaseURL, cache(gzHandler, vueAssetDir))
-	router.GET(fbBaseURL+"/*w", gin.WrapH(cacheH))
-
 	reactSPA := &spaHandler{
 		staticPath: reactAssetDir,
 		indexPath:  reactAssetDir + "/index.html",
