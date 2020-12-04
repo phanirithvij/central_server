@@ -66,8 +66,8 @@ func Serve(port int, debug bool) {
 	}
 
 	rgzHandler := gziphandler.GzipHandler(reactSPA)
-	rcacheH := http.StripPrefix("/react", cache(rgzHandler, reactAssetDir))
-	router.GET("/react"+"/*w", gin.WrapH(rcacheH))
+	rcacheH := http.StripPrefix(fbBaseURL, cache(rgzHandler, reactAssetDir))
+	router.GET(fbBaseURL+"/*w", gin.WrapH(rcacheH))
 
 	promH := promhttp.Handler()
 	lmt := tollbooth.NewLimiter(3, nil)
