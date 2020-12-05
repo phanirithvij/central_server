@@ -65,14 +65,22 @@ Client
 ```sh
 cd client/org
 # npm install
+# for developing along with the server
 npm start
+# OR to work on just the react app individually
+npm start:dev
+# go to http://localhost:3000/org
 # code
 ```
 
 ```sh
 cd client/admin
 # npm install
+# for developing along with the server
 npm start
+# OR to work on just the react app individually
+npm start:dev
+# go to http://localhost:3000/admin
 # code
 ```
 
@@ -83,12 +91,17 @@ sh build.sh -b -d
 sh start.sh -d
 ```
 
+Go to [http://localhost:9090/admin](http://localhost:9090/admin)
+
 ## Deploy
 
 - [ ] TODO use go releaser ?
 
 ```sh
 sh build.sh -a -d
+# -a will build client/admin and client/org
+# then pack assets
+# then go build
 ```
 
 ## Routes

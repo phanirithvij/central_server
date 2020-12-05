@@ -2,9 +2,10 @@ import React from "react";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import "./App.css";
 import { ReactComponent as Logo } from "./logo.svg";
-import ServerBaseURL from "../../admin/src/utils/server";
+import ServerBaseURL from "./utils/server";
 
 console.log(ServerBaseURL);
+console.log("Updatex");
 
 function Home() {
   return (

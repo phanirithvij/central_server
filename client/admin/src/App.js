@@ -5,6 +5,7 @@ import { ReactComponent as Logo } from "./logo.svg";
 import ServerBaseURL from "./utils/server";
 
 console.log(ServerBaseURL);
+console.log(":/\\/ServerBaseURL");
 
 function Home() {
   return (
