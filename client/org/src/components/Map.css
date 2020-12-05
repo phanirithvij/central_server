@@ -1,0 +1,8 @@
+.map {
+    height: 40vh;
+    width: 80vw;
+}
+
+.leaflet-control-geosearch .results>* {
+    text-align: left;
+}

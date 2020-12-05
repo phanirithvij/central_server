@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import "./App.css";
-import { ReactComponent as Logo } from "./logo.svg";
+import Map from "./components/Map";
 import ServerBaseURL from "./utils/server";
 
 console.log(ServerBaseURL);
@@ -22,6 +22,15 @@ function About() {
   );
 }
 
+function Register() {
+  return (
+    <div>
+      <h2>Register</h2>
+      <Map />
+    </div>
+  );
+}
+
 function Dashboard() {
   return (
     <div>
@@ -33,38 +42,40 @@ function Dashboard() {
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        {/* https://create-react-app.dev/docs/adding-custom-environment-variables/ */}
-        <Router basename={process.env.REACT_APP_BASE_URL}>
-          <div>
-            <ul>
-              <li>
-                <Link to="/">Home</Link>
-              </li>
-              <li>
-                <Link to="/about">About</Link>
-              </li>
-              <li>
-                <Link to="/dashboard">Dashboard</Link>
-              </li>
-            </ul>
+      <Router basename={process.env.REACT_APP_BASE_URL}>
+        <div>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/about">About</Link>
+            </li>
+            <li>
+              <Link to="/register">Register</Link>
+            </li>
+            <li>
+              <Link to="/dashboard">Dashboard</Link>
+            </li>
+          </ul>
 
-            <hr />
-            <Switch>
-              <Route exact path="/">
-                <Home />
-              </Route>
-              <Route path="/about">
-                <About />
-              </Route>
-              <Route path="/dashboard">
-                <Dashboard />
-              </Route>
-            </Switch>
-          </div>
-        </Router>
-        <Logo className="App-logo" alt="logo" />
-      </header>
+          <hr />
+          <Switch>
+            <Route exact path="/">
+              <Home />
+            </Route>
+            <Route path="/register">
+              <Register />
+            </Route>
+            <Route path="/about">
+              <About />
+            </Route>
+            <Route path="/dashboard">
+              <Dashboard />
+            </Route>
+          </Switch>
+        </div>
+      </Router>
     </div>
   );
 }
