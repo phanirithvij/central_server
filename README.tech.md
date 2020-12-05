@@ -41,8 +41,12 @@ Bash completions also work for linux systems
 Or
 
 ```sh
-# client
+# clients
 cd client/react
+npm i
+npm run build
+cd ../..
+cd client/admin
 npm i
 npm run build
 cd ../..
@@ -59,7 +63,15 @@ cd ..
 Client
 
 ```sh
-cd client/react
+cd client/org
+# npm install
+npm start
+# code
+```
+
+```sh
+cd client/admin
+# npm install
 npm start
 # code
 ```
@@ -81,23 +93,55 @@ sh build.sh -a -d
 
 ## Routes
 
+Public views
+
 ```
-/home
-/register
-/api
-/api/v1
-/api/v2
+/privacy
+/terms
+/org                    - Default homepage for public (REACT)
+  /register               - Organization register & login
+  /docs                   - Documentation
+    /docs/api             - Public API documentation
+    /docs/orgs            - Public organization documentation
+/api                    - Public API lists
+  /api/v1               - Public API v1
+  /api/v2               - ...
+  ...
 ```
 
 ---
 
+Organization views
+
 ```
-/dashboard
-/privacy
-/terms
-/docs
-/docs/api
-/docs/orgs
+/org/dashboard              - Organization Dashboard
+  /activity                 - Organization activity
+```
+
+---
+
+Admin views
+
+```
+/admin            Admin dashboard (REACT app)
+  /activity       Admin activity & logs
+  /activity/logs  View & export recent logs
+  /analytics      Central analytics
+  /list           List of all admins
+  /register       Admin registration & login
+  /status         Metrics and stuff
+  /new            Add a new admin
+  /added          Admins added by this admin
+  /profile        Admin's profile
+  /logout         Admin logout
+  /files          View organizations as a filesystem
+```
+
+Status.hub.org
+
+```
+/status           Status of the server
+/incident/id      Incident details
 ```
 
 ## Server plan

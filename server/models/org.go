@@ -4,6 +4,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/mcuadros/go-defaults"
@@ -65,13 +66,14 @@ func (o *Organization) Print() {
 }
 
 // Validate Validates the organization
-func (o *Organization) Validate() {
+func (o *Organization) Validate() error {
 	validate := validator.New()
 	err := validate.Struct(o)
 	if err != nil {
 		validationErrors := err.(validator.ValidationErrors)
 		for _, err := range validationErrors {
-			fmt.Println(err)
+			log.Println(err)
 		}
 	}
+	return err
 }

@@ -15,8 +15,8 @@ debugInfo () {
   echo "Build web:          $BIN"
 }
 
-buildWebReact () {
-  exe cd client/react
+buildWebAdmin () {
+  exe cd client/admin
 
   if [ ! -d "node_modules" ]; then
     if [ "$CI" = "true" ]; then
@@ -30,6 +30,21 @@ buildWebReact () {
   exe cd ../..
 }
 
+
+buildWebOrg () {
+  exe cd client/org
+
+  if [ ! -d "node_modules" ]; then
+    if [ "$CI" = "true" ]; then
+      exe npm ci
+    else
+      exe npm install
+    fi
+  fi
+
+  exe npm run build
+  exe cd ../..
+}
 
 packAssets () {
   echo "Packing assets..."
@@ -85,10 +100,12 @@ if [ "$DEBUG" = "true" ]; then
 fi
 
 if [ "$WEB" = "true" ]; then
-  buildWebReact
+  buildWebAdmin &
+  buildWebOrg
 fi
 
 if [ "$PACK" = "true" ]; then
+  wait
   packAssets
 fi
 

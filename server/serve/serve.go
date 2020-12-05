@@ -29,12 +29,15 @@ import (
 )
 
 const (
-	fbBaseURL     = "/web"
-	reactAssetDir = "/client/react/build"
+	orgBaseURL    = "/org"
+	adminBaseURL  = "/admin"
+	orgAssetDir   = "/client/org/build"
+	adminAssetDir = "/client/admin/build"
 )
 
 func init() {
-	pkger.Include("/client/react/build")
+	pkger.Include("/client/org/build")
+	pkger.Include("/client/admin/build")
 }
 
 // Serve A function which serves the server
@@ -60,14 +63,23 @@ func Serve(port int, debug bool) {
 	// https://create-react-app.dev/docs/adding-custom-environment-variables/
 
 	// https://github.com/gorilla/mux#serving-single-page-applications
-	reactSPA := &spaHandler{
-		staticPath: reactAssetDir,
-		indexPath:  reactAssetDir + "/index.html",
+	orgSPA := &spaHandler{
+		staticPath: orgAssetDir,
+		indexPath:  orgAssetDir + "/index.html",
 	}
 
-	rgzHandler := gziphandler.GzipHandler(reactSPA)
-	rcacheH := http.StripPrefix(fbBaseURL, cache(rgzHandler, reactAssetDir))
-	router.GET(fbBaseURL+"/*w", gin.WrapH(rcacheH))
+	orggzHandler := gziphandler.GzipHandler(orgSPA)
+	orgcacheH := http.StripPrefix(orgBaseURL, cache(orggzHandler, orgAssetDir))
+	router.GET(orgBaseURL+"/*w", gin.WrapH(orgcacheH))
+
+	amdinSPA := &spaHandler{
+		staticPath: adminAssetDir,
+		indexPath:  adminAssetDir + "/index.html",
+	}
+
+	orggzHandler := gziphandler.GzipHandler(amdinSPA)
+	orgcacheH := http.StripPrefix(adminBaseURL, cache(orggzHandler, adminAssetDir))
+	router.GET(adminBaseURL+"/*w", gin.WrapH(orgcacheH))
 
 	promH := promhttp.Handler()
 	lmt := tollbooth.NewLimiter(3, nil)
@@ -149,7 +161,7 @@ var (
 func cache(h http.Handler, assetDir string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fname := r.URL.Path
-		if r.URL.Path == fbBaseURL {
+		if r.URL.Path == orgBaseURL {
 			fname = "index.html"
 		}
 		fi, err := pkger.Stat(filepath.Join(assetDir, fname))

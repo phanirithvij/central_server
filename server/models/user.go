@@ -7,12 +7,14 @@ type User struct {
 	UID      string
 	Password string
 	Details  map[string]UserDetail
+	TZ       string
 }
 
 // GuestUser a guest user
 type GuestUser struct {
 	UID     string
 	Details map[string]UserDetail
+	TZ      string
 }
 
 // UserDetail details about the user
