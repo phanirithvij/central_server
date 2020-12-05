@@ -116,22 +116,15 @@ Public views
 /terms
 /org                    - Default homepage for public (REACT)
   /register               - Organization register & login
-  /docs                   - Documentation
-    /docs/api             - Public API documentation
-    /docs/orgs            - Public organization documentation
+  /dashboard          - Organization Dashboard
+    /activity             - Organization activity
+/docs                   - Documentation
+  /docs/api             - Public API documentation
+  /docs/orgs            - Public organization documentation
 /api                    - Public API lists
   /api/v1               - Public API v1
   /api/v2               - ...
   ...
-```
-
----
-
-Organization views
-
-```
-/org/dashboard              - Organization Dashboard
-  /activity                 - Organization activity
 ```
 
 ---
