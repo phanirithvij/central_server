@@ -68,18 +68,18 @@ func Serve(port int, debug bool) {
 		indexPath:  orgAssetDir + "/index.html",
 	}
 
-	orggzHandler := gziphandler.GzipHandler(orgSPA)
-	orgcacheH := http.StripPrefix(orgBaseURL, cache(orggzHandler, orgAssetDir))
-	router.GET(orgBaseURL+"/*w", gin.WrapH(orgcacheH))
+	orgGzHandler := gziphandler.GzipHandler(orgSPA)
+	orgCacheH := http.StripPrefix(orgBaseURL, cache(orgGzHandler, orgAssetDir))
+	router.GET(orgBaseURL+"/*w", gin.WrapH(orgCacheH))
 
 	amdinSPA := &spaHandler{
 		staticPath: adminAssetDir,
 		indexPath:  adminAssetDir + "/index.html",
 	}
 
-	orggzHandler := gziphandler.GzipHandler(amdinSPA)
-	orgcacheH := http.StripPrefix(adminBaseURL, cache(orggzHandler, adminAssetDir))
-	router.GET(adminBaseURL+"/*w", gin.WrapH(orgcacheH))
+	adminGzHandler := gziphandler.GzipHandler(amdinSPA)
+	adminCacheH := http.StripPrefix(adminBaseURL, cache(adminGzHandler, adminAssetDir))
+	router.GET(adminBaseURL+"/*w", gin.WrapH(adminCacheH))
 
 	promH := promhttp.Handler()
 	lmt := tollbooth.NewLimiter(3, nil)
