@@ -17,6 +17,7 @@ Bash completions also work for linux systems
 
 - [x] Remove pkger and use packr2 because pkger slow
   - [x] Removed packr instead because file modtimes are not supported packr
+- [ ] [Leaflet-geosearch](https://github.com/smeijer/leaflet-geosearch) for getting location then drag [marker](https://stackoverflow.com/questions/27271994/leaflet-draggable-marker-and-coordinates-display-in-a-field-form) to get latlong
 
 ## Dev notes
 
@@ -158,6 +159,9 @@ Status.hub.org
 /status           Status of the server
 /incident/id      Incident details
 ```
+
+- [ssm](https://github.com/ssimunic/gossm) server status notifications example
+  - Email, Slack etc. supported
 
 ## Server plan
 
