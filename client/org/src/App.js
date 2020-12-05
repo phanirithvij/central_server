@@ -2,10 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import "./App.css";
 import { ReactComponent as Logo } from "./logo.svg";
+import ServerBaseURL from "../../admin/src/utils/server";
 
-// in prod server is /, in dev server is :9090
-let ServerBaseURL =
-  process.env.NODE_ENV === "production" ? "/" : "http://localhost:9090/";
 console.log(ServerBaseURL);
 
 function Home() {
