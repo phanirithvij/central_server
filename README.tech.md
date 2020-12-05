@@ -30,6 +30,8 @@ Bash completions also work for linux systems
   - [fate](https://github.com/phanirithvij/fate) has filebrowser embedded
   - [ ] TODO move it to this
   - [ ] `browser` build tag in `fate` for inbuilt filebrowser support not useful when using s3 or other cloud providers
+- create-react-app [issue](https://github.com/facebook/create-react-app/issues/1070) with react-scripts start and [workaround](https://github.com/facebook/create-react-app/issues/1070#issuecomment-721477819) is [cra-build-watch](https://github.com/Nargonath/cra-build-watch)
+  - This has errors in console from `webpackdevserver.js`
 
 ## Setup
 
@@ -95,7 +97,7 @@ Go to [http://localhost:9090/admin](http://localhost:9090/admin)
 
 ## Deploy
 
-- [ ] TODO use go releaser ?
+- [ ] TODO use go releaser (??)
 
 ```sh
 sh build.sh -a -d
@@ -184,10 +186,11 @@ Status.hub.org
   - Privacy settings
   - Corpora data License
 - Documentation
-  - Swagger (?)
+  - Swagger (??)
     - API for clients
     - Organization setup docs
-  - Readthedocs for general docs (?)
+  - Readthedocs for general docs (??)
+  - Or docz [this](https://github.com/doczjs/docz/) ??
 
 ## Client Pages
 
