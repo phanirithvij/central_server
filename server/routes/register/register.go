@@ -2,6 +2,7 @@
 package register
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -49,6 +50,16 @@ type TemplateParams struct {
 	Title string
 }
 
+type orgSubmission struct {
+	Address     string    `json:"address"`
+	Alias       string    `json:"alias"`
+	Description string    `json:"description"`
+	Emails      []string  `json:"emails"`
+	Location    []float64 `json:"location"`
+	Name        string    `json:"name"`
+	Password    string    `json:"password"`
+}
+
 // RegisterEndPoints Registers all the /register endpoints
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
@@ -61,6 +72,27 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 		register.GET("/", func(c *gin.Context) {
 			params := TemplateParams{Title: "register page"}
 			c.HTML(http.StatusOK, registerAssetsPrefix+"/register.html", params)
+		})
+		register.OPTIONS("/", func(c *gin.Context) {
+			// Enable CORS for react client when in dev
+			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			c.Header("Access-Control-Allow-Methods", "POST")
+			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
+
+			c.Status(http.StatusOK)
+		})
+		register.POST("/", func(c *gin.Context) {
+			// Enable CORS for react client when in dev
+			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			d := json.NewDecoder(c.Request.Body)
+			data := &orgSubmission{}
+			err := d.Decode(&data)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+				return
+			}
+			log.Println(data)
+			c.JSON(http.StatusOK, data)
 		})
 		register.GET("/hello", func(c *gin.Context) {
 			c.String(http.StatusOK, `strings.Join(versions, "\n")`)

@@ -6,6 +6,7 @@ import styles from "./Search.module.css";
 // eslint-disable-next-line no-extend-native
 String.prototype.trimLeft =
   String.prototype.trimLeft ||
+  // https://stackoverflow.com/a/1593909/8608146
   function () {
     var start = -1;
     while (this.charCodeAt(++start) < 33);
@@ -27,20 +28,23 @@ function Search(props) {
     if (props.selectCallback) props.selectCallback(x);
     setQuery(x.label);
     setTimeout(() => {
-      setSearching(undefined);
+      // reset search results
       setResults([]);
+      // don't show search results
+      setSearching(undefined);
     }, 200);
   };
 
+  // https://reactjsexample.com/simple-and-accessible-loading-indicators-with-react/
   const { containerProps, indicatorEl } = useLoading({
     loading: true,
     indicator: <Puff width="50" />,
   });
 
+  // initially undefined
   const [searching, setSearching] = useState();
 
   const search = (nquery) => {
-    // console.log(nquery + "x");
     // no empty searchs and < 3 searches
     if (nquery === "" || nquery.length < 3) {
       if (results.length !== 0) {
@@ -50,20 +54,12 @@ function Search(props) {
       setQuery(nquery.trimLeft());
       return;
     }
-    // no duplicate searchs
-    // if (nquery.trim() === query.trim()) {
-    //   setQuery(nquery.trimLeft());
-    //   return;
-    // }
     setQuery(nquery.trimLeft());
     if (run) {
-      //   console.log("don't run for 300 ms");
       setRun(false);
       setTimeout(() => {
-        // console.log("run enabled");
         setRun(true);
       }, 300);
-      // console.log("Search", nquery.trimLeft());
       setSearching(true);
       provider
         .search({ query: nquery.trimLeft() })
@@ -71,7 +67,11 @@ function Search(props) {
           setSearching(false);
           setResults(results.slice(0, 10));
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          setSearching(false);
+          // this sometimes fails for no reason
+          console.error(err);
+        });
       return;
     }
     // exhaustive dependencies not needed

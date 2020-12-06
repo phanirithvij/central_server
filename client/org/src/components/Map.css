@@ -14,3 +14,25 @@
 .leaflet-control-geosearch .results>* {
     text-align: left;
 }
+
+.locBtn {
+    background-color: #b4b3b3;
+    border: 5px solid rgb(0 0 0);
+    height: 8px;
+    border-radius: 50%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 8px;
+}
+
+.center-flex-control:hover {
+    background-color: #f3f5f7;
+}
+.center-flex-control {
+    background-color: white;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

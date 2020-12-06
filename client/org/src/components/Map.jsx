@@ -11,7 +11,8 @@ import {
   Marker,
   Popup,
   TileLayer,
-  useMapEvents,
+  useMap,
+  useMapEvents
 } from "react-leaflet";
 import "./Map.css";
 import Search, { Address } from "./Search";
@@ -34,6 +35,34 @@ const control = new GeoSearchControl({
 });
  */
 
+const POSITION_CLASSES = {
+  bottomleft: "leaflet-bottom leaflet-left",
+  bottomright: "leaflet-bottom leaflet-right",
+  topleft: "leaflet-top leaflet-left",
+  topright: "leaflet-top leaflet-right",
+};
+
+// https://stackoverflow.com/questions/31924890/leaflet-js-custom-control-button-add-text-hover
+// https://react-leaflet.js.org/docs/example-react-control
+function CurrentLocationControl({ position }) {
+  const map = useMap();
+  const positionClass =
+    (position && POSITION_CLASSES[position]) || POSITION_CLASSES.topleft;
+  return (
+    <div className={positionClass} style={{ top: "75px" }}>
+      <div
+        style={{ cursor: "pointer" }}
+        className="leaflet-control leaflet-bar center-flex-control"
+        onClick={() => {
+          map.locate();
+        }}
+      >
+        <div className="locBtn"></div>
+      </div>
+    </div>
+  );
+}
+
 const LocationMarker = React.forwardRef((props, ref) => {
   const [position, setPosition] = useState(null);
   const [label, setLabel] = useState("Current location");
@@ -50,15 +79,27 @@ const LocationMarker = React.forwardRef((props, ref) => {
   };
   const map = useMapEvents({
     click(e) {
+      // check if location button was clicked
+      let { x, y } = e.containerPoint;
+      let re = e.target._container.getBoundingClientRect();
+      x += re.x;
+      y += re.y;
+      const target = document.elementFromPoint(x, y);
+      if (
+        target.classList.contains("locBtn") ||
+        target.classList.contains("center-flex-control")
+      ) {
+        return;
+      }
       let tupl = [e.latlng.lat, e.latlng.lng];
       setPosition(tupl);
       updateMarkerLabel(tupl);
-      // map.locate();
     },
     locationfound(e) {
       map.flyTo(e.latlng);
-      setPosition([e.latlng.lat, e.latlng.lng]);
-      console.log(e.latlng);
+      let tupl = [e.latlng.lat, e.latlng.lng];
+      setPosition(tupl);
+      updateMarkerLabel(tupl);
     },
   });
   const markerRef = useRef(null);
@@ -107,7 +148,16 @@ const LocationMarker = React.forwardRef((props, ref) => {
       position={position}
     >
       <Popup>
-        {label} {position !== null && `${position[0]}, ${position[1]}`}
+        <div>
+          <span>{label}</span>
+          <button>use</button>
+        </div>
+        {position !== null && (
+          <div>
+            <span>{`${position[0]}, ${position[1]}`}</span>
+            <button>use</button>
+          </div>
+        )}
       </Popup>
     </Marker>
   );
@@ -133,6 +183,10 @@ function Map() {
   const setPositionLabel = (x, l) => {
     childRef.current.setPositionLabel(x, l);
     setCenter(x);
+  };
+
+  const onMapInit = (m) => {
+    setMap(m);
   };
 
   const eventHandlers = useMemo(
@@ -165,7 +219,7 @@ function Map() {
         latlong={childRef.current?.getLatLng()}
       />
       <MapContainer
-        whenCreated={(m) => setMap(m)}
+        whenCreated={onMapInit}
         className="map"
         center={center}
         eventHandlers={eventHandlers}
@@ -179,6 +233,8 @@ function Map() {
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        <CurrentLocationControl />
         <LocationMarker ref={childRef} />
       </MapContainer>
     </div>
