@@ -1,10 +1,11 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import "./App.css";
-import Dashboard from "./routes/dashboard";
-import Home from "./routes/home";
-import Register from "./routes/register";
 import ServerBaseURL from "./utils/server";
+
+const Home = lazy(() => import("./routes/home"));
+const Dashboard = lazy(() => import("./routes/dashboard"));
+const Register = lazy(() => import("./routes/register"));
 
 console.log(ServerBaseURL);
 function App() {
@@ -25,6 +26,8 @@ function App() {
           </ul>
 
           <hr />
+        </div>
+        <Suspense fallback={<div>Loading...</div>}>
           <Switch>
             <Route exact path="/">
               <Home />
@@ -32,11 +35,9 @@ function App() {
             <Route path="/register">
               <Register />
             </Route>
-            <Route path="/dashboard">
-              <Dashboard />
-            </Route>
+            <Route path="/dashboard" component={Dashboard} />
           </Switch>
-        </div>
+        </Suspense>
       </Router>
     </div>
   );

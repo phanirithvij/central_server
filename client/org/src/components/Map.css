@@ -1,6 +1,14 @@
 .map {
-    height: 40vh;
-    width: 80vw;
+    height: 54vh;
+    width: 96vw;
+    min-height: 300px;
+}
+
+.mapwrap{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .leaflet-control-geosearch .results>* {

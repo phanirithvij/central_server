@@ -1,3 +1,7 @@
+.search {
+    width: 77vw;
+}
+
 .search form {
     position: relative;
     margin: 32px 0;
@@ -14,10 +18,10 @@
 }
 
 .search input {
+    width: 77vw;
     border: none;
     padding: 0;
     margin: 0;
-    width: 100%;
     outline: none;
     font: 16px arial, sans-serif;
     line-height: 48px;
@@ -25,7 +29,8 @@
     text-indent: 18px;
 }
 
-.result>* {
+.result>div {
+    background: white;
     border: 1px solid transparent;
     line-height: 32px;
     padding: 0 18px;
@@ -37,7 +42,20 @@
     text-overflow: ellipsis;
 }
 
-.result>*:hover,
+.result>div:last-child {
+    border-radius: 0 0 20px 20px;
+}
+.result>div:first-child {
+    border-radius: 9px 9px 0 0;
+}
+
+.result {
+    z-index: 401;
+    position: absolute;
+    width: inherit;
+}
+
+.result>div:hover,
 .result> :global(.active) {
     background-color: #f8f8f8;
     border-color: #c6c6c6;

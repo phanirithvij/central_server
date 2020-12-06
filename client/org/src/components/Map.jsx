@@ -14,7 +14,7 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "./Map.css";
-import Search from "./Search";
+import Search, { Address } from "./Search";
 
 /* const provider = new OpenStreetMapProvider();
 const control = new GeoSearchControl({
@@ -37,9 +37,23 @@ const control = new GeoSearchControl({
 const LocationMarker = React.forwardRef((props, ref) => {
   const [position, setPosition] = useState(null);
   const [label, setLabel] = useState("Current location");
+  const updateMarkerLabel = (tupl) => {
+    setLabel("Fetcing marker location...");
+    Address(tupl)
+      .then((address) => {
+        setLabel(address[0].label);
+      })
+      .catch((err) => {
+        setLabel(err.toString());
+        console.error(err);
+      });
+  };
   const map = useMapEvents({
-    click() {
-      map.locate();
+    click(e) {
+      let tupl = [e.latlng.lat, e.latlng.lng];
+      setPosition(tupl);
+      updateMarkerLabel(tupl);
+      // map.locate();
     },
     locationfound(e) {
       map.flyTo(e.latlng);
@@ -53,7 +67,10 @@ const LocationMarker = React.forwardRef((props, ref) => {
       dragend() {
         const marker = markerRef.current;
         if (marker != null) {
-          setPosition(marker.getLatLng());
+          const latlng = marker.getLatLng();
+          let tupl = [latlng.lat, latlng.lng];
+          setPosition(tupl);
+          updateMarkerLabel(tupl);
         }
       },
     }),
@@ -68,8 +85,9 @@ const LocationMarker = React.forwardRef((props, ref) => {
         setPosition(latlong);
         setLabel(label);
       },
+      getLatLng: () => position,
     }),
-    [setPosition, setLabel]
+    [setPosition, setLabel, position]
   );
 
   return position === null ? null : (
@@ -104,7 +122,7 @@ function SearchWrapper(props) {
     }
   };
 
-  return <Search selectCallback={selectCallback} />;
+  return <Search selectCallback={selectCallback} latlong={props.latlng} />;
 }
 
 function Map() {
@@ -140,9 +158,12 @@ function Map() {
   );
 
   return (
-    <div>
-      <h2>H3</h2>
-      <SearchWrapper map={map} setPositionLabel={setPositionLabel} />
+    <div className="mapwrap">
+      <SearchWrapper
+        map={map}
+        setPositionLabel={setPositionLabel}
+        latlong={childRef.current?.getLatLng()}
+      />
       <MapContainer
         whenCreated={(m) => setMap(m)}
         className="map"
