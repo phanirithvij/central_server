@@ -30,6 +30,10 @@ export default function Register() {
     }
   };
 
+  const copyCallback = (type, value) => {
+    console.log(type, value);
+  };
+
   return (
     <div>
       <h2>Register</h2>
@@ -72,7 +76,7 @@ export default function Register() {
       <button onClick={() => setmapVis(!mapVis)}>
         {!mapVis ? "Show" : "Hide"} Map
       </button>
-      {mapVis && <Map />}
+      {mapVis && <Map copyCallback={copyCallback} />}
     </div>
   );
 }

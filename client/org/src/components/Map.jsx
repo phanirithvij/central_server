@@ -13,7 +13,7 @@ import {
   Popup,
   TileLayer,
   useMap,
-  useMapEvents
+  useMapEvents,
 } from "react-leaflet";
 import copy from "./drawing.svg";
 import "./Map.css";
@@ -65,7 +65,9 @@ const LocationMarker = React.forwardRef((props, ref) => {
     click(e) {
       // check if location button was clicked
       let { x, y } = e.containerPoint;
+      // get map's bounds
       let re = e.target._container.getBoundingClientRect();
+      // get absolute position in the dom
       x += re.x;
       y += re.y;
       const target = document.elementFromPoint(x, y);
@@ -73,6 +75,8 @@ const LocationMarker = React.forwardRef((props, ref) => {
         target.classList.contains("locBtn") ||
         target.classList.contains("center-flex-control")
       ) {
+        // Don't set marker and label if location button was clicked
+        // locationfound will handle it
         return;
       }
       let tupl = [e.latlng.lat, e.latlng.lng];
@@ -112,8 +116,9 @@ const LocationMarker = React.forwardRef((props, ref) => {
         setLabel(label);
       },
       getLatLng: () => position,
+      getLabel: () => label,
     }),
-    [setPosition, setLabel, position]
+    [setPosition, setLabel, position, label]
   );
 
   return position === null ? null : (
@@ -135,7 +140,12 @@ const LocationMarker = React.forwardRef((props, ref) => {
       <Popup className="popupcl">
         <div className="popup-item">
           <span>{label}</span>
-          <div className="iconbtn" title="Use as Address">
+          <div
+            className="iconbtn"
+            title="Use as Address"
+            onClick={() => props.copyCallback("label", label)}
+          >
+            {/* https://stackoverflow.com/a/41756265/8608146 */}
             <SVG className="svgicon" src={copy}>
               <div>use</div>
             </SVG>
@@ -145,7 +155,11 @@ const LocationMarker = React.forwardRef((props, ref) => {
         {position !== null && (
           <div className="popup-item">
             <span>{`${position[0]}, ${position[1]}`}</span>
-            <div className="iconbtn" title="Use as Location">
+            <div
+              className="iconbtn"
+              title="Use as Location"
+              onClick={() => props.copyCallback("latlong", position)}
+            >
               <SVG className="svgicon" src={copy}>
                 <div>use</div>
               </SVG>
@@ -170,7 +184,7 @@ function SearchWrapper(props) {
   return <Search selectCallback={selectCallback} latlong={props.latlng} />;
 }
 
-function Map() {
+function Map(props) {
   const [map, setMap] = useState(null);
   // default location is iiit hyderabad
   const [center, setCenter] = useState([17.44511053681717, 78.34944901691728]);
@@ -186,28 +200,6 @@ function Map() {
     setMap(m);
   };
 
-  const eventHandlers = useMemo(
-    () => ({
-      zoomend(e) {
-        console.log("Zoom End");
-        console.log(e);
-      },
-      zoom(e) {
-        console.log("Zoom");
-        console.log(e);
-      },
-      zoomstart(e) {
-        console.log("Zoom Start");
-        console.log(e);
-      },
-      zoomlevelschange(e) {
-        console.log("Zoom Level");
-        console.log(e);
-      },
-    }),
-    []
-  );
-
   return (
     <div className="mapwrap">
       <SearchWrapper
@@ -219,7 +211,6 @@ function Map() {
         whenCreated={onMapInit}
         className="map"
         center={center}
-        eventHandlers={eventHandlers}
         zoom={13}
         scrollWheelZoom={true}
         placeholder={
@@ -232,7 +223,7 @@ function Map() {
         />
 
         <CurrentLocationControl />
-        <LocationMarker ref={childRef} />
+        <LocationMarker copyCallback={props.copyCallback} ref={childRef} />
       </MapContainer>
     </div>
   );

@@ -13,7 +13,8 @@ const Login = lazy(() =>
   }))
 );
 
-console.log(ServerBaseURL);
+console.log("ServerBaseURL", ServerBaseURL);
+
 function App() {
   return (
     <div className="App">
