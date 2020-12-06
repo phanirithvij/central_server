@@ -13,11 +13,19 @@ String.prototype.trimLeft =
     return this.slice(start, this.length);
   };
 
+/**
+ * Uses the provider to query the address from the latlong
+ * @param {[number, number]} latlong
+ */
 export async function Address(latlong) {
   return await provider.search({ query: latlong.toString() });
 }
 
+// Using the openstreetmap provider
+// Dev notes: Check https://smeijer.github.io/leaflet-geosearch/providers/algolia
+// for more providers
 const provider = new OpenStreetMapProvider();
+
 function Search(props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -48,6 +56,7 @@ function Search(props) {
     // no empty searchs and < 3 searches
     if (nquery === "" || nquery.length < 3) {
       if (results.length !== 0) {
+        // show nothing
         setSearching(undefined);
         setResults([]);
       }
@@ -70,12 +79,11 @@ function Search(props) {
         .catch((err) => {
           setSearching(false);
           // this sometimes fails for no reason
+          // issue inside the leaflet-geosearch
           console.error(err);
         });
       return;
     }
-    // exhaustive dependencies not needed
-    // eslint-disable-next-line
   };
 
   return (
@@ -89,21 +97,22 @@ function Search(props) {
         />
       </form>
 
-      <div className={styles.result}>
-        {searching !== undefined &&
-          (searching ? (
+      {searching !== undefined && (
+        <div className={styles.result}>
+          {searching ? (
             <section {...containerProps}>{indicatorEl}</section>
           ) : results.length === 0 ? (
             "No results found"
           ) : (
-            ""
-          ))}
-        {results.map((result, idx) => (
-          <div key={idx} onClick={() => handleClick(result)}>
-            {result.label}
-          </div>
-        ))}
-      </div>
+            // if results are available
+            results.map((result, idx) => (
+              <div key={idx} onClick={() => handleClick(result)}>
+                {result.label}
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

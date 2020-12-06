@@ -21,7 +21,9 @@ export default function Register() {
       // check if password == confirm
       console.log(e.target.value, org._password);
     } else if (e.target.name === "location") {
-      org["location"](e.target.value.split(",").map(e => parseFloat(e.trim())));
+      org["location"](
+        e.target.value.split(",").map((e) => parseFloat(e.trim()))
+      );
     } else {
       // set name = value
       org[e.target.name](e.target.value);
@@ -61,15 +63,15 @@ export default function Register() {
         <input type="text" name="email-0" placeholder="Email Primary" />
         <input type="text" name="email-1" placeholder="Email 1" />
         <input type="text" name="description" placeholder="Description" />
-        <button onClick={() => setmapVis(!mapVis)}>
-          {!mapVis ? "Show" : "Hide"} Map
-        </button>
         <input type="text" name="address" placeholder="Address" />
         <input type="text" name="location" placeholder="Location Lat, Long" />
         <input type="password" name="password" placeholder="Password" />
         <input type="password" name="confirm" placeholder="Confirm password" />
         <button type="submit">Register</button>
       </form>
+      <button onClick={() => setmapVis(!mapVis)}>
+        {!mapVis ? "Show" : "Hide"} Map
+      </button>
       {mapVis && <Map />}
     </div>
   );

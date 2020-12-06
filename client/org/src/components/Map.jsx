@@ -6,6 +6,7 @@ import shadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet";
 import "leaflet/dist/leaflet.css";
 import React, { useImperativeHandle, useMemo, useRef, useState } from "react";
+import SVG from "react-inlinesvg";
 import {
   MapContainer,
   Marker,
@@ -14,26 +15,9 @@ import {
   useMap,
   useMapEvents
 } from "react-leaflet";
+import copy from "./drawing.svg";
 import "./Map.css";
 import Search, { Address } from "./Search";
-
-/* const provider = new OpenStreetMapProvider();
-const control = new GeoSearchControl({
-  provider,
-  style: "bar",
-  marker: {
-    alt: "marker",
-    draggable: true,
-    icon: new Icon({ iconUrl: icon, shadowUrl: shadow }),
-  },
-  keepResult: true,
-  searchLabel: "Search for address",
-  popupFormat: ({ result, query }) => {
-    console.log(query, result);
-    return `${query.query}\n ${result.x}, ${result.y}`;
-  },
-});
- */
 
 const POSITION_CLASSES = {
   bottomleft: "leaflet-bottom leaflet-left",
@@ -118,7 +102,8 @@ const LocationMarker = React.forwardRef((props, ref) => {
     []
   );
 
-  //   https://stackoverflow.com/a/61547777/8608146
+  // https://stackoverflow.com/a/61547777/8608146
+  // exposing child methods to parent component
   useImperativeHandle(
     ref,
     () => ({
@@ -147,15 +132,24 @@ const LocationMarker = React.forwardRef((props, ref) => {
       }
       position={position}
     >
-      <Popup>
-        <div>
+      <Popup className="popupcl">
+        <div className="popup-item">
           <span>{label}</span>
-          <button>use</button>
+          <div className="iconbtn" title="Use as Address">
+            <SVG className="svgicon" src={copy}>
+              <div>use</div>
+            </SVG>
+          </div>
         </div>
+        {/* if position exists show it on pop up*/}
         {position !== null && (
-          <div>
+          <div className="popup-item">
             <span>{`${position[0]}, ${position[1]}`}</span>
-            <button>use</button>
+            <div className="iconbtn" title="Use as Location">
+              <SVG className="svgicon" src={copy}>
+                <div>use</div>
+              </SVG>
+            </div>
           </div>
         )}
       </Popup>
@@ -164,6 +158,7 @@ const LocationMarker = React.forwardRef((props, ref) => {
 });
 
 function SearchWrapper(props) {
+  // can't use useMap so passing as a prop
   const selectCallback = ({ x, y, label }) => {
     if (props.map) {
       const map = props.map;
@@ -177,14 +172,16 @@ function SearchWrapper(props) {
 
 function Map() {
   const [map, setMap] = useState(null);
-  //   default iiit hyderabad
+  // default location is iiit hyderabad
   const [center, setCenter] = useState([17.44511053681717, 78.34944901691728]);
   const childRef = useRef(null);
+  // sets marker position and label
   const setPositionLabel = (x, l) => {
     childRef.current.setPositionLabel(x, l);
     setCenter(x);
   };
 
+  // need to do this because useMap doesn't work outside <MapContainer/>
   const onMapInit = (m) => {
     setMap(m);
   };
@@ -226,7 +223,7 @@ function Map() {
         zoom={13}
         scrollWheelZoom={true}
         placeholder={
-          <div>Map not visible for some reason, try enable javascript?</div>
+          <div>Map not visible for some reason, try enabling javascript?</div>
         }
       >
         <TileLayer
