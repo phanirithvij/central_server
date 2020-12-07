@@ -210,7 +210,7 @@ function SearchWrapper(props) {
   return <Search selectCallback={selectCallback} />;
 }
 
-function Map(props) {
+export default function Map(props) {
   const [map, setMap] = useState(null);
   // default location is iiit hyderabad
   const [center, setCenter] = useState([17.4454957, 78.34854697544472]);
@@ -250,5 +250,3 @@ function Map(props) {
     </div>
   );
 }
-
-export default Map;
