@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -129,4 +130,92 @@ func (o *Organization) Validate() ([]string, error) {
 		return msgs, errx
 	}
 	return []string{}, nil
+}
+
+// ValidateSub Validates only some fields for the organization
+func (o *Organization) ValidateSub(only []string) ([]string, error) {
+	validate := validator.New()
+	errx := validate.Struct(o)
+	msgs := []string{}
+	onlyStr := strings.Join(only, ",")
+	if errx != nil {
+		validationErrors := errx.(validator.ValidationErrors)
+		for _, err := range validationErrors {
+			if strings.Contains(onlyStr, err.Field()) {
+				log.Println(err, err.Field())
+				msgs = append(msgs, err.Field()+" provided "+fmt.Sprint(err.Value())+" was not a valid "+strings.ToLower(err.Field()))
+				errx = err
+			} else {
+				// skip validate for this field so no errors
+				errx = nil
+			}
+		}
+		return msgs, errx
+	}
+	return []string{}, nil
+}
+
+// OrgSubmission a submission from the clients
+type OrgSubmission struct {
+	ID          uint      `json:"id"`
+	Address     string    `json:"address"`
+	Alias       string    `json:"alias"`
+	Description string    `json:"description"`
+	Emails      []emailD  `json:"emails"`
+	Location    []float64 `json:"location"`
+	Name        string    `json:"name"`
+	Password    string    `json:"password"`
+}
+
+type emailD struct {
+	Email   string `json:"em"`
+	Private bool   `default:"false" json:"private"`
+}
+
+// Find finds the org from db
+func (s *OrgSubmission) Find() (*Organization, error) {
+	o := s.Org()
+	o.ID = s.ID
+	tx := db.Find(&o)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	return o, nil
+}
+
+// Org struct conversion, use Find() if needed from db
+func (s *OrgSubmission) Org() *Organization {
+	// TODO get from DB
+	o := NewOrganization()
+	o.Alias = s.Alias
+	o.Emails = []Email{}
+	for _, e := range s.Emails {
+		o.Emails = append(o.Emails, Email{Email: e.Email, Private: e.Private})
+	}
+	o.Name = s.Name
+	o.OrgDetails.LocationStr = s.Address
+	o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(s.Location[0], 'f', -1, 64)
+	o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(s.Location[1], 'f', -1, 64)
+	o.OrgDetails.Description = s.Description
+	return o
+}
+
+// GetOrgSubmission a submission for the clients
+func (o *Organization) GetOrgSubmission() *OrgSubmission {
+	s := new(OrgSubmission)
+	s.Alias = o.Alias
+	s.Address = o.OrgDetails.LocationStr
+	s.Emails = []emailD{}
+	for _, e := range o.Emails {
+		x := new(emailD)
+		x.Email = e.Email
+		x.Private = e.Private
+		s.Emails = append(s.Emails, *x)
+	}
+	s.Name = o.Name
+	s.Address = o.OrgDetails.LocationStr
+	s.Location[0], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Latitude, 64)
+	s.Location[1], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Longitude, 64)
+	s.Description = o.OrgDetails.Description
+	return s
 }

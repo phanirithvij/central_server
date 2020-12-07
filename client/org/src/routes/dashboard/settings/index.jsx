@@ -11,20 +11,20 @@ export default function Settings() {
   const [conf, setConf] = useState();
   const [org] = useState(new Org());
   const validatePass = () => {
-    setPass(org._password);
+    setPass(org.$password);
     setConf(org._confirm);
-    if (!org._password.startsWith(org._confirm)) {
+    if (!org.$password.startsWith(org._confirm)) {
       // entered wrong thing
       setPassValid(false);
-      // console.log(org._confirm, "doesn't match", org._password);
+      // console.log(org._confirm, "doesn't match", org.$password);
       return;
     } else {
       if (
-        org._confirm.length >= org._password.length &&
-        org._confirm !== org._password
+        org._confirm.length >= org.$password.length &&
+        org._confirm !== org.$password
       ) {
         setPassValid(false);
-        // console.log(org._confirm, "doesn't match", org._password);
+        // console.log(org._confirm, "doesn't match", org.$password);
         return;
       }
     }
@@ -35,7 +35,7 @@ export default function Settings() {
       // form of email-0, email-1 etc.
       // 0 being primary
       let idx = e.target.name.split("-")[1];
-      org["email"](e.target.value, idx);
+      org["email"]({ email: e.target.value, private: false }, idx);
     } else if (e.target.name === "location") {
       if (e.target.value.split(",").length !== 2) {
         // TODO show error message
@@ -65,15 +65,15 @@ export default function Settings() {
     e.preventDefault();
     if (
       passValid &&
-      org._password &&
+      org.$password &&
       org._confirm &&
-      org._password === org._confirm
+      org.$password === org._confirm
     ) {
     } else {
       console.error("Non password");
       return;
     }
-    if (org._location && org._location.length === 2) {
+    if (org.$location && org.$location.length === 2) {
     } else {
       console.error("Non locaceon");
       return;
@@ -105,6 +105,7 @@ export default function Settings() {
         <input type="text" name="description" placeholder="Description" />
         <input type="text" name="address" placeholder="Address" />
         <input type="text" name="location" placeholder="Location Lat, Long" />
+        <input type="checkbox" name="private" />
         <input type="password" name="password" placeholder="Password" />
         <input type="password" name="confirm" placeholder="Confirm password" />
         <label htmlFor="confirm">

@@ -14,20 +14,20 @@ export default function Register() {
   const [conf, setConf] = useState();
 
   const validatePass = () => {
-    setPass(org._password);
+    setPass(org.$password);
     setConf(org._confirm);
-    if (!org._password.startsWith(org._confirm)) {
+    if (!org.$password.startsWith(org._confirm)) {
       // entered wrong thing
       setPassValid(false);
-      // console.log(org._confirm, "doesn't match", org._password);
+      // console.log(org._confirm, "doesn't match", org.$password);
       return;
     } else {
       if (
-        org._confirm.length >= org._password.length &&
-        org._confirm !== org._password
+        org._confirm.length >= org.$password.length &&
+        org._confirm !== org.$password
       ) {
         setPassValid(false);
-        // console.log(org._confirm, "doesn't match", org._password);
+        // console.log(org._confirm, "doesn't match", org.$password);
         return;
       }
     }
@@ -70,15 +70,15 @@ export default function Register() {
     e.preventDefault();
     if (
       passValid &&
-      org._password &&
+      org.$password &&
       org._confirm &&
-      org._password === org._confirm
+      org.$password === org._confirm
     ) {
     } else {
       console.error("Non password");
       return;
     }
-    if (org._location && org._location.length === 2) {
+    if (org.$location && org.$location.length === 2) {
     } else {
       console.error("Non locaceon");
       return;

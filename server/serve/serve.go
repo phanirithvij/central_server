@@ -21,6 +21,7 @@ import (
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
+	settings "github.com/phanirithvij/central_server/server/routes/settings"
 	status "github.com/phanirithvij/central_server/server/routes/status"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
 	"github.com/phanirithvij/central_server/server/utils/rate"
@@ -54,6 +55,7 @@ func Serve(port int, debug bool) {
 	home.RegisterEndPoints(router)
 	register.RegisterEndPoints(router)
 	status.RegisterEndPoints(router)
+	settings.RegisterEndPoints(router)
 
 	routes.CheckEndpoints()
 
@@ -205,6 +207,9 @@ func registerTemplates(router *gin.Engine) {
 
 	st := status.Template{T: t}
 	st.LoadTemplates()
+
+	set := settings.Template{T: t}
+	set.LoadTemplates()
 
 	router.SetHTMLTemplate(t)
 }

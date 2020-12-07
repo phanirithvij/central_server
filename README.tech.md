@@ -13,6 +13,8 @@ The server uses [cobra](https://github.com/spf13/cobra/) cli tool for command ge
 
 Bash completions also work for linux systems
 
+**No typescript** -> slightly more errors but huge time waste handling typescript issues
+
 ## TODO
 
 - [x] Remove pkger and use packr2 because pkger slow

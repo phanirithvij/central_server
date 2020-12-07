@@ -7,71 +7,80 @@ export default class Org {
    * @param {string} addr
    */
   address(addr) {
-    this._address = addr;
+    this.$address = addr;
     return this;
   }
   /**
    * @param {[number, number]} loc
    */
   location(loc) {
-    this._location = loc;
+    this.$location = loc;
     return this;
   }
   /**
-   * @param {string} em
+   * @param {{email: string, private: boolean}} em
    * @param {number} indx
    */
   email(em, indx) {
-    if (!this._emails) this._emails = [];
-    this._emails[indx] = em;
+    if (!this.$emails) this.$emails = {};
+    this.$emails[indx] = em;
     return this;
   }
   /**
    * @param {string} n
    */
   name(n) {
-    this._name = n;
+    this.$name = n;
     return this;
   }
   /**
    * @param {string} a
    */
   alias(a) {
-    this._alias = a;
+    this.$alias = a;
     return this;
   }
   /**
    * @param {string} d
    */
   description(d) {
-    this._description = d;
+    this.$description = d;
     return this;
   }
   /**
    * @param {string} p
    */
   password(p) {
-    this._password = p;
+    this.$password = p;
     return this;
   }
+  /**
+   * @param {boolean} b
+   */
+  private(b) {
+    this.$private = b;
+    return this;
+  }
+  /**
+   * @param {string} p
+   */
   confirm(p) {
     this._confirm = p;
     return this;
   }
   /**
-   *
    * @param {boolean} update
    */
   create(update) {
-    this.props = {
-      password: this._password,
-      emails: this._emails,
-      location: this._location,
-      name: this._name,
-      description: this._description,
-      alias: this._alias,
-      address: this._address,
-    };
+    if (!this.props) this.props = {};
+    Object.keys(this).forEach((k) => {
+      if (k.startsWith("$")) {
+        if (k === "$emails") {
+          this.props[k.split("$")[1]] = Object.values(this[k]);
+        } else this.props[k.split("$")[1]] = this[k];
+      }
+    });
+
     const url = update ? OrgSettingsURL : RegisterURL;
     return fetch(url, {
       method: update ? "PUT" : "POST",
@@ -81,6 +90,7 @@ export default class Org {
       body: JSON.stringify(this.props),
     });
   }
+  // Call this from the settings route to update the Org
   update() {
     return this.create(true);
   }

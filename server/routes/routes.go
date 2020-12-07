@@ -10,7 +10,6 @@ import (
 var (
 	// Endpoints ...
 	endpoints = map[string]bool{}
-	// EndPointStrings ...
 )
 
 // CheckEndpoints checks whether each route's endpoints are initialized
