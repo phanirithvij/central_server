@@ -5,7 +5,13 @@ import icon from "leaflet/dist/images/marker-icon.png";
 import shadow from "leaflet/dist/images/marker-shadow.png";
 import "leaflet/dist/leaflet";
 import "leaflet/dist/leaflet.css";
-import React, { useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import SVG from "react-inlinesvg";
 import {
   MapContainer,
@@ -13,7 +19,7 @@ import {
   Popup,
   TileLayer,
   useMap,
-  useMapEvents,
+  useMapEvents
 } from "react-leaflet";
 import copy from "./drawing.svg";
 import "./Map.css";
@@ -106,6 +112,24 @@ const LocationMarker = React.forwardRef((props, ref) => {
     []
   );
 
+  // https://github.com/PaulLeCam/react-leaflet/issues/317#issuecomment-739856989
+  const openPopup = () => {
+    if (document.querySelector(".popupcl")) {
+      // popup is already open
+      return;
+    }
+    document.querySelectorAll(".marker-x")?.[1].click();
+  };
+
+  // https://stackoverflow.com/a/53446665/8608146
+  // const prevPos = usePrevious(position);
+
+  // TODO: bug, clicking on location icon toggles the popup
+
+  useEffect(() => {
+    if (position !== null) openPopup();
+  }, [position]);
+
   // https://stackoverflow.com/a/61547777/8608146
   // exposing child methods to parent component
   useImperativeHandle(
@@ -133,11 +157,12 @@ const LocationMarker = React.forwardRef((props, ref) => {
           shadowUrl: shadow,
           iconSize: [25, 41],
           iconAnchor: [12, 41],
+          className: "marker-x",
         })
       }
       position={position}
     >
-      <Popup className="popupcl">
+      <Popup closeOnEscapeKey={true} className="popupcl">
         <div className="popup-item">
           <span>{label}</span>
           <div
