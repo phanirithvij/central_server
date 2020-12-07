@@ -1,4 +1,4 @@
-import { RegisterURL } from "../utils/server";
+import { OrgSettingsURL, RegisterURL } from "../utils/server";
 export default class Org {
   constructor(props) {
     this.props = props;
@@ -58,7 +58,11 @@ export default class Org {
     this._confirm = p;
     return this;
   }
-  create() {
+  /**
+   *
+   * @param {boolean} update
+   */
+  create(update) {
     this.props = {
       password: this._password,
       emails: this._emails,
@@ -68,16 +72,17 @@ export default class Org {
       alias: this._alias,
       address: this._address,
     };
-    fetch(RegisterURL, {
-      method: "POST",
+    const url = update ? OrgSettingsURL : RegisterURL;
+    return fetch(url, {
+      method: update ? "PUT" : "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(this.props),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.error(err));
+    });
+  }
+  update() {
+    return this.create(true);
   }
 }
 

@@ -1,18 +1,15 @@
 import { lazy, useState } from "react";
-import { Link } from "react-router-dom";
-import Org from "../../models/org";
+import Org from "../../../models/org";
 import "./index.css";
 
-const Map = lazy(() => import("../../components/Map"));
+const Map = lazy(() => import("../../../components/Map"));
 
-export default function Register() {
+export default function Settings() {
   const [mapVis, setmapVis] = useState(false);
-
-  const [org] = useState(new Org());
   const [passValid, setPassValid] = useState(false);
   const [pass, setPass] = useState();
   const [conf, setConf] = useState();
-
+  const [org] = useState(new Org());
   const validatePass = () => {
     setPass(org._password);
     setConf(org._confirm);
@@ -33,7 +30,6 @@ export default function Register() {
     }
     setPassValid(true);
   };
-
   const updateOrg = (e) => {
     if (e.target.name.startsWith("email")) {
       // form of email-0, email-1 etc.
@@ -58,7 +54,6 @@ export default function Register() {
       org[e.target.name](e.target.value);
     }
   };
-
   // triggered when clicked on the copy icons in the marker popup
   const useCallback = (type, value) => {
     org[type](value);
@@ -84,26 +79,13 @@ export default function Register() {
       return;
     }
     org
-      .create()
+      .update()
       .then((res) => res.json())
       .then((data) => console.log(data))
       .catch((err) => console.error(err));
   };
   return (
     <div>
-      <h2>Register</h2>
-      <Link to="/login">Login</Link>
-      {/* 
-        - Private bool
-        - Name string
-        - Email[] - emails for hub/user communication
-        - ID string serverAssigned
-        - Alias string - Human friendly org slug serverRecommended
-        - Description string - human readable description
-        - LocationStr string - Manual location address
-        - Location
-        - Server (servers ??)
-      */}
       <form
         onChange={updateOrg}
         onSubmit={handleSubmit}
