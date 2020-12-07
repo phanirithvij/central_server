@@ -16,7 +16,6 @@ import (
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
 	"github.com/phanirithvij/central_server/server/utils"
-	dbm "github.com/phanirithvij/central_server/server/utils/db"
 )
 
 var (
@@ -67,7 +66,6 @@ type orgSubmission struct {
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
 func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
-	db := dbm.DB
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
@@ -97,16 +95,34 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			}
 			o := models.NewOrganization()
 			o.Alias = data.Alias
+			// TODO all emails
+			// TODO frontend email private option
+			// TODO don't ask all these details when signing up
+			// Ask after email verification
+			// TODO multi email verification
 			o.Emails = []models.Email{{Email: data.Emails[0], Private: false}}
 			o.Name = data.Name
 			o.OrgDetails.LocationStr = data.Address
 			o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(data.Location[0], 'f', -1, 64)
 			o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(data.Location[1], 'f', -1, 64)
 			o.OrgDetails.Description = data.Description
+			msgs, err := o.Validate()
+			if err != nil {
+				// https://stackoverflow.com/a/40926661/8608146
+				c.JSON(http.StatusUnprocessableEntity, gin.H{
+					"error":    err.Error(),
+					"type":     "validate",
+					"messages": msgs,
+				})
+				return
+			}
 			log.Println(data)
 			log.Println(o.Str())
-			db.Create(o)
-			db.Save(o)
+			err = o.SaveReq(c)
+			if err != nil {
+				log.Println(err)
+				return
+			}
 			log.Println(o.Str())
 			c.JSON(http.StatusOK, o)
 		})

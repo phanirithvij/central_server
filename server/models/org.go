@@ -5,10 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/mcuadros/go-defaults"
+	dbm "github.com/phanirithvij/central_server/server/utils/db"
 	"gorm.io/gorm"
+)
+
+var (
+	db *gorm.DB = dbm.DB
 )
 
 // Organization is an organization
@@ -16,6 +24,7 @@ type Organization struct {
 	gorm.Model
 	OrgID string
 	OrganizationPublic
+	Servers []*Server `gorm:"ForeignKey:ID"`
 }
 
 // OrganizationPublic all the public feilds that can be configured by the organization
@@ -56,6 +65,13 @@ func NewOrganization() *Organization {
 	return o
 }
 
+// NewServer a new server for the organization
+func (o *Organization) NewServer() *Server {
+	s := NewServer()
+	o.Servers = append(o.Servers, s)
+	return s
+}
+
 // Str prints the organization
 func (o *Organization) Str() string {
 	jd, err := json.Marshal(o)
@@ -65,15 +81,52 @@ func (o *Organization) Str() string {
 	return string(jd)
 }
 
-// Validate Validates the organization
-func (o *Organization) Validate() error {
-	validate := validator.New()
-	err := validate.Struct(o)
-	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		for _, err := range validationErrors {
-			log.Println(err)
-		}
+// SaveReq saves organization to database inside a http request
+func (o *Organization) SaveReq(c *gin.Context) error {
+	tx := db.Create(o)
+	if tx.Error != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": tx.Error.Error(),
+			"type":  "create",
+		})
+		return tx.Error
 	}
-	return err
+	tx = db.Save(o)
+	if tx.Error != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": tx.Error.Error(),
+			"type":  "save",
+		})
+		return tx.Error
+	}
+	return nil
+}
+
+// Save saves
+func (o *Organization) Save() error {
+	tx := db.Create(o)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	tx = db.Save(o)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+
+// Validate Validates the organization
+func (o *Organization) Validate() ([]string, error) {
+	validate := validator.New()
+	errx := validate.Struct(o)
+	msgs := []string{}
+	if errx != nil {
+		validationErrors := errx.(validator.ValidationErrors)
+		for _, err := range validationErrors {
+			log.Println(err, err.Field())
+			msgs = append(msgs, err.Field()+" provided "+fmt.Sprint(err.Value())+" was not a valid "+strings.ToLower(err.Field()))
+		}
+		return msgs, errx
+	}
+	return []string{}, nil
 }

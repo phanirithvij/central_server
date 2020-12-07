@@ -1,35 +1,64 @@
 package models
 
 import (
+	"fmt"
 	"log"
-	"net/url"
+	"net/http"
+	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/mcuadros/go-defaults"
+	"gorm.io/gorm"
 )
 
 // Server an organization server
 type Server struct {
-	URL   url.URL
-	Alias string `validate:"alphanum"`
+	gorm.Model
+	URL   string `validate:"url" json:"url"`
+	Alias string `validate:"alphanum" json:"alias"`
 }
 
-// NewServer returns a new empty organization
+// NewServer returns a new empty server
 func NewServer() *Server {
 	s := new(Server)
 	defaults.SetDefaults(s)
 	return s
 }
 
-// Validate validates the struct
-func (s *Server) Validate() error {
-	validate := validator.New()
-	err := validate.Struct(s)
-	if err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		for _, err := range validationErrors {
-			log.Println(err)
-		}
+// Save saves to db
+func (s *Server) Save(db *gorm.DB, c *gin.Context) error {
+	tx := db.Create(s)
+	if tx.Error != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": tx.Error.Error(),
+			"type":  "create",
+		})
+		return tx.Error
 	}
-	return err
+	tx = db.Save(s)
+	if tx.Error != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"error": tx.Error.Error(),
+			"type":  "save",
+		})
+		return tx.Error
+	}
+	return nil
+}
+
+// Validate validates the struct
+func (s *Server) Validate() ([]string, error) {
+	validate := validator.New()
+	errx := validate.Struct(s)
+	msgs := []string{}
+	if errx != nil {
+		validationErrors := errx.(validator.ValidationErrors)
+		for _, err := range validationErrors {
+			log.Println(err, err.Field())
+			msgs = append(msgs, err.Field()+" provided "+fmt.Sprint(err.Value())+" was not a valid "+strings.ToLower(err.Field()))
+		}
+		return msgs, errx
+	}
+	return []string{}, nil
 }

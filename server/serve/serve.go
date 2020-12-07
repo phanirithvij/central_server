@@ -92,7 +92,7 @@ func Serve(port int, debug bool) {
 
 	db := dbm.DB
 	// Migrate the schema
-	err := db.AutoMigrate(&models.Organization{}, &models.Email{})
+	err := db.AutoMigrate(&models.Organization{}, &models.Email{}, &models.Server{})
 	if err != nil {
 		log.Fatalln(err)
 	}
