@@ -53,19 +53,6 @@ function CurrentLocationControl({ position }) {
   );
 }
 
-function usePrevious(value) {
-  const ref = useRef();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
-// https://stackoverflow.com/a/19746771/8608146
-function cmparr(a, b) {
-  return !a && !b && a.length === b.length && a.every((v, i) => v === b[i]);
-}
-
 const LocationMarker = React.forwardRef((props, ref) => {
   const [position, setPosition] = useState(null);
   const [label, setLabel] = useState("Current location");
@@ -126,7 +113,9 @@ const LocationMarker = React.forwardRef((props, ref) => {
   );
 
   // https://stackoverflow.com/a/53446665/8608146
-  const previous = usePrevious(position);
+  // const previous = usePrevious(position);
+
+  // https://stackoverflow.com/a/19746771/8608146
 
   // https://github.com/PaulLeCam/react-leaflet/issues/317#issuecomment-739856989
   const openPopup = () => {
@@ -138,7 +127,7 @@ const LocationMarker = React.forwardRef((props, ref) => {
   };
 
   useEffect(() => {
-    if (position !== null && !cmparr(position, previous)) openPopup();
+    if (position !== null) openPopup();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position]);
 
