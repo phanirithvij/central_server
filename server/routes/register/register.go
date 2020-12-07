@@ -8,12 +8,15 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/pkger"
 	"github.com/phanirithvij/central_server/server/config"
+	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
 	"github.com/phanirithvij/central_server/server/utils"
+	dbm "github.com/phanirithvij/central_server/server/utils/db"
 )
 
 var (
@@ -64,6 +67,7 @@ type orgSubmission struct {
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
 func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
+	db := dbm.DB
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
@@ -91,11 +95,20 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 				return
 			}
+			o := models.NewOrganization()
+			o.Alias = data.Alias
+			o.Emails = []models.Email{{Email: data.Emails[0], Private: false}}
+			o.Name = data.Name
+			o.OrgDetails.LocationStr = data.Address
+			o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(data.Location[0], 'f', -1, 64)
+			o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(data.Location[1], 'f', -1, 64)
+			o.OrgDetails.Description = data.Description
 			log.Println(data)
-			c.JSON(http.StatusOK, data)
-		})
-		register.GET("/hello", func(c *gin.Context) {
-			c.String(http.StatusOK, `strings.Join(versions, "\n")`)
+			log.Println(o.Str())
+			db.Create(o)
+			db.Save(o)
+			log.Println(o.Str())
+			c.JSON(http.StatusOK, o)
 		})
 	}
 	routes.RegisterSelf(config.Register)

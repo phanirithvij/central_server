@@ -14,11 +14,11 @@ String.prototype.trimLeft =
   };
 
 /**
- * Uses the provider to query the address from the latlong
- * @param {[number, number]} latlong
+ * Uses the provider to query the address from the latlng
+ * @param {[number, number]} latlng
  */
-export async function Address(latlong) {
-  return await provider.search({ query: latlong.toString() });
+export async function Address(latlng) {
+  return await provider.search({ query: latlng.toString() });
 }
 
 // Using the openstreetmap provider
@@ -55,11 +55,9 @@ function Search(props) {
   const search = (nquery) => {
     // no empty searchs and < 3 searches
     if (nquery === "" || nquery.length < 3) {
-      if (results.length !== 0) {
-        // show nothing
-        setSearching(undefined);
-        setResults([]);
-      }
+      // show nothing
+      setSearching(undefined);
+      setResults([]);
       setQuery(nquery.trimLeft());
       return;
     }
@@ -96,7 +94,7 @@ function Search(props) {
       >
         <input
           type="text"
-          placeholder="Search address"
+          placeholder="Search by address or lat, long"
           value={query}
           onChange={(e) => search(e.target.value)}
         />

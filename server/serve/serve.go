@@ -22,10 +22,9 @@ import (
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
 	status "github.com/phanirithvij/central_server/server/routes/status"
+	dbm "github.com/phanirithvij/central_server/server/utils/db"
 	"github.com/phanirithvij/central_server/server/utils/rate"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 const (
@@ -91,13 +90,9 @@ func Serve(port int, debug bool) {
 	// o.Print()
 	o.Validate()
 
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
-
+	db := dbm.DB
 	// Migrate the schema
-	err = db.AutoMigrate(&models.Organization{}, &models.Email{})
+	err := db.AutoMigrate(&models.Organization{}, &models.Email{})
 	if err != nil {
 		log.Fatalln(err)
 	}

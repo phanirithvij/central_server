@@ -56,13 +56,13 @@ func NewOrganization() *Organization {
 	return o
 }
 
-// Print prints the organization
-func (o *Organization) Print() {
+// Str prints the organization
+func (o *Organization) Str() string {
 	jd, err := json.Marshal(o)
 	if err != nil {
-		fmt.Println(o)
+		return fmt.Sprintln(o)
 	}
-	fmt.Println(string(jd))
+	return string(jd)
 }
 
 // Validate Validates the organization

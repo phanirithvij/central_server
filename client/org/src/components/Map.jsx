@@ -13,7 +13,7 @@ import {
   Popup,
   TileLayer,
   useMap,
-  useMapEvents
+  useMapEvents,
 } from "react-leaflet";
 import copy from "./drawing.svg";
 import "./Map.css";
@@ -111,8 +111,8 @@ const LocationMarker = React.forwardRef((props, ref) => {
   useImperativeHandle(
     ref,
     () => ({
-      setPositionLabel: (latlong, label) => {
-        setPosition(latlong);
+      setPositionLabel: (latlng, label) => {
+        setPosition(latlng);
         setLabel(label);
       },
       getLatLng: () => position,
@@ -181,13 +181,13 @@ function SearchWrapper(props) {
     }
   };
 
-  return <Search selectCallback={selectCallback} latlong={props.latlng} />;
+  return <Search selectCallback={selectCallback} />;
 }
 
 function Map(props) {
   const [map, setMap] = useState(null);
   // default location is iiit hyderabad
-  const [center, setCenter] = useState([17.44511053681717, 78.34944901691728]);
+  const [center, setCenter] = useState([17.4454957, 78.34854697544472]);
   const childRef = useRef(null);
   // sets marker position and label
   const setPositionLabel = (x, l) => {
@@ -202,11 +202,7 @@ function Map(props) {
 
   return (
     <div className="mapwrap">
-      <SearchWrapper
-        map={map}
-        setPositionLabel={setPositionLabel}
-        latlong={childRef.current?.getLatLng()}
-      />
+      <SearchWrapper map={map} setPositionLabel={setPositionLabel} />
       <MapContainer
         whenCreated={onMapInit}
         className="map"
