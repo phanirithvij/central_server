@@ -88,7 +88,12 @@ function Search(props) {
 
   return (
     <div className={styles.search}>
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          search(query);
+        }}
+      >
         <input
           type="text"
           placeholder="Search address"

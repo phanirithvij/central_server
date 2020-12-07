@@ -54,6 +54,10 @@ export default class Org {
     this._password = p;
     return this;
   }
+  confirm(p) {
+    this._confirm = p;
+    return this;
+  }
   create() {
     this.props = {
       password: this._password,

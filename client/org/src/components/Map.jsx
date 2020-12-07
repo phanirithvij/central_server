@@ -13,7 +13,7 @@ import {
   Popup,
   TileLayer,
   useMap,
-  useMapEvents,
+  useMapEvents
 } from "react-leaflet";
 import copy from "./drawing.svg";
 import "./Map.css";
@@ -143,7 +143,7 @@ const LocationMarker = React.forwardRef((props, ref) => {
           <div
             className="iconbtn"
             title="Use as Address"
-            onClick={() => props.copyCallback("label", label)}
+            onClick={() => props.copyCallback("address", label)}
           >
             {/* https://stackoverflow.com/a/41756265/8608146 */}
             <SVG className="svgicon" src={copy}>
@@ -158,7 +158,7 @@ const LocationMarker = React.forwardRef((props, ref) => {
             <div
               className="iconbtn"
               title="Use as Location"
-              onClick={() => props.copyCallback("latlong", position)}
+              onClick={() => props.copyCallback("location", position)}
             >
               <SVG className="svgicon" src={copy}>
                 <div>use</div>

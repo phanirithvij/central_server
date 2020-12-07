@@ -9,21 +9,50 @@ export default function Register() {
   const [mapVis, setmapVis] = useState(false);
 
   const [org] = useState(new Org());
+  const [passValid, setPassValid] = useState(false);
+  const [pass, setPass] = useState();
+  const [conf, setConf] = useState();
+
+  const validatePass = () => {
+    setPass(org._password);
+    setConf(org._confirm);
+    if (!org._password.startsWith(org._confirm)) {
+      // entered wrong thing
+      setPassValid(false);
+      // console.log(org._confirm, "doesn't match", org._password);
+      return;
+    } else {
+      if (
+        org._confirm.length >= org._password.length &&
+        org._confirm !== org._password
+      ) {
+        setPassValid(false);
+        // console.log(org._confirm, "doesn't match", org._password);
+        return;
+      }
+    }
+    setPassValid(true);
+  };
 
   const updateOrg = (e) => {
-    console.log(e.target.name, e.target.value);
     if (e.target.name.startsWith("email")) {
       // form of email-0, email-1 etc.
       // 0 being primary
       let idx = e.target.name.split("-")[1];
       org["email"](e.target.value, idx);
-    } else if (e.target.name === "confirm") {
-      // check if password == confirm
-      console.log(e.target.value, org._password);
     } else if (e.target.name === "location") {
+      if (e.target.value.split(",").length !== 2) {
+        // TODO show error message
+        console.log(e.target.value, "is not a valid location");
+        return;
+      }
       org["location"](
         e.target.value.split(",").map((e) => parseFloat(e.trim()))
       );
+    } else if (e.target.name === "password" || e.target.name === "confirm") {
+      // set name = value
+      org[e.target.name](e.target.value);
+      validatePass();
     } else {
       // set name = value
       org[e.target.name](e.target.value);
@@ -31,9 +60,30 @@ export default function Register() {
   };
 
   const copyCallback = (type, value) => {
-    console.log(type, value);
+    org[type](value);
+    const inp = document.querySelector(`input[name="${type}"]`);
+    inp.value = value.toString();
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (
+      passValid &&
+      org._password &&
+      org._confirm &&
+      org._password === org._confirm
+    ) {
+    } else {
+      console.error("Non password");
+      return;
+    }
+    if (org._location && org._location.length === 2) {
+    } else {
+      console.error("Non locaceon");
+      return;
+    }
+    org.create();
+  };
   return (
     <div>
       <h2>Register</h2>
@@ -51,10 +101,7 @@ export default function Register() {
       */}
       <form
         onChange={updateOrg}
-        onSubmit={(e) => {
-          e.preventDefault();
-          org.create();
-        }}
+        onSubmit={handleSubmit}
         style={{
           display: "flex",
           flexDirection: "column",
@@ -71,6 +118,12 @@ export default function Register() {
         <input type="text" name="location" placeholder="Location Lat, Long" />
         <input type="password" name="password" placeholder="Password" />
         <input type="password" name="confirm" placeholder="Confirm password" />
+        <label htmlFor="confirm">
+          {!passValid &&
+            pass &&
+            conf &&
+            `Passwords don't match ${pass} , ${conf}`}
+        </label>
         <button type="submit">Register</button>
       </form>
       <button onClick={() => setmapVis(!mapVis)}>
