@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/sessions"
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
@@ -57,7 +58,8 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 			// TODO get the currently logged in org from db
-			// Use redis and fallback to cookies
+			session := sessions.DefaultMany(c, "org")
+			log.Println(session)
 			c.JSON(http.StatusOK, gin.H{})
 		})
 

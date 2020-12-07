@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"time"
@@ -14,6 +15,9 @@ import (
 	"github.com/NYTimes/gziphandler"
 
 	"github.com/didip/tollbooth/v6"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"github.com/markbates/pkger"
 	"github.com/phanirithvij/central_server/server/models"
@@ -50,6 +54,7 @@ func Serve(port int, debug bool) {
 
 	router := gin.Default()
 	registerTemplates(router)
+	setupSessionStore(router)
 
 	api.RegisterEndPoints(router)
 	home.RegisterEndPoints(router)
@@ -242,4 +247,26 @@ func (w lhWriter) WriteHeader(code int) {
 
 func (w lhWriter) Header() http.Header {
 	return w.w.Header()
+}
+
+func setupSessionStore(r *gin.Engine) sessions.Store {
+	secretKey := os.Getenv("SESSION_SECRET")
+	if secretKey == "" {
+		// https://randomkeygen.com/
+		secretKey = "$l9voQ>MoLq{nAT#zJzH*b_;jC=2g6"
+	}
+	bsk := []byte(secretKey)
+	// https://github.com/gin-contrib/sessions#redis
+	// https://github.com/boj/redistore/blob/cd5dcc76aeff9ba06b0a924829fe24fd69cdd517/redistore.go#L155
+	// size: maximum number of idle connections.
+	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", bsk)
+	if err != nil {
+		log.Println(err)
+		log.Println("[Warning] Redis not available so using cookie sessions")
+		store = cookie.NewStore(bsk)
+	}
+	// https://github.com/gin-contrib/sessions#multiple-sessions
+	sessionNames := []string{"org", "admin"}
+	r.Use(sessions.SessionsMany(sessionNames, store))
+	return store
 }
