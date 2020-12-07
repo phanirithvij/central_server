@@ -10,7 +10,7 @@ import React, {
   useImperativeHandle,
   useMemo,
   useRef,
-  useState
+  useState,
 } from "react";
 import SVG from "react-inlinesvg";
 import {
@@ -19,7 +19,7 @@ import {
   Popup,
   TileLayer,
   useMap,
-  useMapEvents
+  useMapEvents,
 } from "react-leaflet";
 import copy from "./drawing.svg";
 import "./Map.css";
@@ -112,19 +112,16 @@ const LocationMarker = React.forwardRef((props, ref) => {
     []
   );
 
-  // https://github.com/PaulLeCam/react-leaflet/issues/317#issuecomment-739856989
-  const openPopup = () => {
-    if (document.querySelector(".popupcl")) {
-      // popup is already open
-      return;
-    }
-    document.querySelectorAll(".marker-x")?.[1].click();
-  };
-
   // https://stackoverflow.com/a/53446665/8608146
   // const prevPos = usePrevious(position);
-
+  
   // TODO: bug, clicking on location icon toggles the popup
+
+  // https://github.com/PaulLeCam/react-leaflet/issues/317#issuecomment-739856989
+  const openPopup = () => {
+    if (document.querySelector(".popupcl")) return; // popup is already open
+    document.querySelectorAll(".marker-x")?.[1].click();
+  };  
 
   useEffect(() => {
     if (position !== null) openPopup();
