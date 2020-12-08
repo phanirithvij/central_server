@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Org from "../../models/org";
 import "./index.css";
 
+// Must be lazy for it is ~ 1MB, gziped 200 KB
 const Map = lazy(() => import("../../components/Map"));
 
 export default function Register() {

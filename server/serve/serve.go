@@ -2,6 +2,7 @@
 package serve
 
 import (
+	"compress/gzip"
 	"encoding/hex"
 	"html/template"
 	"io/ioutil"
@@ -74,7 +75,11 @@ func Serve(port int, debug bool) {
 		indexPath:  orgAssetDir + "/index.html",
 	}
 
-	orgGzHandler := gziphandler.GzipHandler(orgSPA)
+	gh, err := gziphandler.NewGzipLevelHandler(gzip.BestCompression)
+	if err != nil {
+		log.Fatal(err)
+	}
+	orgGzHandler := gh(orgSPA)
 	orgCacheH := http.StripPrefix(orgBaseURL, cache(orgGzHandler, orgAssetDir))
 	router.GET(orgBaseURL+"/*w", gin.WrapH(orgCacheH))
 
@@ -83,7 +88,7 @@ func Serve(port int, debug bool) {
 		indexPath:  adminAssetDir + "/index.html",
 	}
 
-	adminGzHandler := gziphandler.GzipHandler(amdinSPA)
+	adminGzHandler := gh(amdinSPA)
 	adminCacheH := http.StripPrefix(adminBaseURL, cache(adminGzHandler, adminAssetDir))
 	router.GET(adminBaseURL+"/*w", gin.WrapH(adminCacheH))
 
@@ -99,7 +104,7 @@ func Serve(port int, debug bool) {
 
 	db := dbm.DB
 	// Migrate the schema
-	err := db.AutoMigrate(&models.Organization{}, &models.Email{}, &models.Server{})
+	err = db.AutoMigrate(&models.Organization{}, &models.Email{}, &models.Server{})
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -221,7 +226,7 @@ func registerTemplates(router *gin.Engine) {
 
 func newOrg() *models.Organization {
 	o := models.NewOrganization()
-	o.OrgID = "org-oror"
+	// o.OrgID = "org-oror"
 	o.Alias = "oror"
 	o.Emails = []models.Email{{Email: "email@email.email", Private: false}}
 	o.Name = "Or Or Organization"

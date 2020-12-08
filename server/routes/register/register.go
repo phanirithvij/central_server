@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
@@ -68,12 +69,14 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 			c.Header("Access-Control-Allow-Methods", "POST")
 			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
+			c.Header("Access-Control-Allow-Credentials", "true")
 
 			c.Status(http.StatusOK)
 		})
 		register.POST("/", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			c.Header("Access-Control-Allow-Credentials", "true")
 			d := json.NewDecoder(c.Request.Body)
 			data := &orgSubmission{}
 			err := d.Decode(&data)
@@ -108,6 +111,17 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 				return
 			}
 			log.Println(o.Str())
+			session := sessions.DefaultMany(c, "org")
+			session.Set("org-id", o.ID)
+			err = session.Save()
+			if err != nil {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{
+					"error":    err.Error(),
+					"type":     "cookie",
+					"messages": []string{"Setting cookie failed"},
+				})
+				return
+			}
 			c.JSON(http.StatusOK, o)
 		})
 	}

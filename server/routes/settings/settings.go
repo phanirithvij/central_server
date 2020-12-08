@@ -9,8 +9,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
@@ -57,10 +57,31 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 		settings.GET("/", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			// TODO get the currently logged in org from db
+			c.Header("Access-Control-Allow-Credentials", "true")
+			// TODO get the currently loggedin orgid
+			// then get it from db
 			session := sessions.DefaultMany(c, "org")
-			log.Println(session)
-			c.JSON(http.StatusOK, gin.H{})
+			data := &models.OrgSubmission{}
+			v, ok := session.Get("org-id").(uint)
+			if !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":    "sesson has no org ID",
+					"type":     "login",
+					"messages": []string{"Not Authorized"},
+				})
+				return
+			}
+			data.ID = v
+			o, err := data.Find()
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{
+					"error":    "sesson has no org ID",
+					"type":     "login",
+					"messages": []string{"Not Authorized"},
+				})
+				return
+			}
+			c.JSON(http.StatusOK, o.OrgSubmission())
 		})
 
 		settings.OPTIONS("/", func(c *gin.Context) {
@@ -68,12 +89,18 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 			c.Header("Access-Control-Allow-Methods", "PUT")
 			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
+			c.Header("Access-Control-Allow-Credentials", "true")
 
 			c.Status(http.StatusOK)
 		})
+
 		settings.PUT("/", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			c.Header("Access-Control-Allow-Credentials", "true")
+			// cookies won't show in react devtools
+			// https://stackoverflow.com/a/50370345/8608146
+			// log.Println(c.Request.Header.Get("Cookie"))
 			d := json.NewDecoder(c.Request.Body)
 			data := &models.OrgSubmission{}
 			err := d.Decode(&data)
@@ -85,20 +112,28 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-			o, err := data.Find()
+			session := sessions.DefaultMany(c, "org")
+			v, ok := session.Get("org-id").(uint)
+			if !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":    "sesson has no org ID",
+					"type":     "login",
+					"messages": []string{"Not Authorized"},
+				})
+				return
+			}
+			data.ID = v
+			o := data.Org()
 			if err != nil {
 				log.Println(err)
-				c.JSON(http.StatusNotAcceptable, gin.H{
+				c.JSON(http.StatusNotFound, gin.H{
 					"error":    err.Error(),
 					"type":     "no-org",
 					"messages": []string{"No such organization found"},
 				})
 				return
 			}
-			// TODO all emails
-			// TODO frontend email private option
-			// TODO don't ask all these details when signing up
-			// Ask after email verification
+			// Allow update only after email verification
 			// TODO multi email verification
 			msgs, err := o.Validate()
 			if err != nil {
@@ -110,8 +145,6 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-			log.Println(data)
-			log.Println(o.Str())
 			err = o.SaveReq(c)
 			if err != nil {
 				log.Println(err)

@@ -1,4 +1,4 @@
-import { lazy, useState } from "react";
+import { lazy, useEffect, useState } from "react";
 import Org from "../../../models/org";
 import "./index.css";
 
@@ -30,6 +30,15 @@ export default function Settings() {
     }
     setPassValid(true);
   };
+
+  useEffect(() => {
+    org
+      .fetch()
+      .then((x) => x.json())
+      .then((x) => console.log(x))
+      .catch((err) => console.error(err));
+  }, [org]);
+
   const updateOrg = (e) => {
     if (e.target.name.startsWith("email")) {
       // form of email-0, email-1 etc.
@@ -114,7 +123,7 @@ export default function Settings() {
             conf &&
             `Passwords don't match ${pass} , ${conf}`}
         </label>
-        <button type="submit">Register</button>
+        <button type="submit">Update</button>
       </form>
       <button onClick={() => setmapVis(!mapVis)}>
         {!mapVis ? "Show" : "Hide"} Map

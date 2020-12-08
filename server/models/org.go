@@ -23,7 +23,6 @@ var (
 // Organization is an organization
 type Organization struct {
 	gorm.Model
-	OrgID string
 	OrganizationPublic
 	Servers []*Server `gorm:"ForeignKey:ID"`
 }
@@ -168,7 +167,7 @@ type OrgSubmission struct {
 }
 
 type emailD struct {
-	Email   string `json:"em"`
+	Email   string `json:"email"`
 	Private bool   `default:"false" json:"private"`
 }
 
@@ -194,14 +193,16 @@ func (s *OrgSubmission) Org() *Organization {
 	}
 	o.Name = s.Name
 	o.OrgDetails.LocationStr = s.Address
-	o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(s.Location[0], 'f', -1, 64)
-	o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(s.Location[1], 'f', -1, 64)
+	if len(s.Location) == 2 {
+		o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(s.Location[0], 'f', -1, 64)
+		o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(s.Location[1], 'f', -1, 64)
+	}
 	o.OrgDetails.Description = s.Description
 	return o
 }
 
-// GetOrgSubmission a submission for the clients
-func (o *Organization) GetOrgSubmission() *OrgSubmission {
+// OrgSubmission a submission for the clients
+func (o *Organization) OrgSubmission() *OrgSubmission {
 	s := new(OrgSubmission)
 	s.Alias = o.Alias
 	s.Address = o.OrgDetails.LocationStr
@@ -214,8 +215,10 @@ func (o *Organization) GetOrgSubmission() *OrgSubmission {
 	}
 	s.Name = o.Name
 	s.Address = o.OrgDetails.LocationStr
-	s.Location[0], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Latitude, 64)
-	s.Location[1], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Longitude, 64)
+	if o.OrgDetails.LocationLL.Longitude != "" && o.OrgDetails.LocationLL.Latitude != "" {
+		s.Location[0], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Latitude, 64)
+		s.Location[1], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Longitude, 64)
+	}
 	s.Description = o.OrgDetails.Description
 	return s
 }

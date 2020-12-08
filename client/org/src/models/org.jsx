@@ -84,6 +84,7 @@ export default class Org {
     const url = update ? OrgSettingsURL : RegisterURL;
     return fetch(url, {
       method: update ? "PUT" : "POST",
+      credentials : "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -93,6 +94,14 @@ export default class Org {
   // Call this from the settings route to update the Org
   update() {
     return this.create(true);
+  }
+
+  // fetch the org from the server
+  fetch() {
+    return fetch(OrgSettingsURL, {
+      method: "GET",
+      credentials : "include",
+    });
   }
 }
 
