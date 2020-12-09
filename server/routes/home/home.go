@@ -49,10 +49,10 @@ type TemplateParams struct {
 	Title string
 }
 
-// RegisterEndPoints Registers all the /home endpoints
+// SetupEndpoints Registers all the /home endpoints
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
-func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
+func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}

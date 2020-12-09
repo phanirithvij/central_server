@@ -46,20 +46,10 @@ type TemplateParams struct {
 	Title string
 }
 
-type orgSubmission struct {
-	Address     string    `json:"address"`
-	Alias       string    `json:"alias"`
-	Description string    `json:"description"`
-	Emails      []string  `json:"emails"`
-	Location    []float64 `json:"location"`
-	Name        string    `json:"name"`
-	Password    string    `json:"password"`
-}
-
-// RegisterEndPoints Registers all the /register endpoints
+// SetupEndpoints Registers all the /register endpoints
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
-func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
+func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	db := dbm.GetDB()
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
@@ -102,12 +92,13 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 			c.Header("Access-Control-Allow-Credentials", "true")
 			d := json.NewDecoder(c.Request.Body)
-			data := &orgSubmission{}
+			data := &models.OrgSubmissionPass{}
 			err := d.Decode(&data)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 				return
 			}
+			// o := data.
 			o := models.NewOrganization()
 			o.Alias = data.Alias
 			// TODO all emails
@@ -115,7 +106,13 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			// TODO don't ask all these details when signing up
 			// Ask after email verification
 			// TODO multi email verification
-			o.Emails = []models.Email{{Email: data.Emails[0], Private: false}}
+			o.Emails = []models.Email{}
+			for _, email := range data.Emails {
+				o.Emails = append(o.Emails, models.Email{
+					Email:   email.Email,
+					Private: email.Private,
+				})
+			}
 			o.Name = data.Name
 			msgs, err := o.ValidateSub([]string{"Name", "Emails", "Alias"})
 			if err != nil {

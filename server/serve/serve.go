@@ -73,11 +73,11 @@ func Serve(port int, debug bool) {
 	registerTemplates(router)
 	setupSessionStore(router)
 
-	api.RegisterEndPoints(router)
-	home.RegisterEndPoints(router)
-	register.RegisterEndPoints(router)
-	status.RegisterEndPoints(router)
-	settings.RegisterEndPoints(router)
+	api.SetupEndpoints(router)
+	home.SetupEndpoints(router)
+	register.SetupEndpoints(router)
+	status.SetupEndpoints(router)
+	settings.SetupEndpoints(router)
 
 	routes.CheckEndpoints()
 

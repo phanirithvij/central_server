@@ -153,6 +153,12 @@ func (o *Organization) ValidateSub(only []string) ([]string, error) {
 	return []string{}, nil
 }
 
+// OrgSubmissionPass a submission from the clients
+type OrgSubmissionPass struct {
+	OrgSubmission
+	Password string `json:"password"`
+}
+
 // OrgSubmission a submission from the clients
 type OrgSubmission struct {
 	ID          uint      `json:"id"`
@@ -162,7 +168,6 @@ type OrgSubmission struct {
 	Emails      []emailD  `json:"emails"`
 	Location    []float64 `json:"location"`
 	Name        string    `json:"name"`
-	Password    string    `json:"password"`
 }
 
 type emailD struct {

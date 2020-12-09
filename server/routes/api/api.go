@@ -12,8 +12,8 @@ import (
 	v2 "github.com/phanirithvij/central_server/server/routes/api/v2"
 )
 
-// RegisterEndPoints Registers all the /api endpoints
-func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
+// SetupEndpoints Registers all the /api endpoints
+func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	apiG := router.Group("/api")
 	{
 		var versions []string
