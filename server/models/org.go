@@ -14,10 +14,7 @@ import (
 	"github.com/mcuadros/go-defaults"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
 	"gorm.io/gorm"
-)
-
-var (
-	db *gorm.DB = dbm.DB
+	"gorm.io/gorm/clause"
 )
 
 // Organization is an organization
@@ -25,6 +22,7 @@ type Organization struct {
 	gorm.Model
 	OrganizationPublic
 	Servers []*Server `gorm:"ForeignKey:ID"`
+	DB      *gorm.DB  `json:"-" gorm:"-" validate:"-"`
 }
 
 // OrganizationPublic all the public feilds that can be configured by the organization
@@ -62,6 +60,7 @@ type LongLat struct {
 func NewOrganization() *Organization {
 	o := new(Organization)
 	defaults.SetDefaults(o)
+	o.DB = dbm.GetDB()
 	return o
 }
 
@@ -83,6 +82,7 @@ func (o *Organization) Str() string {
 
 // SaveReq saves organization to database inside a http request
 func (o *Organization) SaveReq(c *gin.Context) error {
+	db := o.DB
 	if err := db.Create(o).Error; err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
 			"error":    err.Error(),
@@ -104,6 +104,7 @@ func (o *Organization) SaveReq(c *gin.Context) error {
 
 // Save saves
 func (o *Organization) Save() error {
+	db := o.DB
 	if err := db.Create(o).Error; err != nil {
 		return err
 	}
@@ -173,8 +174,10 @@ type emailD struct {
 func (s *OrgSubmission) Find() (*Organization, error) {
 	o := s.Org()
 	o.ID = s.ID
+	db := o.DB
 	log.Println(o.Str())
-	if err := db.Find(&o).Error; err != nil {
+	// https://gorm.io/docs/preload.html#Preload-All
+	if err := db.Preload(clause.Associations).Find(&o).Error; err != nil {
 		return nil, err
 	}
 	return o, nil

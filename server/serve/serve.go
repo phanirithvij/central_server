@@ -47,13 +47,13 @@ func init() {
 
 // Serve A function which serves the server
 func Serve(port int, debug bool) {
-	db := dbm.DB
 	if debug {
 		log.SetFlags(log.Ltime | log.Lshortfile)
-		db = db.Debug()
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	dbm.InitDB(debug)
+	db := dbm.DB
 
 	o := newOrg()
 	// utils.PrintStruct(*o)

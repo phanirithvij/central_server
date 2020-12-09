@@ -7,7 +7,7 @@ import (
 
 var (
 	port  int
-	debug bool
+	Debug bool
 )
 
 // serveCmd represents the serve command
@@ -15,7 +15,7 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Starts the server",
 	Run: func(cmd *cobra.Command, args []string) {
-		serve.Serve(port, debug)
+		serve.Serve(port, Debug)
 	},
 }
 
@@ -23,5 +23,5 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 
 	serveCmd.PersistentFlags().IntVarP(&port, "port", "p", 9090, "The port to serve the server")
-	serveCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "If debug or release")
+	serveCmd.PersistentFlags().BoolVarP(&Debug, "debug", "d", false, "If debug or release")
 }

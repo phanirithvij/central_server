@@ -15,11 +15,9 @@ import (
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
-	"gorm.io/gorm"
 )
 
 var (
-	db *gorm.DB = dbm.DB
 	// to keep track of whether the templates are initialized or not for this route
 	templatesInitDone = false
 )
@@ -62,6 +60,7 @@ type orgSubmission struct {
 // Must call LoadTemplates before this if it exists
 // Returns the router group so it can be also used to set routes externally
 func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
+	db := dbm.GetDB()
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
