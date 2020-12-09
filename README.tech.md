@@ -24,6 +24,8 @@ Bash completions also work for linux systems
 - [x] [Leaflet-geosearch](https://github.com/smeijer/leaflet-geosearch) for getting location then drag [marker](https://stackoverflow.com/questions/27271994/leaflet-draggable-marker-and-coordinates-display-in-a-field-form) to get latlong
 - [ ] Might be useful [timezone-builder](https://github.com/evansiroky/timezone-boundary-builder)
 - [ ] Attribute https://icons8.com/icons somewhere
+  - Using ok.svg, no.svg
+- [ ] Move register endpoints to /api/v1/register
 
 ## Dev notes
 

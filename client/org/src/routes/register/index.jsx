@@ -31,7 +31,7 @@ export default function Register() {
   const validatePass = () => {
     setPass(org.$password);
     setConf(org._confirm);
-    if (org.$password === undefined){
+    if (org.$password === undefined) {
       setPassValid(false);
       return;
     }
@@ -58,7 +58,7 @@ export default function Register() {
       // form of email-0, email-1 etc.
       // 0 being primary
       let idx = e.target.name.split("-")[1];
-      org["email"](e.target.value, idx);
+      org["email"]({ email: e.target.value }, idx);
     } else if (e.target.name === "password" || e.target.name === "confirm") {
       // set name = value
       org[e.target.name](e.target.value);

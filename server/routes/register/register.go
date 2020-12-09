@@ -95,27 +95,18 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			data := &models.OrgSubmissionPass{}
 			err := d.Decode(&data)
 			if err != nil {
+				log.Println(err)
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 				return
 			}
-			// o := data.
-			o := models.NewOrganization()
-			o.Alias = data.Alias
-			// TODO all emails
 			// TODO frontend email private option
 			// TODO don't ask all these details when signing up
 			// Ask after email verification
 			// TODO multi email verification
-			o.Emails = []models.Email{}
-			for _, email := range data.Emails {
-				o.Emails = append(o.Emails, models.Email{
-					Email:   email.Email,
-					Private: email.Private,
-				})
-			}
-			o.Name = data.Name
+			o := data.Org()
 			msgs, err := o.ValidateSub([]string{"Name", "Emails", "Alias"})
 			if err != nil {
+				log.Println(err)
 				// https://stackoverflow.com/a/40926661/8608146
 				c.JSON(http.StatusUnprocessableEntity, gin.H{
 					"error":    err.Error(),
@@ -136,6 +127,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			session.Set("org-id", o.ID)
 			err = session.Save()
 			if err != nil {
+				log.Println(err)
 				c.JSON(http.StatusUnprocessableEntity, gin.H{
 					"error":    err.Error(),
 					"type":     "cookie",

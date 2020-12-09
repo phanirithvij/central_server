@@ -66,19 +66,24 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			if !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error":    "session has no org ID",
-					"type":     "login",
+					"type":     "settings",
 					"messages": []string{"Not Authorized"},
 				})
 				return
 			}
 			data.ID = v
 			o, err := data.Find()
+			// deleted organizations with active sessions
+			if o.Alias == "" {
+				// Alias is empty => not found on server
+				err = errors.New("Organization not found")
+			}
 			log.Println(o.Str())
 			if err != nil {
 				c.JSON(http.StatusNotFound, gin.H{
-					"error":    "session has no org ID",
-					"type":     "login",
-					"messages": []string{"Not Authorized"},
+					"error":    err.Error(),
+					"type":     "settings",
+					"messages": []string{"Organization not found"},
 				})
 				return
 			}
@@ -118,7 +123,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			if !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{
 					"error":    "sesson has no org ID",
-					"type":     "login",
+					"type":     "settings",
 					"messages": []string{"Not Authorized"},
 				})
 				return

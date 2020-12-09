@@ -165,12 +165,13 @@ type OrgSubmission struct {
 	Address     string    `json:"address"`
 	Alias       string    `json:"alias"`
 	Description string    `json:"description"`
-	Emails      []emailD  `json:"emails"`
+	Emails      []EmailD  `json:"emails"`
 	Location    []float64 `json:"location"`
 	Name        string    `json:"name"`
 }
 
-type emailD struct {
+// EmailD ?
+type EmailD struct {
 	Email   string `json:"email"`
 	Private bool   `default:"false" json:"private"`
 }
@@ -182,9 +183,11 @@ func (s *OrgSubmission) Find() (*Organization, error) {
 	db := o.DB
 	log.Println(o.Str())
 	// https://gorm.io/docs/preload.html#Preload-All
-	if err := db.Preload(clause.Associations).Find(&o).Error; err != nil {
-		return nil, err
+	tx := db.Preload(clause.Associations).Find(&o)
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
+	log.Println(tx.RowsAffected)
 	return o, nil
 }
 
@@ -212,9 +215,9 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 	s := new(OrgSubmission)
 	s.Alias = o.Alias
 	s.Address = o.OrgDetails.LocationStr
-	s.Emails = []emailD{}
+	s.Emails = []EmailD{}
 	for _, e := range o.Emails {
-		x := new(emailD)
+		x := new(EmailD)
 		x.Email = e.Email
 		x.Private = e.Private
 		s.Emails = append(s.Emails, *x)
