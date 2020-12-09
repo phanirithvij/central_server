@@ -5,6 +5,7 @@ const (
 	// PkgerPrefix ..
 	PkgerPrefix = "github.com/phanirithvij/central_server:"
 	Register    = "register"
+	Logout      = "logout"
 	Status      = "status"
 	Settings    = "settings"
 	Home        = "home"
@@ -18,4 +19,5 @@ var EndPointStrings = []string{
 	Register,
 	Settings,
 	Status,
+	Logout,
 }

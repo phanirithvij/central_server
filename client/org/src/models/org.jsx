@@ -1,4 +1,4 @@
-import { OrgSettingsURL, RegisterURL } from "../utils/server";
+import { OrgSettingsURL, RegisterURL, OrgAliasCheckURL, LogoutURL } from "../utils/server";
 export default class Org {
   constructor(props) {
     this.props = props;
@@ -84,7 +84,7 @@ export default class Org {
     const url = update ? OrgSettingsURL : RegisterURL;
     return fetch(url, {
       method: update ? "PUT" : "POST",
-      credentials : "include",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -100,7 +100,27 @@ export default class Org {
   fetch() {
     return fetch(OrgSettingsURL, {
       method: "GET",
-      credentials : "include",
+      credentials: "include",
+    });
+  }
+
+  loggedin() {
+    return fetch(RegisterURL, {
+      method: "GET",
+      credentials: "include",
+    });
+  }
+  logout() {
+    return fetch(LogoutURL, {
+      method: "GET",
+      credentials: "include",
+    });
+  }
+  aliasAvailable() {
+    // const url = new URL(OrgAliasCheckURL);
+    // url.searchParams.set("alias", this.$alias);
+    return fetch(`${OrgAliasCheckURL}/${this.$alias}`, {
+      method: "GET",
     });
   }
 }

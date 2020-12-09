@@ -1,17 +1,21 @@
-import React, { lazy, Suspense } from "react";
+import React, { Suspense } from "react";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import "./App.css";
+import Dashboard from "./routes/dashboard";
+import Home from "./routes/home";
+import Register from "./routes/register";
+import Login from "./routes/register/login";
 import ServerBaseURL from "./utils/server";
 
-const Home = lazy(() => import("./routes/home"));
-const Dashboard = lazy(() => import("./routes/dashboard"));
-const Register = lazy(() => import("./routes/register"));
+// const Home = lazy(() => import("./routes/home"));
+// const Dashboard = lazy(() => import("./routes/dashboard"));
+// const Register = lazy(() => import("./routes/register"));
 // https://dev.to/iamandrewluca/react-lazy-without-default-export-4b65
-const Login = lazy(() =>
-  import("./routes/register/login").then((module) => ({
-    default: module.Login,
-  }))
-);
+// const Login = lazy(() =>
+//   import("./routes/register/login").then((module) => ({
+//     default: module.Login,
+//   }))
+// );
 
 console.log("ServerBaseURL", ServerBaseURL);
 

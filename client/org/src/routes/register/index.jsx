@@ -1,18 +1,28 @@
-import { lazy, useState } from "react";
+import { Puff, useLoading } from "@agney/react-loading";
+import debounce from "debounce";
+import { useEffect, useState } from "react";
+import SVG from "react-inlinesvg";
 import { Link } from "react-router-dom";
 import Org from "../../models/org";
 import "./index.css";
-
-// Must be lazy for it is ~ 1MB, gziped 200 KB
-const Map = lazy(() => import("../../components/Map"));
+import Logout from "./logout";
+import svgnot from "./no.svg";
+import svgok from "./ok.svg";
 
 export default function Register() {
-  const [mapVis, setmapVis] = useState(false);
-
   const [org] = useState(new Org());
   const [passValid, setPassValid] = useState(false);
   const [pass, setPass] = useState();
   const [conf, setConf] = useState();
+
+  const [loggedin, setLoggedin] = useState();
+  const [aliasAvailable, setAliasAvailable] = useState();
+  const [aliasAvailableError, setAliasAvailableError] = useState();
+
+  const { containerProps, indicatorEl } = useLoading({
+    loading: true,
+    indicator: <Puff width="50" />,
+  });
 
   const validatePass = () => {
     setPass(org.$password);
@@ -41,15 +51,6 @@ export default function Register() {
       // 0 being primary
       let idx = e.target.name.split("-")[1];
       org["email"](e.target.value, idx);
-    } else if (e.target.name === "location") {
-      if (e.target.value.split(",").length !== 2) {
-        // TODO show error message
-        console.log(e.target.value, "is not a valid location");
-        return;
-      }
-      org["location"](
-        e.target.value.split(",").map((e) => parseFloat(e.trim()))
-      );
     } else if (e.target.name === "password" || e.target.name === "confirm") {
       // set name = value
       org[e.target.name](e.target.value);
@@ -60,12 +61,56 @@ export default function Register() {
     }
   };
 
-  // triggered when clicked on the copy icons in the marker popup
-  const useCallback = (type, value) => {
-    org[type](value);
-    const inp = document.querySelector(`input[name="${type}"]`);
-    inp.value = value.toString();
-  };
+  // https://stackoverflow.com/questions/4220126/run-javascript-function-when-user-finishes-typing-instead-of-on-key-up#comment85608718_16324620
+  const checkAliasAvaliable = debounce(
+    () => {
+      if (org.$alias.length > 3) {
+        org.aliasAvailable().then((res) => {
+          // possible status codes 500, 200, 403
+          switch (res.status) {
+            case 200:
+              setAliasAvailable(true);
+              break;
+            case 403:
+              setAliasAvailable(false);
+              break;
+            case 500:
+              res.json().then((x) => {
+                setAliasAvailableError(x.message);
+              });
+              break;
+
+            default:
+              break;
+          }
+        });
+      } else {
+        // TODO show alias > 3 digits message
+      }
+    },
+    400,
+    // not immediately
+    false
+  );
+
+  useEffect(() => {
+    org
+      .loggedin()
+      .then((x) => {
+        // https://stackoverflow.com/a/54118576/8608146
+        if (x.status !== 200) {
+          throw new Error("Not logged in");
+        }
+        return x.json();
+      })
+      .then((x) => {
+        setLoggedin(true);
+        console.log(x);
+      })
+      .catch(() => {
+        setLoggedin(false);
+      });
+  }, [org]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -79,9 +124,12 @@ export default function Register() {
       console.error("Non password");
       return;
     }
-    if (org.$location && org.$location.length === 2) {
+    if (
+      org.$alias.length > 3 &&
+      aliasAvailable
+    ) {
     } else {
-      console.error("Non locaceon");
+      console.error("Bad alias");
       return;
     }
     org
@@ -94,50 +142,73 @@ export default function Register() {
     <div>
       <h2>Register</h2>
       <Link to="/login">Login</Link>
-      {/* 
-        - Private bool
-        - Name string
-        - Email[] - emails for hub/user communication
-        - ID string serverAssigned
-        - Alias string - Human friendly org slug serverRecommended
-        - Description string - human readable description
-        - LocationStr string - Manual location address
-        - Location
-        - Server (servers ??)
-      */}
-      <form
-        onChange={updateOrg}
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <input type="text" name="name" placeholder="Name" />
-        <input type="text" name="alias" placeholder="Alias" />
-        {/* TODO list of emails */}
-        {/* TODO private property to emails */}
-        <input type="text" name="email-0" placeholder="Email Primary" />
-        <input type="text" name="email-1" placeholder="Email 1" />
-        <input type="text" name="description" placeholder="Description" />
-        <input type="text" name="address" placeholder="Address" />
-        <input type="text" name="location" placeholder="Location Lat, Long" />
-        <input type="password" name="password" placeholder="Password" />
-        <input type="password" name="confirm" placeholder="Confirm password" />
-        <label htmlFor="confirm">
-          {!passValid &&
-            pass &&
-            conf &&
-            `Passwords don't match ${pass} , ${conf}`}
-        </label>
-        <button type="submit">Register</button>
-      </form>
-      <button onClick={() => setmapVis(!mapVis)}>
-        {!mapVis ? "Show" : "Hide"} Map
-      </button>
-      {mapVis && <Map copyCallback={useCallback} />}
+      {loggedin !== undefined ? (
+        !loggedin ? (
+          <form
+            onChange={updateOrg}
+            onSubmit={handleSubmit}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <input
+              type="text"
+              name="alias"
+              onKeyUp={checkAliasAvaliable}
+              placeholder="Alias"
+            />
+            <label htmlFor="alias">
+              {aliasAvailable !== undefined &&
+                (aliasAvailable ? (
+                  <div>
+                    <SVG className="svgicon" title={"Available"} src={svgok}>
+                      <div>✅</div>
+                    </SVG>
+                  </div>
+                ) : (
+                  <div>
+                    <SVG
+                      className="svgicon"
+                      title={`${org.$alias} Not available`}
+                      src={svgnot}
+                    >
+                      <div>❌</div>
+                    </SVG>
+                  </div>
+                ))}
+              {aliasAvailableError !== undefined && aliasAvailableError && (
+                <div>{aliasAvailableError}</div>
+              )}
+            </label>
+            {/* TODO list of emails */}
+            {/* TODO private property to emails */}
+            <input type="text" name="email-0" placeholder="Email" />
+            <input type="password" name="password" placeholder="Password" />
+            <input
+              type="password"
+              name="confirm"
+              placeholder="Confirm password"
+            />
+            <label htmlFor="confirm">
+              {!passValid &&
+                pass &&
+                conf &&
+                `Passwords don't match ${pass} , ${conf}`}
+            </label>
+            <button type="submit">Register</button>
+          </form>
+        ) : (
+          <div>
+            You're already loggedin
+            <Logout org={org} redirect="/" timeoutDur={5} />
+          </div>
+        )
+      ) : (
+        <section {...containerProps}>{indicatorEl}</section>
+      )}
     </div>
   );
 }

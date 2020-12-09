@@ -32,7 +32,7 @@ type OrganizationPublic struct {
 	Name   string  `validate:"required,printascii"`
 	Emails []Email `validate:"required,min=1,dive,required" gorm:"ForeignKey:ID"`
 	// A slug which will be auto assigned if not chosen by them
-	Alias      string `validate:"alphanum"`
+	Alias      string `validate:"alphanum" gorm:"index"`
 	OrgDetails `validate:"required"`
 }
 
@@ -83,34 +83,32 @@ func (o *Organization) Str() string {
 
 // SaveReq saves organization to database inside a http request
 func (o *Organization) SaveReq(c *gin.Context) error {
-	tx := db.Create(o)
-	if tx.Error != nil {
+	if err := db.Create(o).Error; err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": tx.Error.Error(),
-			"type":  "create",
+			"error":    err.Error(),
+			"type":     "create",
+			"messages": []string{"Failed to create organization"},
 		})
-		return tx.Error
+		return err
 	}
-	tx = db.Save(o)
-	if tx.Error != nil {
+	if err := db.Save(o).Error; err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": tx.Error.Error(),
-			"type":  "save",
+			"error":    err.Error(),
+			"type":     "save",
+			"messages": []string{"Failed to save to database"},
 		})
-		return tx.Error
+		return err
 	}
 	return nil
 }
 
 // Save saves
 func (o *Organization) Save() error {
-	tx := db.Create(o)
-	if tx.Error != nil {
-		return tx.Error
+	if err := db.Create(o).Error; err != nil {
+		return err
 	}
-	tx = db.Save(o)
-	if tx.Error != nil {
-		return tx.Error
+	if err := db.Save(o).Error; err != nil {
+		return err
 	}
 	return nil
 }
@@ -175,9 +173,9 @@ type emailD struct {
 func (s *OrgSubmission) Find() (*Organization, error) {
 	o := s.Org()
 	o.ID = s.ID
-	tx := db.Find(&o)
-	if tx.Error != nil {
-		return nil, tx.Error
+	log.Println(o.Str())
+	if err := db.Find(&o).Error; err != nil {
+		return nil, err
 	}
 	return o, nil
 }

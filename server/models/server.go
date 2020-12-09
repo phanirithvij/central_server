@@ -28,21 +28,19 @@ func NewServer() *Server {
 
 // Save saves to db
 func (s *Server) Save(db *gorm.DB, c *gin.Context) error {
-	tx := db.Create(s)
-	if tx.Error != nil {
+	if err := db.Create(s).Error; err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": tx.Error.Error(),
+			"error": err.Error(),
 			"type":  "create",
 		})
-		return tx.Error
+		return err
 	}
-	tx = db.Save(s)
-	if tx.Error != nil {
+	if err := db.Save(s).Error; err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error": tx.Error.Error(),
+			"error": err.Error(),
 			"type":  "save",
 		})
-		return tx.Error
+		return err
 	}
 	return nil
 }

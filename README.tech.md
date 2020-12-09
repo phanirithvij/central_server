@@ -23,6 +23,7 @@ Bash completions also work for linux systems
 - [ ] TIMEPASS: Add source zip to binary and allow download via endpoint
 - [x] [Leaflet-geosearch](https://github.com/smeijer/leaflet-geosearch) for getting location then drag [marker](https://stackoverflow.com/questions/27271994/leaflet-draggable-marker-and-coordinates-display-in-a-field-form) to get latlong
 - [ ] Might be useful [timezone-builder](https://github.com/evansiroky/timezone-boundary-builder)
+- [ ] Attribute https://icons8.com/icons somewhere
 
 ## Dev notes
 

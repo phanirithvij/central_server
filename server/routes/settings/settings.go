@@ -65,7 +65,7 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			v, ok := session.Get("org-id").(uint)
 			if !ok {
 				c.JSON(http.StatusUnauthorized, gin.H{
-					"error":    "sesson has no org ID",
+					"error":    "session has no org ID",
 					"type":     "login",
 					"messages": []string{"Not Authorized"},
 				})
@@ -73,9 +73,10 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 			}
 			data.ID = v
 			o, err := data.Find()
+			log.Println(o.Str())
 			if err != nil {
 				c.JSON(http.StatusNotFound, gin.H{
-					"error":    "sesson has no org ID",
+					"error":    "session has no org ID",
 					"type":     "login",
 					"messages": []string{"Not Authorized"},
 				})

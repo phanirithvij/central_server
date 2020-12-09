@@ -14,9 +14,12 @@ import (
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
+	dbm "github.com/phanirithvij/central_server/server/utils/db"
+	"gorm.io/gorm"
 )
 
 var (
+	db *gorm.DB = dbm.DB
 	// to keep track of whether the templates are initialized or not for this route
 	templatesInitDone = false
 )
@@ -64,10 +67,32 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	}
 	register := router.Group("/register")
 	{
-		register.OPTIONS("/", func(c *gin.Context) {
+		register.GET("/", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Methods", "POST")
+			c.Header("Access-Control-Allow-Credentials", "true")
+			// TODO get the currently loggedin orgid
+			// then get it from db
+			session := sessions.DefaultMany(c, "org")
+			_, ok := session.Get("org-id").(uint)
+			if !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":    "session has no org ID",
+					"type":     "register",
+					"messages": []string{"Not Authorized"},
+				})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"type":     "register",
+				"status":   "success",
+				"messages": []string{"Authorized"},
+			})
+		})
+		register.OPTIONS("/*_", func(c *gin.Context) {
+			// Enable CORS for react client when in dev
+			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			c.Header("Access-Control-Allow-Methods", "POST, GET")
 			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
 			c.Header("Access-Control-Allow-Credentials", "true")
 
@@ -122,10 +147,64 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-			c.JSON(http.StatusOK, o)
+			c.JSON(http.StatusCreated, o)
+		})
+		// check if alias exists in database
+		register.GET("/alias/:alias", func(c *gin.Context) {
+			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			type alias struct {
+				Alias string
+			}
+			al := c.Param("alias")
+			o := alias{}
+			if err := db.
+				Model(&models.Organization{}).
+				Where("alias = ?", al).
+				Find(&o).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"status": "failed", "message": err.Error()})
+				return
+			}
+			if o.Alias != "" {
+				c.JSON(http.StatusForbidden, gin.H{"status": "error", "message": "Alias " + al + " already exists"})
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{"status": "success", "message": "Alias " + al + " avaliable"})
 		})
 	}
 	routes.RegisterSelf(config.Register)
+	logout := router.Group("/logout")
+	{
+		logout.GET("/", func(c *gin.Context) {
+			// Enable CORS for react client when in dev
+			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+			c.Header("Access-Control-Allow-Credentials", "true")
+			session := sessions.DefaultMany(c, "org")
+			_, ok := session.Get("org-id").(uint)
+			if !ok {
+				c.JSON(http.StatusUnauthorized, gin.H{
+					"error":    "session has no org ID",
+					"type":     "logout",
+					"messages": []string{"Not Authorized"},
+				})
+				return
+			}
+			session.Set("org-id", nil)
+			err := session.Save()
+			if err != nil {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{
+					"error":    err.Error(),
+					"type":     "logout",
+					"messages": []string{"Couldn't clear session"},
+				})
+			}
+			c.JSON(http.StatusAccepted, gin.H{
+				"type":     "logout",
+				"messages": []string{"Logged out"},
+			})
+
+		})
+	}
+	routes.RegisterSelf(config.Logout)
 	return register
 }
 

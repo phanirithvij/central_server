@@ -47,11 +47,27 @@ func init() {
 
 // Serve A function which serves the server
 func Serve(port int, debug bool) {
+	db := dbm.DB
 	if debug {
 		log.SetFlags(log.Ltime | log.Lshortfile)
+		db = db.Debug()
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+
+	o := newOrg()
+	// utils.PrintStruct(*o)
+	// o.Print()
+	o.Validate()
+
+	// Migrate the schema
+	err := db.AutoMigrate(&models.Organization{}, &models.Email{}, &models.Server{})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	db.Create(&o)
+	db.Save(&o)
 
 	router := gin.Default()
 	registerTemplates(router)
@@ -96,21 +112,6 @@ func Serve(port int, debug bool) {
 	lmt := tollbooth.NewLimiter(3, nil)
 	rateF := rate.LimitHandler(lmt)
 	router.GET("/metrics", rateF, gin.WrapH(promH))
-
-	o := newOrg()
-	// utils.PrintStruct(*o)
-	// o.Print()
-	o.Validate()
-
-	db := dbm.DB
-	// Migrate the schema
-	err = db.AutoMigrate(&models.Organization{}, &models.Email{}, &models.Server{})
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	db.Create(&o)
-	db.Save(&o)
 
 	serve(router, port)
 }
