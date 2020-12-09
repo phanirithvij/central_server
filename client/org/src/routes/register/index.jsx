@@ -2,7 +2,7 @@ import { Puff, useLoading } from "@agney/react-loading";
 import debounce from "debounce";
 import { useEffect, useState } from "react";
 import SVG from "react-inlinesvg";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
 import Org from "../../models/org";
 import "./index.css";
 import Logout from "./logout";
@@ -18,6 +18,10 @@ export default function Register() {
   const [loggedin, setLoggedin] = useState();
   const [aliasAvailable, setAliasAvailable] = useState();
   const [aliasAvailableError, setAliasAvailableError] = useState();
+  const [clientValidError, setClientValidError] = useState();
+  const [serverValidError, setServerValidError] = useState();
+  const [done, setDone] = useState();
+  const [sending, setSending] = useState();
 
   const { containerProps, indicatorEl } = useLoading({
     loading: true,
@@ -27,6 +31,10 @@ export default function Register() {
   const validatePass = () => {
     setPass(org.$password);
     setConf(org._confirm);
+    if (org.$password === undefined){
+      setPassValid(false);
+      return;
+    }
     if (!org.$password.startsWith(org._confirm)) {
       // entered wrong thing
       setPassValid(false);
@@ -70,9 +78,11 @@ export default function Register() {
           switch (res.status) {
             case 200:
               setAliasAvailable(true);
+              setAliasAvailableError(undefined);
               break;
             case 403:
               setAliasAvailable(false);
+              setAliasAvailableError(undefined);
               break;
             case 500:
               res.json().then((x) => {
@@ -86,6 +96,7 @@ export default function Register() {
         });
       } else {
         // TODO show alias > 3 digits message
+        setAliasAvailableError("Alias must be 4 or more characters long");
       }
     },
     400,
@@ -105,7 +116,6 @@ export default function Register() {
       })
       .then((x) => {
         setLoggedin(true);
-        console.log(x);
       })
       .catch(() => {
         setLoggedin(false);
@@ -121,22 +131,39 @@ export default function Register() {
       org.$password === org._confirm
     ) {
     } else {
-      console.error("Non password");
+      setClientValidError("Password is not a valid password");
       return;
     }
-    if (
-      org.$alias.length > 3 &&
-      aliasAvailable
-    ) {
-    } else {
-      console.error("Bad alias");
+    if (!aliasAvailable) {
+      setClientValidError("Alias is not available");
       return;
     }
+    setSending(true);
     org
       .create()
-      .then((res) => res.json())
-      .then((data) => console.log(data))
-      .catch((err) => console.error(err));
+      .then(async (res) => {
+        setSending(false);
+        const jsonD = await res.json();
+        switch (res.status) {
+          case 422:
+            console.error(jsonD["error"]);
+            setServerValidError(jsonD["messages"].join("\n"));
+            break;
+          case 201:
+            // successfully created org redirect to dashboard
+            setDone(true);
+            break;
+          case 500:
+            setServerValidError(jsonD["error"]);
+            break;
+          default:
+            break;
+        }
+      })
+      .catch((err) => {
+        setSending(false);
+        console.error(err);
+      });
   };
   return (
     <div>
@@ -198,12 +225,22 @@ export default function Register() {
                 conf &&
                 `Passwords don't match ${pass} , ${conf}`}
             </label>
+            {clientValidError !== undefined && <div>clientValidError</div>}
             <button type="submit">Register</button>
+            {serverValidError !== undefined && <div>{serverValidError}</div>}
+            {sending !== undefined && sending && (
+              <section {...containerProps}>{indicatorEl}</section>
+            )}
+            {done !== undefined && done && (
+              <div>
+                <Redirect to={"/dashborad"} />
+              </div>
+            )}
           </form>
         ) : (
           <div>
             You're already loggedin
-            <Logout org={org} redirect="/" timeoutDur={5} />
+            <Logout org={org} redirect="/login" timeoutDur={5} />
           </div>
         )
       ) : (

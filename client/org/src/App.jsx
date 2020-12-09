@@ -5,6 +5,7 @@ import Dashboard from "./routes/dashboard";
 import Home from "./routes/home";
 import Register from "./routes/register";
 import Login from "./routes/register/login";
+import Logout from "./routes/register/logout";
 import ServerBaseURL from "./utils/server";
 
 // const Home = lazy(() => import("./routes/home"));
@@ -51,6 +52,10 @@ function App() {
             <Route exact path="/" component={Home} />
             <Route path="/register" component={Register} />
             <Route path="/login" component={Login} />
+            <Route
+              path="/logout"
+              render={() => <Logout redirect={"/login"} />}
+            />
             <Route path="/dashboard" component={Dashboard} />
           </Switch>
         </Suspense>

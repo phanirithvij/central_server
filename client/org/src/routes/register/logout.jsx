@@ -14,14 +14,12 @@ export default function Logout(props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (props) {
-    org = props.org;
-    if (!org) {
-      org = new Org();
-    }
-    if (props.redirect) {
-      redir = true;
-    }
+  org = props.org;
+  if (!org) {
+    org = new Org();
+  }
+  if (props.redirect) {
+    redir = true;
   }
 
   const timeoutDur = props.timeoutDur || 5;
@@ -60,6 +58,7 @@ export default function Logout(props) {
         console.error(err);
       });
   };
+
   return (
     <div>
       {loggedout === undefined ? (
@@ -68,7 +67,6 @@ export default function Logout(props) {
         <div>Logout Failed</div>
       ) : (
         <div>
-          Logged out successfully
           {redirect && waitDone ? (
             <Redirect to={props.redirect} />
           ) : (

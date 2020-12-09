@@ -175,6 +175,7 @@ func RegisterEndPoints(router *gin.Engine) *gin.RouterGroup {
 	logout := router.Group("/logout")
 	{
 		logout.GET("/", func(c *gin.Context) {
+			// logout will remove session
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 			c.Header("Access-Control-Allow-Credentials", "true")
