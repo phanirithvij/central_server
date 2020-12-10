@@ -72,7 +72,7 @@ export default function Register() {
   // https://stackoverflow.com/questions/4220126/run-javascript-function-when-user-finishes-typing-instead-of-on-key-up#comment85608718_16324620
   const checkAliasAvaliable = debounce(
     () => {
-      if (org.$alias.length > 3) {
+      if (org.$alias && org.$alias.length > 3) {
         org.aliasAvailable().then((res) => {
           // possible status codes 500, 200, 403
           switch (res.status) {
@@ -225,7 +225,7 @@ export default function Register() {
                 conf &&
                 `Passwords don't match ${pass} , ${conf}`}
             </label>
-            {clientValidError !== undefined && <div>clientValidError</div>}
+            {clientValidError !== undefined && <div>{clientValidError}</div>}
             <button type="submit">Register</button>
             {serverValidError !== undefined && <div>{serverValidError}</div>}
             {sending !== undefined && sending && (
