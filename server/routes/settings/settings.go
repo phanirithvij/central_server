@@ -73,11 +73,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			}
 			data.ID = v
 			o, err := data.Find()
-			// deleted organizations with active sessions
-			if o.Alias == "" {
-				// Alias is empty => not found on server
-				err = errors.New("Organization not found")
-			}
 			log.Println(o.Str())
 			if err != nil {
 				c.JSON(http.StatusNotFound, gin.H{

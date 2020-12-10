@@ -32,6 +32,30 @@ export default class Org {
     this.$emails[indx] = em;
     return this;
   }
+
+  /**
+   * @param {{email: string, private: boolean}[]} ems
+   */
+  emails(ems) {
+    this.$emails = {};
+    ems.forEach((em, indx) => (this.$emails[indx] = em));
+    return this;
+  }
+
+  _emailList() {
+    return Object.values(this.$emails);
+  }
+
+  oldPassword(p) {
+    this.$oldPassword = p;
+    return this;
+  }
+
+  newPassword(p) {
+    this.$password = p;
+    return this;
+  }
+
   /**
    * @param {string} a
    */

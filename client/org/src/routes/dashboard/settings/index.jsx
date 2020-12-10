@@ -11,6 +11,9 @@ export default function Settings() {
   const [pass, setPass] = useState();
   const [conf, setConf] = useState();
   const [org] = useState(new Org());
+
+  const [emails, setEmails] = useState();
+
   const validatePass = () => {
     setPass(org.$password);
     setConf(org._confirm);
@@ -35,12 +38,43 @@ export default function Settings() {
   useEffect(() => {
     org
       .fetch()
-      .then((x) => x.json())
-      .then((x) => console.log(x))
+      .then(async (x) => {
+        switch (x.status) {
+          case 401:
+            // TODO not logged in redirect to login page
+            break;
+
+          case 404:
+            // TODO Logged in but org doesn't exist
+            // Show user that warning and a logout button
+            break;
+
+          case 200:
+            // Logged in and got the org details
+            // Fill up org
+            let json = await x.json();
+            Object.keys(json).forEach((key) => {
+              console.log(key);
+              if (key === "id") return;
+              if (key === "emails") {
+                org["emails"](json[key]);
+                setEmails(org._emailList());
+                return;
+              }
+              org[key](json[key]);
+              document.querySelector(`input[name="${key}"]`).value = json[key];
+            });
+            break;
+
+          default:
+            break;
+        }
+      })
       .catch((err) => console.error(err));
   }, [org]);
 
   const updateOrg = (e) => {
+    console.log(e.target.value);
     if (e.target.name.startsWith("email")) {
       // form of email-0, email-1 etc.
       // 0 being primary
@@ -110,13 +144,23 @@ export default function Settings() {
         <input type="text" name="alias" placeholder="Alias" />
         {/* TODO list of emails */}
         {/* TODO private property to emails */}
-        <input type="text" name="email-0" placeholder="Email Primary" />
-        <input type="text" name="email-1" placeholder="Email 1" />
+        {emails !== undefined &&
+          emails.map((email, index) => (
+            <input
+              type="text"
+              name={`email-${index}`}
+              placeholder={index === 0 ? "Email Primary" : `Email ${index + 1}`}
+              defaultValue={email.email}
+              key={index}
+            />
+          ))}
         <input type="text" name="description" placeholder="Description" />
         <input type="text" name="address" placeholder="Address" />
         <input type="text" name="location" placeholder="Location Lat, Long" />
         <input type="checkbox" name="private" />
-        <input type="password" name="password" placeholder="Password" />
+        <label htmlFor="oldPassword">Change Password</label>
+        <input type="password" name="oldPassword" placeholder="Old Password" />
+        <input type="password" name="newPassword" placeholder="Password" />
         <input type="password" name="confirm" placeholder="Confirm password" />
         <label htmlFor="confirm">
           {!passValid &&

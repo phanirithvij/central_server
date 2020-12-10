@@ -28,7 +28,7 @@ var (
 type Organization struct {
 	OrganizationPublic
 	// bringing ID out to not prefix it
-	ID uint `gorm:"primarykey"`
+	ID uint `gorm:"primaryKey"`
 	// https://gorm.io/docs/constraints.html#CHECK-Constraint
 	// https://stackoverflow.com/a/5489759/8608146
 	PasswordHash  string `gorm:"check:password_empty,password_hash <> '';not null;"`
@@ -42,7 +42,7 @@ type OrganizationPublic struct {
 	Emails []Email `validate:"required,min=1,dive,required" gorm:"polymorphic:Organization;"`
 	Name   string  `validate:"required,printascii"`
 	// A slug which will be auto assigned if not chosen by them
-	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"index"`
+	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"index;primaryKey"`
 	OrgDetails `validate:"required"`
 }
 
@@ -228,13 +228,14 @@ func (s *OrgSubmission) Find() (*Organization, error) {
 	o := s.Org()
 	o.ID = s.ID
 	db := o.DB
-	log.Println(o.Str())
 	// https://gorm.io/docs/preload.html#Preload-All
 	tx := db.Preload(clause.Associations).Find(&o)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	log.Println(tx.RowsAffected)
+	if tx.RowsAffected <= 0 {
+		return nil, ErrNoResultsFound
+	}
 	return o, nil
 }
 
@@ -377,6 +378,7 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 	s.Name = o.Name
 	s.Address = o.OrgDetails.LocationStr
 	if o.OrgDetails.LocationLL.Longitude != "" && o.OrgDetails.LocationLL.Latitude != "" {
+		s.Location = []float64{0, 0}
 		s.Location[0], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Latitude, 64)
 		s.Location[1], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Longitude, 64)
 	}
