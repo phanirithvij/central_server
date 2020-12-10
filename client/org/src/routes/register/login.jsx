@@ -81,7 +81,11 @@ export default function Login() {
             setDone(true);
             break;
           case 500:
-            setServerValidityErrors([jsonD["error"],]);
+            setServerValidityErrors([jsonD["error"]]);
+            break;
+          // login failed StatusForbidden
+          case 403:
+            setServerValidityErrors([jsonD["messages"]]);
             break;
           default:
             break;
@@ -117,7 +121,7 @@ export default function Login() {
             <button type="submit">Login</button>
             {serverValidityErrors !== undefined && (
               <div>
-                {serverValidityErrors.map((x,i) => (
+                {serverValidityErrors.map((x, i) => (
                   <p key={i}>{x}</p>
                 ))}
               </div>

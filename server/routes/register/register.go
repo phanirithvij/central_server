@@ -14,6 +14,7 @@ import (
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
+	"github.com/phanirithvij/central_server/server/utils"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
 )
 
@@ -93,6 +94,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
+			o.PasswordHash = utils.Hash(data.Password)
 			log.Println(data)
 			log.Println(o.Str())
 			err = o.SaveReq(c)

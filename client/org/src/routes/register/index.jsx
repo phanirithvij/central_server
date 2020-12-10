@@ -240,7 +240,7 @@ export default function Register() {
         ) : (
           <div>
             You're already loggedin
-            <Logout org={org} redirect="/login" timeoutDur={5} />
+            <Logout org={org} redirect="/login" />
           </div>
         )
       ) : (

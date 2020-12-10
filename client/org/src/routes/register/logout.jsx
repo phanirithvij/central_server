@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Redirect } from "react-router-dom";
 import Org from "../../models/org";
 
+// Must set timeoutDur={0} to redirect immediately
+// Default 3 secs count down
 export default function Logout(props) {
   let org;
   let redir;

@@ -25,10 +25,11 @@ import (
 	"github.com/phanirithvij/central_server/server/routes"
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
-	register "github.com/phanirithvij/central_server/server/routes/register"
 	login "github.com/phanirithvij/central_server/server/routes/login"
+	register "github.com/phanirithvij/central_server/server/routes/register"
 	settings "github.com/phanirithvij/central_server/server/routes/settings"
 	status "github.com/phanirithvij/central_server/server/routes/status"
+	"github.com/phanirithvij/central_server/server/utils"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
 	"github.com/phanirithvij/central_server/server/utils/rate"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -232,6 +233,7 @@ func registerTemplates(router *gin.Engine) {
 
 func newOrg() *models.Organization {
 	o := models.NewOrganization()
+	o.PasswordHash = utils.Hash("oror")
 	// o.OrgID = "org-oror"
 	o.Alias = "oror"
 	o.Emails = []models.Email{

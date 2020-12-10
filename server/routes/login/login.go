@@ -15,6 +15,7 @@ import (
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
+	"github.com/phanirithvij/central_server/server/utils"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
 )
 
@@ -170,20 +171,28 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 
 			log.Println(o.Str())
 
-			// Save org id to cookie
-			session := sessions.DefaultMany(c, "org")
-			session.Set("org-id", o.ID)
-			err = session.Save()
-			if err != nil {
-				log.Println(err)
-				c.JSON(http.StatusUnprocessableEntity, gin.H{
-					"error":    err.Error(),
-					"type":     "cookie",
-					"messages": []string{"Setting cookie failed"},
-				})
+			if utils.ComparePasswords(o.PasswordHash, data.Password) {
+				// Save org id to cookie
+				session := sessions.DefaultMany(c, "org")
+				session.Set("org-id", o.ID)
+				err = session.Save()
+				if err != nil {
+					log.Println(err)
+					c.JSON(http.StatusUnprocessableEntity, gin.H{
+						"error":    err.Error(),
+						"type":     "cookie",
+						"messages": []string{"Setting cookie failed"},
+					})
+					return
+				}
+				c.JSON(http.StatusOK, o)
 				return
 			}
-			c.JSON(http.StatusOK, o)
+			c.JSON(http.StatusForbidden, gin.H{
+				"error":    "Wrong password",
+				"type":     "login",
+				"messages": []string{"Your password is incorrect"},
+			})
 		})
 	}
 	routes.RegisterSelf(config.Login)

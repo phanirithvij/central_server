@@ -28,7 +28,10 @@ var (
 type Organization struct {
 	OrganizationPublic
 	// bringing ID out to not prefix it
-	ID            uint `gorm:"primarykey"`
+	ID uint `gorm:"primarykey"`
+	// https://gorm.io/docs/constraints.html#CHECK-Constraint
+	// https://stackoverflow.com/a/5489759/8608146
+	PasswordHash  string `gorm:"check:password_empty,password_hash <> '';not null;"`
 	GormModelNoID `gorm:"embedded;embeddedPrefix:org_"`
 	Servers       []*Server `gorm:"ForeignKey:ID"`
 	DB            *gorm.DB  `json:"-" gorm:"-" validate:"-"`
@@ -89,7 +92,7 @@ func (o *Organization) NewServer() *Server {
 	return s
 }
 
-// Str prints the organization
+// Str retuns a json representation of the organization
 func (o *Organization) Str() string {
 	jd, err := json.Marshal(o)
 	if err != nil {
@@ -98,39 +101,58 @@ func (o *Organization) Str() string {
 	return string(jd)
 }
 
+// Save a org
+//
+// Upserts the org
+func (o *Organization) Save() error {
+	db := o.DB
+	cols := []string{"updated_at", "name"}
+	// PGSQL
+	// cols := []string{"updated_at", "name", "emails"}
+	tx := db.Clauses(clause.OnConflict{
+		// TODO all primaryKeys not just ID
+		Columns: []clause.Column{{Name: "id"}},
+		// TODO exept created_at everything
+		DoUpdates: clause.AssignmentColumns(cols),
+	}).Create(&o)
+	// remove this line after fixing the above cols logic
+	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
+	return tx.Error
+}
+
 // SaveReq saves organization to database inside a http request
 func (o *Organization) SaveReq(c *gin.Context) error {
+	// TODO use above save method and return the error to client
 	db := o.DB
-	if err := db.Create(o).Error; err != nil {
+	cols := []string{"updated_at", "name"}
+	// PGSQL
+	// cols := []string{"updated_at", "name", "emails"}
+	tx := db.Clauses(clause.OnConflict{
+		// TODO all primaryKeys not just ID
+		Columns: []clause.Column{{Name: "id"}},
+		// TODO exept created_at everything
+		DoUpdates: clause.AssignmentColumns(cols),
+	}).Create(&o)
+	// remove this line after fixing the above cols logic
+	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
+	if tx.Error != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error":    err.Error(),
+			"error":    tx.Error.Error(),
 			"type":     "create",
 			"messages": []string{"Failed to create organization"},
 		})
-		return err
+		return tx.Error
 	}
 	if err := db.Save(o).Error; err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"error":    err.Error(),
+			"error":    tx.Error.Error(),
 			"type":     "save",
 			"messages": []string{"Failed to save to database"},
 		})
 		return err
 	}
-	return nil
+	return tx.Error
 }
-
-// // Save saves
-// func (o *Organization) Save() error {
-// 	db := o.DB
-// 	if err := db.Create(o).Error; err != nil {
-// 		return err
-// 	}
-// 	if err := db.Save(o).Error; err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
 
 // Validate Validates the organization
 func (o *Organization) Validate() ([]string, error) {
@@ -166,7 +188,12 @@ func (o *Organization) ValidateSub(only []string) ([]string, error) {
 			}
 		}
 		if retrr != "" {
+			// customising an error to make if useful for login via email or alias
 			errx = errors.New(retrr)
+		} else {
+			// if reterr is empty => no errors in the required fields
+			// so any other previous validation errors can be ignored
+			errx = nil
 		}
 		return msgs, errx
 	}
@@ -251,13 +278,18 @@ type orgEmailPacked struct {
 // FindByEmail finds the org from db by email
 func (s *OrgSubmission) FindByEmail() (*Organization, error) {
 	db := dbm.GetDB()
-	res := &orgEmailPacked{}
+	o := &Organization{}
 	// https://gorm.io/docs/query.html#Joins
+	// tx := db.Model(&Organization{}).
+	// 	Select("`organizations`.*, `emails`.*").
+	// 	Joins("LEFT JOIN `emails` ON `emails`.`organization_id` = `organizations`.`id`").
+	// 	Where("`emails`.`email` = ?", s.Emails[0].Email).
+	// 	Scan(&res)
 	tx := db.Model(&Organization{}).
-		Select("`organizations`.*, `emails`.*").
+		Select("`organizations`.`id`, `organizations`.`password_hash`").
 		Joins("LEFT JOIN `emails` ON `emails`.`organization_id` = `organizations`.`id`").
 		Where("`emails`.`email` = ?", s.Emails[0].Email).
-		Scan(&res)
+		Scan(&o)
 	// TODO need one more query anyway to get the full associations
 
 	// so it should Ideally be just check if the email exists
@@ -266,31 +298,13 @@ func (s *OrgSubmission) FindByEmail() (*Organization, error) {
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	if tx.RowsAffected == 0 {
+	// can also be -1 for non-existant emails
+	if tx.RowsAffected <= 0 {
 		return nil, ErrNoResultsFound
 	}
-	o := &(res.Organization)
-	o.Emails = []Email{res.Email}
+	// o := &(res.Organization)
+	// o.Emails = []Email{res.Email}
 	return o, nil
-}
-
-// Save a org
-//
-// Upserts the org
-func (o *Organization) Save() error {
-	db := o.DB
-	cols := []string{"updated_at", "name"}
-	// PGSQL
-	// cols := []string{"updated_at", "name", "emails"}
-	tx := db.Clauses(clause.OnConflict{
-		// TODO all primaryKeys not just ID
-		Columns: []clause.Column{{Name: "id"}},
-		// TODO exept created_at everything
-		DoUpdates: clause.AssignmentColumns(cols),
-	}).Create(&o)
-	// remove this line after fixing the above cols logic
-	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
-	return tx.Error
 }
 
 // BeforeCreate before creating fix the conflicts for primarykey
