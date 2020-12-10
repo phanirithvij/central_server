@@ -6,14 +6,23 @@ import "./index.css";
 import Logout from "./logout";
 
 export default function Login() {
+  // Org is the API methods provider as well as store
   const [org] = useState(new Org());
 
+  // Used to track if logged in or not
   const [loggedin, setLoggedin] = useState();
+
+  // if we're done logging in so we can redirect to /dashboard
   const [done, setDone] = useState();
+
+  // tracks if we're sending a request to server to show a loading spinner
   const [sending, setSending] = useState();
+
+  // any error received from the server which will be shown to the user
   const [serverValidError, setServerValidError] = useState();
 
-  const { containerProps, indicatorEl } = useLoading({
+  // a loading spinner thing
+  const { containerProps, indicatorEl: loaderSpinner } = useLoading({
     loading: true,
     indicator: <Puff width="50" />,
   });
@@ -31,6 +40,7 @@ export default function Login() {
   // we use it after logout
   const [reload, updateState] = useState();
   const reloadPage = useCallback(() => {
+    // we're not logged in anymore
     setLoggedin(undefined);
     updateState({});
   }, []);
@@ -45,7 +55,7 @@ export default function Login() {
         }
         return x.json();
       })
-      .then((x) => {
+      .then(() => {
         setLoggedin(true);
       })
       .catch(() => {
@@ -107,7 +117,7 @@ export default function Login() {
             <button type="submit">Login</button>
             {serverValidError !== undefined && <div>{serverValidError}</div>}
             {sending !== undefined && sending && (
-              <section {...containerProps}>{indicatorEl}</section>
+              <section {...containerProps}>{loaderSpinner}</section>
             )}
             {done !== undefined && done && (
               <div>
@@ -127,7 +137,7 @@ export default function Login() {
           </div>
         )
       ) : (
-        <section {...containerProps}>{indicatorEl}</section>
+        <section {...containerProps}>{loaderSpinner}</section>
       )}
     </div>
   );

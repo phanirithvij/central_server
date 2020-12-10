@@ -27,7 +27,8 @@ Bash completions also work for linux systems
   - Using ok.svg, no.svg
 - [ ] Move register endpoints to /api/v1/register
 - [ ] Aliases cannot be valid emails write that constraint when validating
-  - Because if so the 
+  - Because if so then the login method will fail if alias is detected as an email
+  - Someone can accidentally create an alias which is someone elses' email and we will cry that day (so remove this bad design)
 
 ## Dev notes
 

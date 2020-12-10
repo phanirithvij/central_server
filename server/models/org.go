@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	// ErrNoResultsFound no sql results were found
 	ErrNoResultsFound = errors.New("No results found")
 )
 
