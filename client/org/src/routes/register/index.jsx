@@ -233,7 +233,7 @@ export default function Register() {
             )}
             {done !== undefined && done && (
               <div>
-                <Redirect to={"/dashborad"} />
+                <Redirect to={"/dashboard"} />
               </div>
             )}
           </form>

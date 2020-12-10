@@ -27,7 +27,7 @@ If **Required**
 ## TODO:
 
 - Applicable to all the organizations which register themselves
-  - Privacy policy for the central dashborad
+  - Privacy policy for the central dashboard
   - Terms of service for the central dashboard
 - Decide on the Licenses of the codebases for
   - server
