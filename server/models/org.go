@@ -124,6 +124,21 @@ func (o *Organization) Save() error {
 func (o *Organization) SaveReq(c *gin.Context) error {
 	// TODO use above save method and return the error to client
 	db := o.DB
+	/*
+		(
+		//	CAN'T CHANGE	`alias` text,
+		`name` text,
+		`location_str` text,
+		`location_longitude` text,
+		`location_latitude` text,
+		`location_private` numeric,
+		`description` text,
+		`private` numeric,
+		`password_hash` text NOT NULL,
+		`org_updated_at` datetime,
+		)
+	*/
+	// except alias everything else can be changed
 	cols := []string{"updated_at", "name"}
 	// PGSQL
 	// cols := []string{"updated_at", "name", "emails"}
@@ -208,13 +223,15 @@ type OrgSubmissionPass struct {
 
 // OrgSubmission a submission from the clients
 type OrgSubmission struct {
-	ID          uint      `json:"id"`
-	Address     string    `json:"address"`
-	Alias       string    `json:"alias"`
-	Description string    `json:"description"`
-	Emails      []EmailD  `json:"emails"`
-	Location    []float64 `json:"location"`
-	Name        string    `json:"name"`
+	ID              uint      `json:"id"`
+	Address         string    `json:"address"`
+	Alias           string    `json:"alias"`
+	Description     string    `json:"description"`
+	Emails          []EmailD  `json:"emails"`
+	Location        []float64 `json:"location"`
+	Name            string    `json:"name"`
+	Private         bool      `json:"private"`
+	LocationPrivate bool      `json:"privateLoc"`
 }
 
 // EmailD ?
@@ -355,6 +372,8 @@ func (s *OrgSubmission) Org() *Organization {
 	}
 	o.Name = s.Name
 	o.OrgDetails.LocationStr = s.Address
+	o.OrgDetails.LocationLL.Private = s.LocationPrivate
+	o.OrgDetails.Private = s.Private
 	if len(s.Location) == 2 {
 		o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(s.Location[0], 'f', -1, 64)
 		o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(s.Location[1], 'f', -1, 64)
@@ -377,6 +396,8 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 	}
 	s.Name = o.Name
 	s.Address = o.OrgDetails.LocationStr
+	s.LocationPrivate = o.OrgDetails.LocationLL.Private
+	s.Private = o.OrgDetails.Private
 	if o.OrgDetails.LocationLL.Longitude != "" && o.OrgDetails.LocationLL.Latitude != "" {
 		s.Location = []float64{0, 0}
 		s.Location[0], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Latitude, 64)
