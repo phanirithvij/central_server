@@ -1,10 +1,11 @@
-import Org from "../../models/org";
 import { useEffect, useState } from "react";
 import { Redirect } from "react-router-dom";
+import Org from "../../models/org";
 
 export default function Logout(props) {
   let org;
   let redir;
+  let callback = props.callback;
 
   // https://stackoverflow.com/a/59283373/8608146
   let stillMounted = { value: false };
@@ -22,7 +23,7 @@ export default function Logout(props) {
     redir = true;
   }
 
-  const timeoutDur = props.timeoutDur || 5;
+  const timeoutDur = props.timeoutDur !== undefined ? props.timeoutDur : 3;
   const [loggedout, setLoggedout] = useState();
   const [redirect] = useState(redir);
   const [waitDone, setWaitDone] = useState(false);
@@ -39,25 +40,32 @@ export default function Logout(props) {
       })
       .then((x) => {
         setLoggedout(true);
-        setTimeout(() => {
-          setWaitDone(true);
-        }, 1000 * timeoutDur);
-        let sec = timeoutDur;
-        let handler = setInterval(() => {
-          sec -= 1;
-          if (!stillMounted.value) {
-            clearInterval(handler);
-          } else {
-            setWaitT(sec);
-          }
-        }, 1000);
+        if (timeoutDur > 0) {
+          setTimeout(() => {
+            setWaitDone(true);
+          }, 1000 * timeoutDur);
+          let sec = timeoutDur;
+          let handler = setInterval(() => {
+            sec -= 1;
+            if (!stillMounted.value) {
+              clearInterval(handler);
+            } else {
+              setWaitT(sec);
+            }
+          }, 1000);
+        }
         console.log(x);
+        if (timeoutDur === 0) setWaitDone(true);
       })
       .catch((err) => {
         setLoggedout(false);
         console.error(err);
       });
   };
+
+  useEffect(() => {
+    waitDone && callback?.();
+  }, [waitDone, callback]);
 
   return (
     <div>
@@ -68,7 +76,9 @@ export default function Logout(props) {
       ) : (
         <div>
           {redirect && waitDone ? (
-            <Redirect to={props.redirect} />
+            <>
+              <Redirect to={props.redirect} />
+            </>
           ) : (
             <p>
               Redirecting to {props.redirect} in {waitT} seconds

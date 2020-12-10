@@ -26,6 +26,7 @@ import (
 	api "github.com/phanirithvij/central_server/server/routes/api"
 	home "github.com/phanirithvij/central_server/server/routes/home"
 	register "github.com/phanirithvij/central_server/server/routes/register"
+	login "github.com/phanirithvij/central_server/server/routes/login"
 	settings "github.com/phanirithvij/central_server/server/routes/settings"
 	status "github.com/phanirithvij/central_server/server/routes/status"
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
@@ -76,6 +77,7 @@ func Serve(port int, debug bool) {
 	api.SetupEndpoints(router)
 	home.SetupEndpoints(router)
 	register.SetupEndpoints(router)
+	login.SetupEndpoints(router)
 	status.SetupEndpoints(router)
 	settings.SetupEndpoints(router)
 
@@ -216,6 +218,9 @@ func registerTemplates(router *gin.Engine) {
 	rt := register.Template{T: t}
 	rt.LoadTemplates()
 
+	lt := login.Template{T: t}
+	lt.LoadTemplates()
+
 	st := status.Template{T: t}
 	st.LoadTemplates()
 
@@ -229,7 +234,15 @@ func newOrg() *models.Organization {
 	o := models.NewOrganization()
 	// o.OrgID = "org-oror"
 	o.Alias = "oror"
-	o.Emails = []models.Email{{Email: "email@email.email", Private: false}}
+	o.Emails = []models.Email{
+		{Email: "emaixl@email.emailemail", Private: false},
+		{Email: "email3w@email3.email", Private: true},
+		{Email: "emai2lw@x.email", Private: false},
+		{Email: "emxaxi2lwx@email.", Private: true},
+		{Email: "emxaxilwx@xxemail.email", Private: false},
+		{Email: "emailwxxw@exmxail.email", Private: true},
+		{Email: "emailw@wemaixl.email", Private: false},
+	}
 	o.Name = "Or Or Organization"
 	o.OrgDetails.LocationStr = "Hyderabad"
 	o.OrgDetails.LocationLL.Latitude = "17.235650"

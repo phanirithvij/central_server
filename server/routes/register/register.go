@@ -56,32 +56,10 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	}
 	register := router.Group("/register")
 	{
-		register.GET("/", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
-			// TODO get the currently loggedin orgid
-			// then get it from db
-			session := sessions.DefaultMany(c, "org")
-			_, ok := session.Get("org-id").(uint)
-			if !ok {
-				c.JSON(http.StatusUnauthorized, gin.H{
-					"error":    "session has no org ID",
-					"type":     "register",
-					"messages": []string{"Not Authorized"},
-				})
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"type":     "register",
-				"status":   "success",
-				"messages": []string{"Authorized"},
-			})
-		})
 		register.OPTIONS("/*_", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
 			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Methods", "POST, GET")
+			c.Header("Access-Control-Allow-Methods", "POST")
 			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
 			c.Header("Access-Control-Allow-Credentials", "true")
 
@@ -160,40 +138,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 		})
 	}
 	routes.RegisterSelf(config.Register)
-	logout := router.Group("/logout")
-	{
-		logout.GET("/", func(c *gin.Context) {
-			// logout will remove session
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
-			session := sessions.DefaultMany(c, "org")
-			_, ok := session.Get("org-id").(uint)
-			if !ok {
-				c.JSON(http.StatusUnauthorized, gin.H{
-					"error":    "session has no org ID",
-					"type":     "logout",
-					"messages": []string{"Not Authorized"},
-				})
-				return
-			}
-			session.Set("org-id", nil)
-			err := session.Save()
-			if err != nil {
-				c.JSON(http.StatusUnprocessableEntity, gin.H{
-					"error":    err.Error(),
-					"type":     "logout",
-					"messages": []string{"Couldn't clear session"},
-				})
-			}
-			c.JSON(http.StatusAccepted, gin.H{
-				"type":     "logout",
-				"messages": []string{"Logged out"},
-			})
-
-		})
-	}
-	routes.RegisterSelf(config.Logout)
 	return register
 }
 

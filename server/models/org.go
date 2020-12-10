@@ -3,11 +3,13 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -15,6 +17,10 @@ import (
 	dbm "github.com/phanirithvij/central_server/server/utils/db"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+)
+
+var (
+	ErrNoResultsFound = errors.New("No results found")
 )
 
 // Organization is an organization
@@ -27,8 +33,8 @@ type Organization struct {
 
 // OrganizationPublic all the public feilds that can be configured by the organization
 type OrganizationPublic struct {
+	Emails []Email `validate:"required,min=1,dive,required" gorm:"polymorphic:Organization;"`
 	Name   string  `validate:"required,printascii"`
-	Emails []Email `validate:"required,min=1,dive,required" gorm:"ForeignKey:ID"`
 	// A slug which will be auto assigned if not chosen by them
 	Alias      string `validate:"alphanum" gorm:"index"`
 	OrgDetails `validate:"required"`
@@ -36,9 +42,13 @@ type OrganizationPublic struct {
 
 // Email type it can be either public/private so we or others can contact them via email
 type Email struct {
-	gorm.Model
-	Email   string `validate:"email"`
-	Private bool   `default:"true"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        gorm.DeletedAt `gorm:"index"`
+	Email            string         `validate:"email" gorm:"uniqueindex:org_email_idx;primaryKey" json:"email"`
+	OrganizationID   uint           `gorm:"uniqueindex:org_email_idx;primaryKey"`
+	OrganizationType string         `gorm:"primaryKey"`
+	Private          bool           `default:"true"`
 }
 
 // OrgDetails the details of the organization
@@ -102,17 +112,17 @@ func (o *Organization) SaveReq(c *gin.Context) error {
 	return nil
 }
 
-// Save saves
-func (o *Organization) Save() error {
-	db := o.DB
-	if err := db.Create(o).Error; err != nil {
-		return err
-	}
-	if err := db.Save(o).Error; err != nil {
-		return err
-	}
-	return nil
-}
+// // Save saves
+// func (o *Organization) Save() error {
+// 	db := o.DB
+// 	if err := db.Create(o).Error; err != nil {
+// 		return err
+// 	}
+// 	if err := db.Save(o).Error; err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
 
 // Validate Validates the organization
 func (o *Organization) Validate() ([]string, error) {
@@ -189,6 +199,94 @@ func (s *OrgSubmission) Find() (*Organization, error) {
 	}
 	log.Println(tx.RowsAffected)
 	return o, nil
+}
+
+// FindByAlias finds the org from db by alias
+func (s *OrgSubmission) FindByAlias() (*Organization, error) {
+	o := s.Org()
+	db := o.DB
+	log.Println(o.Str())
+	// https://gorm.io/docs/preload.html#Preload-All
+	tx := db.Preload(clause.Associations).Where("alias = ?", o.Alias).Find(&o)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return nil, ErrNoResultsFound
+	}
+	return o, nil
+}
+
+// FindByEmail finds the org from db by email
+func (s *OrgSubmission) FindByEmail() (*Organization, error) {
+	o := s.Org()
+	db := o.DB
+	e := new(Email)
+	e.Email = s.Emails[0].Email
+
+	// https://gorm.io/docs/preload.html#Preload-All
+	tx := db.Find(&e)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	log.Println(tx.RowsAffected)
+	log.Println(o.Str())
+	return o, nil
+}
+
+// Save a org
+//
+// Upserts the org
+func (o *Organization) Save() error {
+	db := o.DB
+	cols := []string{"updated_at", "name"}
+	// PGSQL
+	// cols := []string{"updated_at", "name", "emails"}
+	tx := db.Clauses(clause.OnConflict{
+		// TODO all primaryKeys not just ID
+		Columns: []clause.Column{{Name: "id"}},
+		// TODO exept created_at everything
+		DoUpdates: clause.AssignmentColumns(cols),
+	}).Create(&o)
+	// remove this line after fixing the above cols logic
+	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
+	return tx.Error
+}
+
+// BeforeCreate before creating fix the conflicts for primarykey
+func (b *Email) BeforeCreate(tx *gorm.DB) (err error) {
+	cols := []clause.Column{}
+	colsNames := []string{}
+	for _, field := range tx.Statement.Schema.PrimaryFields {
+		cols = append(cols, clause.Column{Name: field.DBName})
+		colsNames = append(colsNames, field.DBName)
+	}
+	// https://gorm.io/docs/create.html#Upsert-On-Conflict
+	// https://github.com/go-gorm/gorm/issues/3611#issuecomment-729673788
+	tx.Statement.AddClause(clause.OnConflict{
+		Columns: cols,
+		// DoUpdates: clause.AssignmentColumns(colsNames),
+		DoNothing: true,
+	})
+	return nil
+}
+
+// BeforeUpdate before updating fix the conflicts for primarykey
+func (b *Email) BeforeUpdate(tx *gorm.DB) (err error) {
+	cols := []clause.Column{}
+	colsNames := []string{}
+	for _, field := range tx.Statement.Schema.PrimaryFields {
+		cols = append(cols, clause.Column{Name: field.DBName})
+		colsNames = append(colsNames, field.DBName)
+	}
+	colsNames = append(colsNames, "updated_at")
+	// https://gorm.io/docs/create.html#Upsert-On-Conflict
+	// https://github.com/go-gorm/gorm/issues/3611#issuecomment-729673788
+	tx.Statement.AddClause(clause.OnConflict{
+		Columns:   cols,
+		DoUpdates: clause.AssignmentColumns(colsNames),
+	})
+	return nil
 }
 
 // Org struct conversion, use Find() if needed from db

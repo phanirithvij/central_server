@@ -22,8 +22,6 @@ case "${unameOut}" in
     *)          machine="UNKNOWN:${unameOut}"
 esac
 
-echo  extension is $EXT
-
 debugInfo () {
     echo "Build web:          $WEB"
     echo "Pack bin assets:    $PACK"

@@ -26,6 +26,8 @@ Bash completions also work for linux systems
 - [ ] Attribute https://icons8.com/icons somewhere
   - Using ok.svg, no.svg
 - [ ] Move register endpoints to /api/v1/register
+- [ ] Aliases cannot be valid emails write that constraint when validating
+  - Because if so the 
 
 ## Dev notes
 

@@ -1,4 +1,10 @@
-import { OrgSettingsURL, RegisterURL, OrgAliasCheckURL, LogoutURL } from "../utils/server";
+import {
+  OrgSettingsURL,
+  RegisterURL,
+  OrgAliasCheckURL,
+  LogoutURL,
+  LoginURL,
+} from "../utils/server";
 export default class Org {
   constructor(props) {
     this.props = props;
@@ -27,17 +33,25 @@ export default class Org {
     return this;
   }
   /**
-   * @param {string} n
-   */
-  name(n) {
-    this.$name = n;
-    return this;
-  }
-  /**
    * @param {string} a
    */
   alias(a) {
     this.$alias = a;
+    return this;
+  }
+  /**
+   * Email or alias used when logging in
+   * @param {string} emAl
+   */
+  emailOrAlias(emAl) {
+    this._emailAlias = emAl;
+    return this;
+  }
+  /**
+   * @param {string} n
+   */
+  name(n) {
+    this.$name = n;
     return this;
   }
   /**
@@ -105,11 +119,26 @@ export default class Org {
   }
 
   loggedin() {
-    return fetch(RegisterURL, {
+    return fetch(LoginURL, {
       method: "GET",
       credentials: "include",
     });
   }
+
+  login() {
+    return fetch(LoginURL, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        emailAlias: this._emailAlias,
+        password: this.$password,
+      }),
+    });
+  }
+
   logout() {
     return fetch(LogoutURL, {
       method: "GET",
