@@ -29,7 +29,12 @@ export default class Org {
    */
   email(em, indx) {
     if (!this.$emails) this.$emails = {};
-    this.$emails[indx] = em;
+    if (!this.$emails[indx] !== undefined) {
+      // already exists so update
+      this.$emails[indx] = { ...this.$emails[indx], ...em };
+    } else {
+      this.$emails[indx] = em;
+    }
     return this;
   }
 

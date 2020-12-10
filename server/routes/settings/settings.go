@@ -124,7 +124,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				return
 			}
 			data.ID = v
-			o := data.Org()
+			log.Println(data)
+			o, err := data.Find()
 			if err != nil {
 				log.Println(err)
 				c.JSON(http.StatusNotFound, gin.H{

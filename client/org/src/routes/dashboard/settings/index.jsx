@@ -54,10 +54,11 @@ export default function Settings() {
             // Fill up org
             let json = await x.json();
             Object.keys(json).forEach((key) => {
-              console.log(key);
+              // console.log(key);
               if (key === "id") return;
               if (key === "emails") {
                 org["emails"](json[key]);
+                // console.log(org._emailList());
                 setEmails(org._emailList());
                 return;
               }
@@ -74,12 +75,20 @@ export default function Settings() {
   }, [org]);
 
   const updateOrg = (e) => {
-    console.log(e.target.value);
     if (e.target.name.startsWith("email")) {
       // form of email-0, email-1 etc.
       // 0 being primary
-      let idx = e.target.name.split("-")[1];
-      org["email"]({ email: e.target.value, private: false }, idx);
+      let parts = e.target.name.split("-");
+      // TODO update email private
+      if (parts.length === 2) {
+        let idx = parts[1];
+        // email
+        org["email"]({ email: e.target.value }, idx);
+      } else if (parts.length === 3) {
+        let idx = parts[2];
+        // private
+        org["email"]({ private: e.target.checked }, idx);
+      }
     } else if (e.target.name === "location") {
       if (e.target.value.split(",").length !== 2) {
         // TODO show error message
@@ -107,19 +116,17 @@ export default function Settings() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (
-      passValid &&
-      org.$password &&
-      org._confirm &&
-      org.$password === org._confirm
-    ) {
-    } else {
-      console.error("Non password");
-      return;
+    if (org.$password && org._confirm) {
+      // we modfied the password
+      if (passValid && org.$password === org._confirm) {
+      } else {
+        console.error("Non password");
+        return;
+      }
     }
     if (org.$location && org.$location.length === 2) {
     } else {
-      console.error("Non locaceon");
+      console.error("Bad locaceon");
       return;
     }
     org
@@ -146,13 +153,22 @@ export default function Settings() {
         {/* TODO private property to emails */}
         {emails !== undefined &&
           emails.map((email, index) => (
-            <input
-              type="text"
-              name={`email-${index}`}
-              placeholder={index === 0 ? "Email Primary" : `Email ${index + 1}`}
-              defaultValue={email.email}
-              key={index}
-            />
+            <div key={index}>
+              <input
+                type="text"
+                name={`email-${index}`}
+                placeholder={
+                  index === 0 ? "Email Primary" : `Email ${index + 1}`
+                }
+                defaultValue={email.email}
+              />
+              <label htmlFor={`email-${index}`}>Private</label>
+              <input
+                type="checkbox"
+                defaultChecked={email.private}
+                name={`email-private-${index}`}
+              />
+            </div>
           ))}
         <input type="text" name="description" placeholder="Description" />
         <input type="text" name="address" placeholder="Address" />
