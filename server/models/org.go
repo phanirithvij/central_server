@@ -26,10 +26,12 @@ var (
 
 // Organization is an organization
 type Organization struct {
-	gorm.Model
 	OrganizationPublic
-	Servers []*Server `gorm:"ForeignKey:ID"`
-	DB      *gorm.DB  `json:"-" gorm:"-" validate:"-"`
+	// bringing ID out to not prefix it
+	ID            uint `gorm:"primarykey"`
+	GormModelNoID `gorm:"embedded;embeddedPrefix:org_"`
+	Servers       []*Server `gorm:"ForeignKey:ID"`
+	DB            *gorm.DB  `json:"-" gorm:"-" validate:"-"`
 }
 
 // OrganizationPublic all the public feilds that can be configured by the organization
@@ -37,19 +39,24 @@ type OrganizationPublic struct {
 	Emails []Email `validate:"required,min=1,dive,required" gorm:"polymorphic:Organization;"`
 	Name   string  `validate:"required,printascii"`
 	// A slug which will be auto assigned if not chosen by them
-	Alias      string `validate:"alphanum" gorm:"index"`
+	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"index"`
 	OrgDetails `validate:"required"`
+}
+
+// GormModelNoID capital so gorm will pickup
+type GormModelNoID struct {
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
 // Email type it can be either public/private so we or others can contact them via email
 type Email struct {
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
-	DeletedAt        gorm.DeletedAt `gorm:"index"`
-	Email            string         `validate:"email" gorm:"uniqueindex:org_email_idx;primaryKey" json:"email"`
-	OrganizationID   uint           `gorm:"uniqueindex:org_email_idx;primaryKey"`
-	OrganizationType string         `gorm:"primaryKey"`
-	Private          bool           `default:"true"`
+	GormModelNoID    `gorm:"embedded;embeddedPrefix:email_"`
+	Email            string `validate:"email" gorm:"uniqueindex:org_email_idx;primaryKey" json:"email"`
+	OrganizationID   uint   `gorm:"uniqueindex:org_email_idx;primaryKey"`
+	OrganizationType string `gorm:"primaryKey"`
+	Private          bool   `default:"true"`
 }
 
 // OrgDetails the details of the organization
@@ -147,17 +154,19 @@ func (o *Organization) ValidateSub(only []string) ([]string, error) {
 	errx := validate.Struct(o)
 	msgs := []string{}
 	onlyStr := strings.Join(only, ",")
+	retrr := ""
 	if errx != nil {
 		validationErrors := errx.(validator.ValidationErrors)
 		for _, err := range validationErrors {
 			if strings.Contains(onlyStr, err.Field()) {
 				log.Println(err, err.Field())
 				msgs = append(msgs, err.Field()+" provided "+fmt.Sprint(err.Value())+" was not a valid "+strings.ToLower(err.Field()))
-				errx = err
-			} else {
-				// skip validate for this field so no errors
-				errx = nil
+				// the last error
+				retrr += err.Field()
 			}
+		}
+		if retrr != "" {
+			errx = errors.New(retrr)
 		}
 		return msgs, errx
 	}
@@ -218,20 +227,50 @@ func (s *OrgSubmission) FindByAlias() (*Organization, error) {
 	return o, nil
 }
 
+/*
+	Note:
+	Because we need both the email and the organization
+	It will not work by default as createdAt, updatedAt, deleteAt
+	fields are the same for both the models which are embedded from gorm.Model
+	So I create a custom struct and gave an embedded_prefix for both the models
+	So there will be no column name conflict or duplicates as far as
+	these 3 feilds are concerned.
+
+	And I realized this was a huge waste of time to save two querys
+	Because we do need to fetch all the emails and other associations
+	for the setting page. But that would require only the org ID and nothing else
+
+	So leaving this code as is in the hope that it will be useful somewhere else
+	But only the ID from all this is needed
+*/
+type orgEmailPacked struct {
+	Organization
+	Email
+}
+
 // FindByEmail finds the org from db by email
 func (s *OrgSubmission) FindByEmail() (*Organization, error) {
-	o := s.Org()
-	db := o.DB
-	e := new(Email)
-	e.Email = s.Emails[0].Email
+	db := dbm.GetDB()
+	res := &orgEmailPacked{}
+	// https://gorm.io/docs/query.html#Joins
+	tx := db.Model(&Organization{}).
+		Select("`organizations`.*, `emails`.*").
+		Joins("LEFT JOIN `emails` ON `emails`.`organization_id` = `organizations`.`id`").
+		Where("`emails`.`email` = ?", s.Emails[0].Email).
+		Scan(&res)
+	// TODO need one more query anyway to get the full associations
 
-	// https://gorm.io/docs/preload.html#Preload-All
-	tx := db.Find(&e)
+	// so it should Ideally be just check if the email exists
+	// then get the org_id and call it done
+
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	log.Println(tx.RowsAffected)
-	log.Println(o.Str())
+	if tx.RowsAffected == 0 {
+		return nil, ErrNoResultsFound
+	}
+	o := &(res.Organization)
+	o.Emails = []Email{res.Email}
 	return o, nil
 }
 

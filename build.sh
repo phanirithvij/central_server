@@ -94,7 +94,7 @@ buildBinDev () {
     echo "Building binary for development..."
     exe cd server
     exe go build -tags skippkger &
-    exe go build -tags skippkger -o ws-server$EXT -ldflags "-w -s"
+    # exe go build -tags skippkger -o ws-server$EXT -ldflags "-w -s"
     wait
     exe cd ..
 }

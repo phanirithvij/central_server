@@ -19,7 +19,7 @@ export default function Login() {
   const [sending, setSending] = useState();
 
   // any error received from the server which will be shown to the user
-  const [serverValidError, setServerValidError] = useState();
+  const [serverValidityErrors, setServerValidityErrors] = useState();
 
   // a loading spinner thing
   const { containerProps, indicatorEl: loaderSpinner } = useLoading({
@@ -74,14 +74,14 @@ export default function Login() {
         switch (res.status) {
           case 422:
             console.error(jsonD["error"]);
-            setServerValidError(jsonD["messages"].join("\n"));
+            setServerValidityErrors(jsonD["messages"]);
             break;
           case 200:
             // successfully loggedin redirect to dashboard
             setDone(true);
             break;
           case 500:
-            setServerValidError(jsonD["error"]);
+            setServerValidityErrors([jsonD["error"],]);
             break;
           default:
             break;
@@ -115,7 +115,13 @@ export default function Login() {
             />
             <input type="password" name="password" placeholder="Password" />
             <button type="submit">Login</button>
-            {serverValidError !== undefined && <div>{serverValidError}</div>}
+            {serverValidityErrors !== undefined && (
+              <div>
+                {serverValidityErrors.map((x,i) => (
+                  <p key={i}>{x}</p>
+                ))}
+              </div>
+            )}
             {sending !== undefined && sending && (
               <section {...containerProps}>{loaderSpinner}</section>
             )}

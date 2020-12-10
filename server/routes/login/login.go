@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -110,32 +111,66 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			// go new doesn't create arrays
 			data.OrgSubmission.Emails = []models.EmailD{{Email: sub.EmailAlias}}
 
+			const AliasX = 0
+			const EmailX = 1
+			const NoMethodX = 2
+			method := EmailX
+
 			o := data.Org()
 			// TODO see if any one of these is valid and use that
-			msgs, err := o.ValidateSub([]string{"Emails", "Alias"})
+			_, err = o.ValidateSub([]string{"Alias", "Emails"})
+			log.Println(err)
 			if err != nil {
-				log.Println(err)
-				// https://stackoverflow.com/a/40926661/8608146
+				if strings.Contains(err.Error(), "Email") {
+					// not a valid email try alias
+					method = AliasX
+					if strings.Contains(err.Error(), "Alias") {
+						// invalid alias
+						method = NoMethodX
+					}
+				}
+			}
+
+			log.Println(data)
+			log.Println(method)
+			log.Println(o.Str())
+
+			switch method {
+			case AliasX:
+				o, err = data.FindByAlias()
+				if err != nil {
+					log.Println(err)
+					c.JSON(http.StatusUnprocessableEntity, gin.H{
+						"error":    err.Error(),
+						"type":     "login",
+						"messages": []string{"Couldn't find org with alias " + sub.EmailAlias},
+					})
+					return
+				}
+			case EmailX:
+				o, err = data.FindByEmail()
+				if err != nil {
+					log.Println(err)
+					c.JSON(http.StatusUnprocessableEntity, gin.H{
+						"error":    err.Error(),
+						"type":     "login",
+						"messages": []string{"Couldn't find org with email " + sub.EmailAlias},
+					})
+					return
+				}
+			default:
+				// validation failed for both email and alias
 				c.JSON(http.StatusUnprocessableEntity, gin.H{
 					"error":    err.Error(),
 					"type":     "validate",
-					"messages": msgs,
+					"messages": []string{sub.EmailAlias + " is not a valid email address or an alias"},
 				})
 				return
 			}
-			log.Println(data)
+
 			log.Println(o.Str())
-			o, err = data.FindByAlias()
-			if err != nil {
-				log.Println(err)
-				c.JSON(http.StatusUnprocessableEntity, gin.H{
-					"error":    err.Error(),
-					"type":     "login",
-					"messages": []string{"Couldn't find org with alias " + sub.EmailAlias},
-				})
-				return
-			}
-			// TODO get org by email or alias
+
+			// Save org id to cookie
 			session := sessions.DefaultMany(c, "org")
 			session.Set("org-id", o.ID)
 			err = session.Save()
