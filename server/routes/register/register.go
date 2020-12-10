@@ -82,7 +82,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			// Ask after email verification
 			// TODO multi email verification
 			o := data.Org()
-			msgs, err := o.ValidateSub([]string{"Name", "Emails", "Alias"})
+			msgs, err := o.ValidateSub([]string{"Emails", "Alias"})
 			if err != nil {
 				log.Println(err)
 				// https://stackoverflow.com/a/40926661/8608146
