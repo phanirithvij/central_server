@@ -25,9 +25,9 @@ func CheckEndpoints() {
 		}
 	}
 	if !done {
-		log.Println("[Warning] some endpoints are not registered")
+		log.Println("[WARNING] some endpoints are not registered")
 		for _, v := range notDone {
-			log.Printf("[Warning] endpoints of %s are not registered", v)
+			log.Printf("[WARNING] endpoints of %s are not registered", v)
 		}
 	}
 }

@@ -283,7 +283,7 @@ func setupSessionStore(r *gin.Engine) sessions.Store {
 	store, err := redis.NewStore(10, "tcp", "localhost:6379", "", bsk)
 	if err != nil {
 		log.Println(err)
-		log.Println("[Warning] Redis not available so using cookie sessions")
+		log.Println("[WARNING] Redis not available so using cookie sessions")
 		store = cookie.NewStore(bsk)
 	}
 	// https://github.com/gin-contrib/sessions#multiple-sessions
