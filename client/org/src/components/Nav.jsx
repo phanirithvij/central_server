@@ -4,6 +4,8 @@ import {
   LoginOutlined,
   PieChartOutlined,
   SettingOutlined,
+  UserAddOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import React from "react";
@@ -30,10 +32,18 @@ export default function NavBar() {
           <Menu.Item key="/dashboard/settings" icon={<SettingOutlined />}>
             <Link to={"/dashboard/settings"}>Settings</Link>
           </Menu.Item>
+          <Menu.Item key="/dashboard/profile" icon={<SettingOutlined />}>
+            <Link to={"/dashboard/profile"}>Profile</Link>
+          </Menu.Item>
         </SubMenu>
-        <Menu.Item key="/register" icon={<LoginOutlined />}>
-          <Link to={"/register"}>Register</Link>
-        </Menu.Item>
+        <SubMenu key="/account" icon={<UserOutlined />} title="Account">
+          <Menu.Item key="/register" icon={<UserAddOutlined />}>
+            <Link to={"/register"}>Register</Link>
+          </Menu.Item>
+          <Menu.Item key="/login" icon={<LoginOutlined />}>
+            <Link to={"/login"}>Login</Link>
+          </Menu.Item>
+        </SubMenu>
       </Menu>
     </div>
   );

@@ -8,7 +8,6 @@ import Register from "./routes/register";
 import Login from "./routes/register/login";
 import Logout from "./routes/register/logout";
 import ServerBaseURL from "./utils/server";
-// import 'bootstrap/dist/css/bootstrap.min.css';
 import "antd/dist/antd.css"; // or 'antd/dist/antd.less'
 
 // const Home = lazy(() => import("./routes/home"));
