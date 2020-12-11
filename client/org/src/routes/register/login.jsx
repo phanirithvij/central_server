@@ -1,5 +1,6 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import { useCallback, useEffect, useState } from "react";
+import {Button} from "antd";
 import { Link, Redirect } from "react-router-dom";
 import Org from "../../models/org";
 import "./index.css";
@@ -118,7 +119,7 @@ export default function Login() {
               placeholder="Email or Alias"
             />
             <input type="password" name="password" placeholder="Password" />
-            <button type="submit">Login</button>
+            <Button type="submit">Login</Button>
             {serverValidityErrors !== undefined && (
               <div>
                 {serverValidityErrors.map((x, i) => (

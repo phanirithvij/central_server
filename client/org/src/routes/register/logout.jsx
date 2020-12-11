@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import {Button} from "antd";
 import { Redirect } from "react-router-dom";
 import Org from "../../models/org";
 
@@ -72,7 +73,7 @@ export default function Logout(props) {
   return (
     <div>
       {loggedout === undefined ? (
-        <button onClick={logOut}>Logout</button>
+        <Button onClick={logOut}>Logout</Button>
       ) : !loggedout ? (
         <div>Logout Failed</div>
       ) : (

@@ -3,10 +3,13 @@ import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import "./App.css";
 import Dashboard from "./routes/dashboard";
 import Home from "./routes/home";
+import NavBar from "./components/Nav";
 import Register from "./routes/register";
 import Login from "./routes/register/login";
 import Logout from "./routes/register/logout";
 import ServerBaseURL from "./utils/server";
+// import 'bootstrap/dist/css/bootstrap.min.css';
+import "antd/dist/antd.css"; // or 'antd/dist/antd.less'
 
 // const Home = lazy(() => import("./routes/home"));
 // const Dashboard = lazy(() => import("./routes/dashboard"));
@@ -22,45 +25,39 @@ console.log("ServerBaseURL", ServerBaseURL);
 
 function App() {
   return (
-    <div className="App">
-      <Router basename={process.env.REACT_APP_BASE_URL}>
-        <div>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-            <li>
-              <Link to="/dashboard">Dashboard</Link>
-            </li>
-          </ul>
+    <>
+      <div className="App">
+        <Router basename={process.env.REACT_APP_BASE_URL}>
+          <div>
+            <div className="nav">
+              <NavBar />
+            </div>
 
-          {/* Development warning */}
-          {process.env.NODE_ENV !== "production" &&
-            (window.location.port === "9090" ? (
-              <div>Development: Server rendered assets</div>
-            ) : (
-              <div>Development: React client</div>
-            ))}
+            {/* Development warning */}
+            {process.env.NODE_ENV !== "production" &&
+              (window.location.port === "9090" ? (
+                <div>Development: Server rendered assets</div>
+              ) : (
+                <div>Development: React client</div>
+              ))}
 
-          <hr />
-        </div>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Switch>
-            <Route exact path="/" component={Home} />
-            <Route path="/register" component={Register} />
-            <Route path="/login" component={Login} />
-            <Route
-              path="/logout"
-              render={() => <Logout redirect={"/login"} />}
-            />
-            <Route path="/dashboard" component={Dashboard} />
-          </Switch>
-        </Suspense>
-      </Router>
-    </div>
+            <hr />
+          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <Route path="/register" component={Register} />
+              <Route path="/login" component={Login} />
+              <Route
+                path="/logout"
+                render={() => <Logout redirect={"/login"} />}
+              />
+              <Route path="/dashboard" component={Dashboard} />
+            </Switch>
+          </Suspense>
+        </Router>
+      </div>
+    </>
   );
 }
 

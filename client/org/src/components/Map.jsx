@@ -1,3 +1,4 @@
+import Tippy from "@tippyjs/react";
 import { Icon } from "leaflet";
 import "leaflet-geosearch/dist/geosearch.css";
 import "leaflet-geosearch/dist/geosearch.umd";
@@ -47,7 +48,14 @@ function CurrentLocationControl({ position }) {
           map.locate();
         }}
       >
-        <div className="locBtn"></div>
+        <Tippy
+          placement={"right"}
+          arrow={false}
+          delay={[100, 200]}
+          content={"Current location"}
+        >
+          <div className="locBtn"></div>
+        </Tippy>
       </div>
     </div>
   );
@@ -172,9 +180,22 @@ const LocationMarker = React.forwardRef((props, ref) => {
             onClick={() => props.copyCallback("address", label)}
           >
             {/* https://stackoverflow.com/a/41756265/8608146 */}
-            <SVG className="svgicon" src={copy}>
-              <div>use</div>
-            </SVG>
+            <Tippy
+              interactive={true}
+              arrow={false}
+              delay={[100, 200]}
+              content={
+                <>
+                  Use <p>{label}</p> as Address
+                </>
+              }
+            >
+              <i>
+                <SVG className="svgicon" src={copy}>
+                  <div>use</div>
+                </SVG>
+              </i>
+            </Tippy>
           </div>
         </div>
         {/* if position exists show it on pop up*/}
@@ -186,9 +207,17 @@ const LocationMarker = React.forwardRef((props, ref) => {
               title="Use as Location"
               onClick={() => props.copyCallback("location", position)}
             >
-              <SVG className="svgicon" src={copy}>
-                <div>use</div>
-              </SVG>
+              <Tippy
+                arrow={false}
+                delay={[100, 200]}
+                content={`Use \`${position}\` as Location`}
+              >
+                <i>
+                  <SVG className="svgicon" src={copy}>
+                    <div>use</div>
+                  </SVG>
+                </i>
+              </Tippy>
             </div>
           </div>
         )}

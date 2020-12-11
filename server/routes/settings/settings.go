@@ -169,7 +169,13 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 
 			err = oldOrg.NewUpdate(newOrg)
 			if err != nil {
+				// TODO more descriptive error messages here
 				log.Println(err)
+				c.JSON(http.StatusUnprocessableEntity, gin.H{
+					"error":    err.Error(),
+					"type":     "login",
+					"messages": []string{"Couldn't update organization"},
+				})
 				return
 			}
 			c.JSON(http.StatusOK, oldOrg)

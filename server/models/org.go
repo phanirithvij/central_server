@@ -32,7 +32,7 @@ type Organization struct {
 	 BUG with gorm where composite primarykey with int, text exists
 	 autoIncrement is ignored for the int key
 	*/
-	ID uint `gorm:"primarykey;uniqueindex:org_alias_id_idx;not null;autoIncrement:true;"`
+	ID uint `gorm:"primarykey;not null;autoIncrement:true;"`
 	// https://gorm.io/docs/constraints.html#CHECK-Constraint
 	// https://stackoverflow.com/a/5489759/8608146
 	PasswordHash  string `gorm:"check:password_empty,password_hash <> '';not null;"`
@@ -47,7 +47,7 @@ type OrganizationPublic struct {
 	Name   string  `validate:"required,printascii"`
 	// A slug which will be auto assigned if not chosen by them
 	// Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"index;primaryKey"`
-	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"uniqueindex:org_alias_id_idx"`
+	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"unique"`
 	OrgDetails `validate:"required"`
 }
 
@@ -255,7 +255,6 @@ func (o *Organization) NewUpdate(n *Organization) error {
 		// this feels optional
 		Session(&gorm.Session{FullSaveAssociations: true}).
 		Updates(&n).Error; err != nil {
-		log.Println(err)
 		return err
 	}
 	return nil
@@ -338,7 +337,7 @@ func (b *Email) BeforeCreate(tx *gorm.DB) (err error) {
 	cols := []clause.Column{}
 	// prefix is email_
 	// TODO get prefix from tx somehow?
-	colsNames := []string{"email_updated_at", "email"}
+	colsNames := []string{"email_updated_at", "email", "private"}
 	for _, field := range tx.Statement.Schema.PrimaryFields {
 		cols = append(cols, clause.Column{Name: field.DBName})
 		colsNames = append(colsNames, field.DBName)

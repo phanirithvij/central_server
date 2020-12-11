@@ -25,6 +25,7 @@ Bash completions also work for linux systems
 - [ ] Might be useful [timezone-builder](https://github.com/evansiroky/timezone-boundary-builder)
 - [ ] Attribute https://icons8.com/icons somewhere
   - Using ok.svg, no.svg
+  - map.svg and modified mapclose.svg
 - [ ] Move register endpoints to /api/v1/register
 - [ ] Aliases cannot be valid emails write that constraint when validating
   - Because if so then the login method will fail if alias is detected as an email
@@ -39,6 +40,10 @@ Bash completions also work for linux systems
   - Delete all expired things like password reset requests  eg. every 3 hrs
   - Delete from DB very old objects by deleted_at time like 2 months
   - https://codereview.stackexchange.com/questions/116066/executing-periodic-tasks
+- [ ] Rate limit every endpoint
+  - Pressing Enter key on login page is enough to DDOS us
+  - Check serve.go metrics example
+- [ ] Antd Forms
 
 ## Dev notes
 

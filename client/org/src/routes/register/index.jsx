@@ -1,8 +1,10 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import debounce from "debounce";
 import { useEffect, useState } from "react";
+import {Button} from "antd";
 import SVG from "react-inlinesvg";
 import { Link, Redirect } from "react-router-dom";
+import AlertDismissible from "../../components/Alert";
 import Org from "../../models/org";
 import "./index.css";
 import Logout from "./logout";
@@ -225,8 +227,10 @@ export default function Register() {
                 conf &&
                 `Passwords don't match ${pass} , ${conf}`}
             </label>
-            {clientValidError !== undefined && <div>{clientValidError}</div>}
-            <button type="submit">Register</button>
+            {clientValidError !== undefined && (
+              <AlertDismissible show content={clientValidError} />
+            )}
+            <Button type="submit">Register</Button>
             {serverValidError !== undefined && <div>{serverValidError}</div>}
             {sending !== undefined && sending && (
               <section {...containerProps}>{indicatorEl}</section>
