@@ -124,8 +124,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				return
 			}
 			data.ID = v
-			log.Println(data)
-			o, err := data.Find()
+			oldOrg, err := data.Find()
 			if err != nil {
 				log.Println(err)
 				c.JSON(http.StatusNotFound, gin.H{
@@ -135,9 +134,15 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
+			// update any non empty fields from data.Org() to org and save
+			//
+
+			newOrg := data.Org()
+			// log.Println(newOrg.Str())
+			// log.Println(oldOrg.Str())
 			// Allow update only after email verification
 			// TODO multi email verification
-			msgs, err := o.Validate()
+			msgs, err := newOrg.Validate()
 			if err != nil {
 				// https://stackoverflow.com/a/40926661/8608146
 				c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -147,13 +152,13 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-			err = o.SaveReq(c)
+			err = oldOrg.NewUpdate(newOrg)
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			log.Println(o.Str())
-			c.JSON(http.StatusOK, o)
+			log.Println(oldOrg.Str())
+			c.JSON(http.StatusOK, oldOrg)
 		})
 	}
 	routes.RegisterSelf(config.Settings)

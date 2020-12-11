@@ -28,7 +28,11 @@ var (
 type Organization struct {
 	OrganizationPublic
 	// bringing ID out to not prefix it
-	ID uint `gorm:"primaryKey"`
+	/*
+	 BUG with gorm where composite primarykey with int, text exists
+	 autoIncrement is ignored for the int key
+	*/
+	ID uint `gorm:"primarykey;uniqueindex:org_alias_id_idx;not null;autoIncrement:true;"`
 	// https://gorm.io/docs/constraints.html#CHECK-Constraint
 	// https://stackoverflow.com/a/5489759/8608146
 	PasswordHash  string `gorm:"check:password_empty,password_hash <> '';not null;"`
@@ -42,7 +46,8 @@ type OrganizationPublic struct {
 	Emails []Email `validate:"required,min=1,dive,required" gorm:"polymorphic:Organization;"`
 	Name   string  `validate:"required,printascii"`
 	// A slug which will be auto assigned if not chosen by them
-	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"index;primaryKey"`
+	// Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"index;primaryKey"`
+	Alias      string `validate:"alphanum,excludesall=!@#$%^&*()" gorm:"uniqueindex:org_alias_id_idx"`
 	OrgDetails `validate:"required"`
 }
 
@@ -55,10 +60,10 @@ type GormModelNoID struct {
 
 // Email type it can be either public/private so we or others can contact them via email
 type Email struct {
-	GormModelNoID    `gorm:"embedded;embeddedPrefix:email_"`
-	Email            string `validate:"email" gorm:"uniqueindex:org_email_idx;primaryKey" json:"email"`
-	OrganizationID   uint   `gorm:"uniqueindex:org_email_idx;primaryKey"`
-	OrganizationType string `gorm:"primaryKey"`
+	gorm.Model       `gorm:"embedded;embeddedPrefix:email_"`
+	Email            string `validate:"email" gorm:"uniqueindex:org_email_idx" json:"email"`
+	OrganizationID   uint   `gorm:"uniqueindex:org_email_idx"`
+	OrganizationType string `gorm:"uniqueindex:org_email_idx"`
 	Private          bool   `default:"true"`
 }
 
@@ -66,7 +71,7 @@ type Email struct {
 type OrgDetails struct {
 	LocationStr string  `validate:"printascii"`
 	LocationLL  LongLat `validate:"required" gorm:"embedded;embeddedPrefix:location_"`
-	Description string  `validate:"required,alphanumunicode"`
+	Description string  `validate:"required,printascii"`
 	Private     bool    `default:"false"`
 }
 
@@ -94,31 +99,32 @@ func (o *Organization) NewServer() *Server {
 
 // Str retuns a json representation of the organization
 func (o *Organization) Str() string {
-	jd, err := json.Marshal(o)
+	jd, err := json.MarshalIndent(o, "", " ")
+	// jd, err := json.Marshal(o)
 	if err != nil {
 		return fmt.Sprintln(o)
 	}
 	return string(jd)
 }
 
-// Save a org
-//
-// Upserts the org
-func (o *Organization) Save() error {
-	db := o.DB
-	cols := []string{"updated_at", "name"}
-	// PGSQL
-	// cols := []string{"updated_at", "name", "emails"}
-	tx := db.Clauses(clause.OnConflict{
-		// TODO all primaryKeys not just ID
-		Columns: []clause.Column{{Name: "id"}},
-		// TODO exept created_at everything
-		DoUpdates: clause.AssignmentColumns(cols),
-	}).Create(&o)
-	// remove this line after fixing the above cols logic
-	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
-	return tx.Error
-}
+// // Save a org
+// //
+// // Upserts the org
+// func (o *Organization) Save() error {
+// 	db := o.DB
+// 	cols := []string{"updated_at", "name"}
+// 	// PGSQL
+// 	// cols := []string{"updated_at", "name", "emails"}
+// 	tx := db.Clauses(clause.OnConflict{
+// 		// TODO all primaryKeys not just ID
+// 		Columns: []clause.Column{{Name: "id"}},
+// 		// TODO exept created_at everything
+// 		DoUpdates: clause.AssignmentColumns(cols),
+// 	}).Create(&o)
+// 	// remove this line after fixing the above cols logic
+// 	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
+// 	return tx.Error
+// }
 
 // SaveReq saves organization to database inside a http request
 func (o *Organization) SaveReq(c *gin.Context) error {
@@ -238,6 +244,7 @@ type OrgSubmission struct {
 type EmailD struct {
 	Email   string `json:"email"`
 	Private bool   `default:"false" json:"private"`
+	ID      uint   `json:"id"`
 }
 
 // Find finds the org from db
@@ -254,6 +261,29 @@ func (s *OrgSubmission) Find() (*Organization, error) {
 		return nil, ErrNoResultsFound
 	}
 	return o, nil
+}
+
+// BeforeCreate ..
+func (o *Organization) BeforeCreate(tx *gorm.DB) error {
+	log.Println(tx.Statement.FullSaveAssociations)
+	return nil
+}
+
+// NewUpdate updates with new values
+func (o *Organization) NewUpdate(n *Organization) error {
+	// alias, ID are readonly so don't update
+	n.Alias = o.Alias
+	n.ID = o.ID
+	log.Println(n.Str())
+	o.Emails = n.Emails
+	log.Println(o.Str())
+	if err := o.DB.Model(&o).
+		// Session(&gorm.Session{FullSaveAssociations: true}).
+		Updates(&n).Error; err != nil {
+		log.Println(err)
+		return err
+	}
+	return nil
 }
 
 // FindByAlias finds the org from db by alias
@@ -327,8 +357,11 @@ func (s *OrgSubmission) FindByEmail() (*Organization, error) {
 
 // BeforeCreate before creating fix the conflicts for primarykey
 func (b *Email) BeforeCreate(tx *gorm.DB) (err error) {
+	log.Println("Updating", b.Email)
 	cols := []clause.Column{}
-	colsNames := []string{}
+	// prefix is email_
+	// TODO get prefix from tx somehow?
+	colsNames := []string{"email_updated_at", "email"}
 	for _, field := range tx.Statement.Schema.PrimaryFields {
 		cols = append(cols, clause.Column{Name: field.DBName})
 		colsNames = append(colsNames, field.DBName)
@@ -336,9 +369,9 @@ func (b *Email) BeforeCreate(tx *gorm.DB) (err error) {
 	// https://gorm.io/docs/create.html#Upsert-On-Conflict
 	// https://github.com/go-gorm/gorm/issues/3611#issuecomment-729673788
 	tx.Statement.AddClause(clause.OnConflict{
-		Columns: cols,
-		// DoUpdates: clause.AssignmentColumns(colsNames),
-		DoNothing: true,
+		Columns:   cols,
+		DoUpdates: clause.AssignmentColumns(colsNames),
+		// DoNothing: true,
 	})
 	return nil
 }
@@ -368,7 +401,13 @@ func (s *OrgSubmission) Org() *Organization {
 	o.Alias = s.Alias
 	o.Emails = []Email{}
 	for _, e := range s.Emails {
-		o.Emails = append(o.Emails, Email{Email: e.Email, Private: e.Private})
+		o.Emails = append(o.Emails,
+			Email{
+				Email:   e.Email,
+				Private: e.Private,
+				Model:   gorm.Model{ID: e.ID},
+			},
+		)
 	}
 	o.Name = s.Name
 	o.OrgDetails.LocationStr = s.Address
@@ -392,6 +431,7 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 		x := new(EmailD)
 		x.Email = e.Email
 		x.Private = e.Private
+		x.ID = e.ID
 		s.Emails = append(s.Emails, *x)
 	}
 	s.Name = o.Name

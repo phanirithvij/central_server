@@ -105,6 +105,13 @@ export default class Org {
     return this;
   }
   /**
+   * @param {boolean} b
+   */
+  privateLoc(b) {
+    this.$privateLoc = b;
+    return this;
+  }
+  /**
    * @param {string} p
    */
   confirm(p) {

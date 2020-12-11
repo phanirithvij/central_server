@@ -62,8 +62,14 @@ export default function Settings() {
                 setEmails(org._emailList());
                 return;
               }
+              // console.log(org[key], key);
               org[key](json[key]);
-              document.querySelector(`input[name="${key}"]`).value = json[key];
+              if (typeof json[key] === "boolean") {
+                document.querySelector(`input[name="${key}"]`).checked =
+                  json[key];
+              } else
+                document.querySelector(`input[name="${key}"]`).value =
+                  json[key];
             });
             break;
 
@@ -104,7 +110,9 @@ export default function Settings() {
       validatePass();
     } else {
       // set name = value
-      org[e.target.name](e.target.value);
+      org[e.target.name](
+        e.target.type === "checkbox" ? e.target.checked : e.target.value
+      );
     }
   };
   // triggered when clicked on the copy icons in the marker popup
@@ -173,6 +181,7 @@ export default function Settings() {
         <input type="text" name="description" placeholder="Description" />
         <input type="text" name="address" placeholder="Address" />
         <input type="text" name="location" placeholder="Location Lat, Long" />
+        <input type="checkbox" name="privateLoc" />
         <input type="checkbox" name="private" />
         <label htmlFor="oldPassword">Change Password</label>
         <input type="password" name="oldPassword" placeholder="Old Password" />

@@ -68,8 +68,9 @@ func Serve(port int, debug bool) {
 		log.Fatalln(err)
 	}
 
-	db.Create(&o)
-	db.Save(&o)
+	db.Create(o)
+	log.Println(o.Str())
+	// db.Save(o)
 
 	router := gin.Default()
 	registerTemplates(router)
