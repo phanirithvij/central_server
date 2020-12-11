@@ -115,47 +115,11 @@ func (o *Organization) Str() string {
 	return string(jd)
 }
 
-// // Save a org
-// //
-// // Upserts the org
-// func (o *Organization) Save() error {
-// 	db := o.DB
-// 	cols := []string{"updated_at", "name"}
-// 	// PGSQL
-// 	// cols := []string{"updated_at", "name", "emails"}
-// 	tx := db.Clauses(clause.OnConflict{
-// 		// TODO all primaryKeys not just ID
-// 		Columns: []clause.Column{{Name: "id"}},
-// 		// TODO exept created_at everything
-// 		DoUpdates: clause.AssignmentColumns(cols),
-// 	}).Create(&o)
-// 	// remove this line after fixing the above cols logic
-// 	log.Println("[main][WARNING]: Hardcoded feilds for Organization.Save", cols)
-// 	return tx.Error
-// }
-
 // SaveReq saves organization to database inside a http request
 func (o *Organization) SaveReq(c *gin.Context) error {
-	// TODO use above save method and return the error to client
 	db := o.DB
-	/*
-		(
-		//	CAN'T CHANGE	`alias` text,
-		`name` text,
-		`location_str` text,
-		`location_longitude` text,
-		`location_latitude` text,
-		`location_private` numeric,
-		`description` text,
-		`private` numeric,
-		`password_hash` text NOT NULL,
-		`org_updated_at` datetime,
-		)
-	*/
 	// except alias everything else can be changed
 	cols := []string{"updated_at", "name"}
-	// PGSQL
-	// cols := []string{"updated_at", "name", "emails"}
 	tx := db.Clauses(clause.OnConflict{
 		// TODO all primaryKeys not just ID
 		Columns: []clause.Column{{Name: "id"}},
@@ -328,10 +292,10 @@ func (s *OrgSubmission) FindByAlias() (*Organization, error) {
 	So leaving this code as is in the hope that it will be useful somewhere else
 	But only the ID from all this is needed
 */
-type orgEmailPacked struct {
-	Organization
-	Email
-}
+// type orgEmailPacked struct {
+// 	Organization
+// 	Email
+// }
 
 // FindByEmail finds the org from db by email
 func (s *OrgSubmission) FindByEmail() (*Organization, error) {
