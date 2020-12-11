@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	port  int
+	port int
+	// Debug debug or not flag
 	Debug bool
 )
 

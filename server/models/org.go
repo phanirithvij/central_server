@@ -335,7 +335,6 @@ func (s *OrgSubmission) FindByEmail() (*Organization, error) {
 
 // BeforeCreate before creating fix the conflicts for primarykey
 func (b *Email) BeforeCreate(tx *gorm.DB) (err error) {
-	log.Println("Updating", b.Email)
 	cols := []clause.Column{}
 	// prefix is email_
 	// TODO get prefix from tx somehow?
@@ -356,6 +355,7 @@ func (b *Email) BeforeCreate(tx *gorm.DB) (err error) {
 
 // BeforeUpdate before updating fix the conflicts for primarykey
 func (b *Email) BeforeUpdate(tx *gorm.DB) (err error) {
+	// TODO this is not getting called for some reason idk why
 	cols := []clause.Column{}
 	colsNames := []string{}
 	for _, field := range tx.Statement.Schema.PrimaryFields {
