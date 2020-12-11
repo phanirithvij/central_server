@@ -13,13 +13,13 @@ import { Link, useLocation } from "react-router-dom";
 
 const { SubMenu } = Menu;
 
-export default function NavBar() {
+export default function NavBar(props) {
   const location = useLocation();
   return (
     <div>
       <Menu
         defaultSelectedKeys={[location.pathname]}
-        mode="horizontal"
+        mode={props.mode}
         theme="dark"
       >
         <Menu.Item key="/" icon={<HomeOutlined />}>
@@ -44,6 +44,17 @@ export default function NavBar() {
             <Link to={"/login"}>Login</Link>
           </Menu.Item>
         </SubMenu>
+        {/* Development warning */}
+        {process.env.NODE_ENV !== "production" && (
+          // 
+          <Menu.Item key="" style={{ float: "right" }}>
+            <div>
+              {window.location.port === "9090"
+                ? "Development: Server rendered assets"
+                : "Development: React client"}
+            </div>
+          </Menu.Item>
+        )}
       </Menu>
     </div>
   );

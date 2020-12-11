@@ -306,10 +306,14 @@ export default function Settings() {
                 conf &&
                 `Passwords don't match ${pass} , ${conf}`}
             </label>
-            {clientValidError !== undefined && <div>{clientValidError}</div>}
-            <Button onClick={() => document.querySelector(".formx").submit()}>
-              Update
-            </Button>
+            {clientValidError !== undefined && (
+              <AlertDismissible
+                show
+                content={clientValidError}
+                variant="warning"
+              />
+            )}
+            <Button onClick={handleSubmit}>Update</Button>
             {done !== undefined && done && (
               <AlertDismissible
                 show
@@ -324,7 +328,9 @@ export default function Settings() {
           {mapVis && <Map copyCallback={useCallback} />}
         </div>
       )}
-      {serverValidError !== undefined && <div>{serverValidError}</div>}
+      {serverValidError !== undefined && (
+        <AlertDismissible show content={serverValidError} variant="error" />
+      )}
     </div>
   );
 }

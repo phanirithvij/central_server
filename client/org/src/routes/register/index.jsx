@@ -1,7 +1,7 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import debounce from "debounce";
 import { useEffect, useState } from "react";
-import {Button} from "antd";
+import { Button } from "antd";
 import SVG from "react-inlinesvg";
 import { Link, Redirect } from "react-router-dom";
 import AlertDismissible from "../../components/Alert";
@@ -176,6 +176,7 @@ export default function Register() {
           <form
             onChange={updateOrg}
             onSubmit={handleSubmit}
+            id="formx"
             style={{
               display: "flex",
               flexDirection: "column",
@@ -209,7 +210,11 @@ export default function Register() {
                   </div>
                 ))}
               {aliasAvailableError !== undefined && aliasAvailableError && (
-                <div>{aliasAvailableError}</div>
+                <AlertDismissible
+                  show
+                  content={aliasAvailableError}
+                  variant="error"
+                />
               )}
             </label>
             {/* TODO list of emails */}
@@ -230,7 +235,7 @@ export default function Register() {
             {clientValidError !== undefined && (
               <AlertDismissible show content={clientValidError} />
             )}
-            <Button type="submit">Register</Button>
+            <Button onClick={handleSubmit}>Register</Button>
             {serverValidError !== undefined && <div>{serverValidError}</div>}
             {sending !== undefined && sending && (
               <section {...containerProps}>{indicatorEl}</section>

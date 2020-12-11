@@ -1,6 +1,6 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import { useCallback, useEffect, useState } from "react";
-import {Button} from "antd";
+import { Button } from "antd";
 import { Link, Redirect } from "react-router-dom";
 import Org from "../../models/org";
 import "./index.css";
@@ -106,6 +106,7 @@ export default function Login() {
           <form
             onChange={updateOrg}
             onSubmit={handleSubmit}
+            id={"formx"}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -119,7 +120,7 @@ export default function Login() {
               placeholder="Email or Alias"
             />
             <input type="password" name="password" placeholder="Password" />
-            <Button type="submit">Login</Button>
+            <Button onClick={handleSubmit}>Login</Button>
             {serverValidityErrors !== undefined && (
               <div>
                 {serverValidityErrors.map((x, i) => (
