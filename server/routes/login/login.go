@@ -136,10 +136,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				}
 			}
 
-			log.Println(data)
-			log.Println(method)
-			log.Println(o.Str())
-
 			switch method {
 			case AliasX:
 				o, err = data.FindByAlias()
@@ -172,8 +168,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-
-			log.Println(o.Str())
 
 			if utils.ComparePasswords(o.PasswordHash, data.Password) {
 				// Save org id to cookie

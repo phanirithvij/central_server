@@ -301,7 +301,6 @@ func (o *Organization) NewUpdate(n *Organization) error {
 func (s *OrgSubmission) FindByAlias() (*Organization, error) {
 	o := s.Org()
 	db := o.DB
-	log.Println(o.Str())
 	// https://gorm.io/docs/preload.html#Preload-All
 	tx := db.Preload(clause.Associations).Where("alias = ?", o.Alias).Find(&o)
 	if tx.Error != nil {

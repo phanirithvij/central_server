@@ -101,13 +101,11 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			}
 			o.PasswordHash = utils.Hash(data.Password)
 			log.Println(data)
-			log.Println(o.Str())
 			err = o.SaveReq(c)
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			log.Println(o.Str())
 			session := sessions.DefaultMany(c, "org")
 			session.Set("org-id", o.ID)
 			err = session.Save()

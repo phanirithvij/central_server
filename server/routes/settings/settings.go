@@ -138,8 +138,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			//
 
 			newOrg := data.Org()
-			// log.Println(newOrg.Str())
-			// log.Println(oldOrg.Str())
 			// Allow update only after email verification
 			// TODO multi email verification
 			msgs, err := newOrg.Validate()
@@ -174,7 +172,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				log.Println(err)
 				return
 			}
-			log.Println(oldOrg.Str())
 			c.JSON(http.StatusOK, oldOrg)
 		})
 	}

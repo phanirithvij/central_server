@@ -69,7 +69,6 @@ func Serve(port int, debug bool) {
 	}
 
 	db.Create(o)
-	log.Println(o.Str())
 	// db.Save(o)
 
 	router := gin.Default()
