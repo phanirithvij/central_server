@@ -10,8 +10,9 @@ var DB *gorm.DB
 
 // InitDB initializes the gorm database
 func InitDB(debug bool) {
+	// TODO postgres or sqlite selection from f8
 	var err error
-	DB, err = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	DB, err = gorm.Open(sqlite.Open("data.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
