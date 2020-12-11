@@ -65,6 +65,7 @@ type Email struct {
 	OrganizationID   uint   `gorm:"uniqueindex:org_email_idx"`
 	OrganizationType string `gorm:"uniqueindex:org_email_idx"`
 	Private          bool   `default:"true"`
+	Main             bool   `default:"false"`
 }
 
 // OrgDetails the details of the organization
@@ -88,6 +89,13 @@ func NewOrganization() *Organization {
 	defaults.SetDefaults(o)
 	o.DB = dbm.GetDB()
 	return o
+}
+
+// NewEmail returns a new empty email
+func NewEmail() *Email {
+	e := new(Email)
+	defaults.SetDefaults(e)
+	return e
 }
 
 // NewServer a new server for the organization
@@ -224,7 +232,8 @@ func (o *Organization) ValidateSub(only []string) ([]string, error) {
 // OrgSubmissionPass a submission from the clients
 type OrgSubmissionPass struct {
 	OrgSubmission
-	Password string `json:"password"`
+	Password    string `json:"password"`
+	OldPassword string `json:"oldPassword"`
 }
 
 // OrgSubmission a submission from the clients
@@ -245,6 +254,7 @@ type EmailD struct {
 	Email   string `json:"email"`
 	Private bool   `default:"false" json:"private"`
 	ID      uint   `json:"id"`
+	Main    bool   `json:"main"`
 }
 
 // Find finds the org from db
@@ -274,11 +284,12 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	// alias, ID are readonly so don't update
 	n.Alias = o.Alias
 	n.ID = o.ID
-	log.Println(n.Str())
+	// this is needed for some reason
 	o.Emails = n.Emails
-	log.Println(o.Str())
+	// TODO remove emails if emails are removed?
 	if err := o.DB.Model(&o).
-		// Session(&gorm.Session{FullSaveAssociations: true}).
+		// this feels optional
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Updates(&n).Error; err != nil {
 		log.Println(err)
 		return err
@@ -336,7 +347,11 @@ func (s *OrgSubmission) FindByEmail() (*Organization, error) {
 	tx := db.Model(&Organization{}).
 		Select("`organizations`.`id`, `organizations`.`password_hash`").
 		Joins("LEFT JOIN `emails` ON `emails`.`organization_id` = `organizations`.`id`").
-		Where("`emails`.`email` = ?", s.Emails[0].Email).
+		Where(
+			"`emails`.`email` = ? AND `emails`.`main` = ?",
+			s.Emails[0].Email,
+			true,
+		).
 		Scan(&o)
 	// TODO need one more query anyway to get the full associations
 
@@ -406,6 +421,7 @@ func (s *OrgSubmission) Org() *Organization {
 				Email:   e.Email,
 				Private: e.Private,
 				Model:   gorm.Model{ID: e.ID},
+				Main:    e.Main,
 			},
 		)
 	}
@@ -432,6 +448,7 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 		x.Email = e.Email
 		x.Private = e.Private
 		x.ID = e.ID
+		x.Main = e.Main
 		s.Emails = append(s.Emails, *x)
 	}
 	s.Name = o.Name

@@ -162,6 +162,9 @@ export default function Settings() {
         {emails !== undefined &&
           emails.map((email, index) => (
             <div key={index}>
+              {email.main && (
+                <label htmlFor={`email-${index}`}>Main Email</label>
+              )}
               <input
                 type="text"
                 name={`email-${index}`}

@@ -55,7 +55,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
-	register := router.Group("/register")
+	register := router.Group("/apiOrg/register")
 	{
 		register.OPTIONS("/*_", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
@@ -83,6 +83,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			// Ask after email verification
 			// TODO multi email verification
 			o := data.Org()
+			// set this is as the mail email
+			o.Emails[0].Main = true
 			msgs, err := o.ValidateSub([]string{"Emails", "Alias"})
 			if err != nil {
 				log.Println(err)

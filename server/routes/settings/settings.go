@@ -14,6 +14,7 @@ import (
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/models"
 	"github.com/phanirithvij/central_server/server/routes"
+	"github.com/phanirithvij/central_server/server/utils"
 )
 
 var (
@@ -52,7 +53,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
-	settings := router.Group("/settings")
+	settings := router.Group("/apiOrg/settings")
 	{
 		settings.GET("/", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
@@ -73,7 +74,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			}
 			data.ID = v
 			o, err := data.Find()
-			log.Println(o.Str())
 			if err != nil {
 				c.JSON(http.StatusNotFound, gin.H{
 					"error":    err.Error(),
@@ -103,7 +103,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			// https://stackoverflow.com/a/50370345/8608146
 			// log.Println(c.Request.Header.Get("Cookie"))
 			d := json.NewDecoder(c.Request.Body)
-			data := &models.OrgSubmission{}
+			data := &models.OrgSubmissionPass{}
 			err := d.Decode(&data)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -152,6 +152,23 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
+
+			// TODO if one of them is empty handle error
+			if data.Password != "" && data.OldPassword != "" {
+				// need to update password
+				// if old password matches the provided old pass word
+				if utils.ComparePasswords(oldOrg.PasswordHash, data.OldPassword) {
+					newOrg.PasswordHash = utils.Hash(data.Password)
+				} else {
+					c.JSON(http.StatusForbidden, gin.H{
+						"error":    "Old password does not match",
+						"type":     "login",
+						"messages": []string{"Your password is incorrect"},
+					})
+					return
+				}
+			}
+
 			err = oldOrg.NewUpdate(newOrg)
 			if err != nil {
 				log.Println(err)

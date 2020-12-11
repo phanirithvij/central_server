@@ -61,7 +61,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
-	login := router.Group("/login")
+	login := router.Group("/apiOrg/login")
 	{
 		login.GET("/", func(c *gin.Context) {
 			// Enable CORS for react client when in dev
@@ -196,7 +196,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 		})
 	}
 	routes.RegisterSelf(config.Login)
-	logout := router.Group("/logout")
+	logout := router.Group("/apiOrg/logout")
 	{
 		logout.GET("/", func(c *gin.Context) {
 			// logout will remove session

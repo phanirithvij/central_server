@@ -238,7 +238,7 @@ func newOrg() *models.Organization {
 	// o.OrgID = "org-oror"
 	o.Alias = "oror"
 	o.Emails = []models.Email{
-		{Email: "emaixl@email.emailemail", Private: false},
+		{Email: "emaixl@email.emailemail", Private: false, Main: true},
 		{Email: "email3w@email3.email", Private: true},
 		{Email: "emai2lw@x.email", Private: false},
 		{Email: "emxaxi2lwx@email.", Private: true},
