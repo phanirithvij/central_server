@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/config"
@@ -55,10 +56,13 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	}
 	settings := router.Group("/apiOrg/settings")
 	{
-		settings.GET("/", func(c *gin.Context) {
+		credCors := cors.New(cors.Config{
+			AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+			AllowCredentials: true,
+		})
+
+		settings.GET("/", credCors, func(c *gin.Context) {
 			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
 			// TODO get the currently loggedin orgid
 			// then get it from db
 			session := sessions.DefaultMany(c, "org")
@@ -85,20 +89,16 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			c.JSON(http.StatusOK, o.OrgSubmission())
 		})
 
-		settings.OPTIONS("/", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Methods", "PUT")
-			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
-			c.Header("Access-Control-Allow-Credentials", "true")
-
-			c.Status(http.StatusOK)
+		optsCors := cors.New(cors.Config{
+			AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+			AllowMethods:     []string{"PUT", "GET"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+			AllowCredentials: true,
 		})
+		settings.OPTIONS("/", optsCors)
 
-		settings.PUT("/", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
+		// Enable CORS for react client when in dev
+		settings.PUT("/", credCors, func(c *gin.Context) {
 			// cookies won't show in react devtools
 			// https://stackoverflow.com/a/50370345/8608146
 			// log.Println(c.Request.Header.Get("Cookie"))

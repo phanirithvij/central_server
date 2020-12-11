@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/config"
@@ -57,19 +58,21 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	}
 	register := router.Group("/apiOrg/register")
 	{
-		register.OPTIONS("/*_", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Methods", "POST")
-			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
-			c.Header("Access-Control-Allow-Credentials", "true")
-
-			c.Status(http.StatusOK)
+		optsCors := cors.New(cors.Config{
+			AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+			AllowMethods:     []string{"POST"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+			AllowCredentials: true,
 		})
-		register.POST("/", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
+		register.OPTIONS("/*_", optsCors)
+
+		credCors := cors.New(cors.Config{
+			AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+			AllowCredentials: true,
+		})
+
+		// Enable CORS for react client when in dev
+		register.POST("/", credCors, func(c *gin.Context) {
 			d := json.NewDecoder(c.Request.Body)
 			data := &models.OrgSubmissionPass{}
 			err := d.Decode(&data)
@@ -120,8 +123,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			c.JSON(http.StatusCreated, o)
 		})
 		// check if alias exists in database
-		register.GET("/alias/:alias", func(c *gin.Context) {
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+		register.GET("/alias/:alias", credCors, func(c *gin.Context) {
 			type alias struct {
 				Alias string
 			}

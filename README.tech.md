@@ -29,6 +29,16 @@ Bash completions also work for linux systems
 - [ ] Aliases cannot be valid emails write that constraint when validating
   - Because if so then the login method will fail if alias is detected as an email
   - Someone can accidentally create an alias which is someone elses' email and we will cry that day (so remove this bad design)
+- [ ] Gorm association updates
+  - https://github.com/go-gorm/gorm/issues/3487
+- [ ] Password reset
+  - https://stackoverflow.com/questions/1102781/best-way-for-a-forgot-password-implementation
+  - https://www.troyhunt.com/everything-you-ever-wanted-to-know/
+  - https://intersog.com/blog/how-to-write-a-custom-url-shortener-using-golang-and-redis/
+- [ ] Cleanup DB periodically
+  - Delete all expired things like password reset requests  eg. every 3 hrs
+  - Delete from DB very old objects by deleted_at time like 2 months
+  - https://codereview.stackexchange.com/questions/116066/executing-periodic-tasks
 
 ## Dev notes
 

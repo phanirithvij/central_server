@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/config"
@@ -61,12 +62,16 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	if !templatesInitDone {
 		log.Fatalln(errors.New(usage))
 	}
+	credCors := cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+		AllowCredentials: true,
+	})
 	login := router.Group("/apiOrg/login")
 	{
-		login.GET("/", func(c *gin.Context) {
+		login.GET("/", credCors, func(c *gin.Context) {
 			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
+			// cors.Cors(c, cors.Creds(true))
+
 			// TODO get the currently loggedin orgid
 			// then get it from db
 			session := sessions.DefaultMany(c, "org")
@@ -85,19 +90,18 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				"messages": []string{"Authorized"},
 			})
 		})
-		login.OPTIONS("/*_", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Methods", "POST, GET")
-			c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Accept")
-			c.Header("Access-Control-Allow-Credentials", "true")
 
-			c.Status(http.StatusOK)
-		})
-		login.POST("/", func(c *gin.Context) {
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
+		optionsCors := (cors.New(cors.Config{
+			AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+			AllowMethods:     []string{"POST", "GET"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+			AllowCredentials: true,
+		}))
+
+		login.OPTIONS("/*_", optionsCors)
+
+		// Enable CORS for react client when in dev
+		login.POST("/", credCors, func(c *gin.Context) {
 			d := json.NewDecoder(c.Request.Body)
 			sub := &loginSubmission{}
 			err := d.Decode(&sub)
@@ -198,11 +202,9 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 	routes.RegisterSelf(config.Login)
 	logout := router.Group("/apiOrg/logout")
 	{
-		logout.GET("/", func(c *gin.Context) {
+		// Enable CORS for react client when in dev
+		logout.GET("/", credCors, func(c *gin.Context) {
 			// logout will remove session
-			// Enable CORS for react client when in dev
-			c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-			c.Header("Access-Control-Allow-Credentials", "true")
 			session := sessions.DefaultMany(c, "org")
 			_, ok := session.Get("org-id").(uint)
 			if !ok {
