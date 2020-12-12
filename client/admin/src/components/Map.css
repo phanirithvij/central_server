@@ -1,0 +1,76 @@
+.map {
+    height: 54vh;
+    height: 54vh;
+    width: 62vw;
+    min-height: 300px;
+}
+
+.mapwrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.leaflet-control-geosearch .results>* {
+    text-align: left;
+}
+
+.locBtn {
+    background-color: #b4b3b3;
+    border: 4px solid rgb(0 0 0);
+    height: 15px;
+    border-radius: 50%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    width: 15px;
+}
+
+.leaflet-popup-content {
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.popup-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popup-item .iconbtn:hover {
+    background: #0000000a;
+}
+
+.leaflet-popup-pane {
+    transform: translate(1px, -41px);
+}
+
+.svgicon {
+    width: 18px;
+    height: 18px;
+    transform: translate(1px, -1px);
+}
+
+.popup-item .iconbtn {
+    max-height: 55px;
+    display: flex;
+    padding: 4px;
+    border: 2px solid #0000003b;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.center-flex-control:hover {
+    background-color: #f3f5f7;
+}
+
+.center-flex-control {
+    background-color: white;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

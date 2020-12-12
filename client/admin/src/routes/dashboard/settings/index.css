@@ -1,0 +1,22 @@
+/* .mapicon.open:hover { */
+.mapicon:hover {
+    background-color: #c0c0c033;
+}
+
+.mapicon {
+    width: 67px;
+    height: 35px;
+    border: 3px solid #8d757591;
+    border-radius: 39px;
+    cursor: pointer;
+}
+
+.dynamic-delete-button {
+    margin: 0 8px;
+    cursor: pointer;
+    position: relative;
+    top: 4px;
+    font-size: 24px;
+    color: #999;
+    transition: all 0.3s;
+}

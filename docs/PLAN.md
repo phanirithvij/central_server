@@ -106,3 +106,33 @@ Incident
   - Description string //html or markdown string
   - Status //Resolved|Pending
   - Time time.Time //Current time
+
+## DEADLINE PLAN
+
+> TODAY
+
+- [ ] Admin ui
+  - [ ] single admin
+  - [ ] simple auth
+
+- [ ] Dashboard
+  - [ ] Orgs
+  - [ ] Delete or Suspend orgs
+    - [ ] Just gorm delete
+    - [ ] Can undelete if wanted
+    - [ ] Delete reason -> [Deletd by Organization, Banned, Suspended]
+
+> TOMMOROW
+
+- [ ] Org server url connect to central server
+- [ ] Dynamic DB split and serve to clients
+- [ ] Client can to login via central server
+
+  - [ ] Server can check if client is authenticated in central server
+    - [ ] If not show the org server's login page
+      - [ ] Send these credentials to central server
+
+- [ ] Client sees list of available orgs/datasets
+- [ ] Client uploads to or server
+
+- [ ] Sentence based mapping and analytics
