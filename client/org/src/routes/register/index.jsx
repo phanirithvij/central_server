@@ -1,7 +1,8 @@
 import { Puff, useLoading } from "@agney/react-loading";
+import { UserOutlined } from "@ant-design/icons";
+import { Button, Col, Form, Input, Row } from "antd";
 import debounce from "debounce";
 import { useEffect, useState } from "react";
-import { Button } from "antd";
 import SVG from "react-inlinesvg";
 import { Link, Redirect } from "react-router-dom";
 import AlertDismissible from "../../components/Alert";
@@ -13,6 +14,7 @@ import svgok from "./ok.svg";
 
 export default function Register() {
   const [org] = useState(new Org());
+  const [form] = Form.useForm();
   const [passValid, setPassValid] = useState(false);
   const [pass, setPass] = useState();
   const [conf, setConf] = useState();
@@ -98,6 +100,7 @@ export default function Register() {
         });
       } else {
         // TODO show alias > 3 digits message
+        setAliasAvailable(undefined);
         setAliasAvailableError("Alias must be 4 or more characters long");
       }
     },
@@ -106,23 +109,31 @@ export default function Register() {
     false
   );
 
+  let stillMounted = { value: false };
   useEffect(() => {
-    org
-      .loggedin()
-      .then((x) => {
-        // https://stackoverflow.com/a/54118576/8608146
-        if (x.status !== 200) {
-          throw new Error("Not logged in");
-        }
-        return x.json();
-      })
-      .then((x) => {
-        setLoggedin(true);
-      })
-      .catch(() => {
-        setLoggedin(false);
-      });
-  }, [org]);
+    stillMounted.value = true;
+    return () => (stillMounted.value = false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (stillMounted.value)
+      org
+        .loggedin()
+        .then((x) => {
+          // https://stackoverflow.com/a/54118576/8608146
+          if (x.status !== 200) {
+            throw new Error("Not logged in");
+          }
+          return x.json();
+        })
+        .then((x) => {
+          if (stillMounted.value) setLoggedin(true);
+        })
+        .catch(() => {
+          if (stillMounted.value) setLoggedin(false);
+        });
+  }, [org, stillMounted.value]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -168,93 +179,139 @@ export default function Register() {
       });
   };
   return (
-    <div>
-      <h2>Register</h2>
-      <Link to="/account/login">Login</Link>
-      {loggedin !== undefined ? (
-        !loggedin ? (
-          <form
-            onChange={updateOrg}
-            onSubmit={handleSubmit}
-            id="formx"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <input
-              type="text"
-              name="alias"
-              onKeyUp={checkAliasAvaliable}
-              placeholder="Alias"
-            />
-            <label htmlFor="alias">
-              {aliasAvailable !== undefined &&
-                (aliasAvailable ? (
-                  <div>
-                    <SVG className="svgicon" title={"Available"} src={svgok}>
-                      <div>✅</div>
-                    </SVG>
-                  </div>
-                ) : (
-                  <div>
-                    <SVG
-                      className="svgicon"
-                      title={`${org.$alias} Not available`}
-                      src={svgnot}
+    <>
+      <Row>
+        <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
+        <Col xs={20} sm={16} md={12} lg={10} xl={8}>
+          <div>
+            <h2>Register</h2>
+            <Link to="/account/login">Login</Link>
+            {loggedin !== undefined ? (
+              !loggedin ? (
+                <>
+                  <Form
+                    form={form}
+                    onChange={updateOrg}
+                    id="formx"
+                    style={{ maxWidth: "600px" }}
+                  >
+                    <Form.Item>
+                      <Input
+                        placeholder="Alias"
+                        onKeyUp={checkAliasAvaliable}
+                        name="alias"
+                      />
+                      <label htmlFor="alias">
+                        {aliasAvailable !== undefined && (
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <SVG
+                              className="svgicon"
+                              title={"Available"}
+                              src={aliasAvailable ? svgok : svgnot}
+                            >
+                              <div>{aliasAvailable ? "✅" : "❌"} </div>
+                            </SVG>
+                            {org.$alias} is{" "}
+                            {aliasAvailable ? "Available" : "Taken"}
+                          </div>
+                        )}
+                        {aliasAvailableError !== undefined &&
+                          aliasAvailableError && (
+                            <AlertDismissible
+                              show
+                              content={aliasAvailableError}
+                              variant="error"
+                            />
+                          )}
+                      </label>
+                    </Form.Item>
+                    <Form.Item>
+                      {/* TODO list of emails */}
+                      {/* TODO private property to emails */}{" "}
+                      <Input
+                        name="email-0"
+                        prefix={<UserOutlined />}
+                        placeholder="Primary Email"
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input your password!",
+                        },
+                      ]}
                     >
-                      <div>❌</div>
-                    </SVG>
-                  </div>
-                ))}
-              {aliasAvailableError !== undefined && aliasAvailableError && (
+                      <Input.Password placeholder="Password" name="password" />
+                    </Form.Item>
+                    <Form.Item
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input your password!",
+                        },
+                      ]}
+                    >
+                      <Input.Password
+                        placeholder="Confirm Password"
+                        name="confirm"
+                      />
+                    </Form.Item>
+                    <label htmlFor="confirm">
+                      {!passValid &&
+                        pass &&
+                        conf &&
+                        `Passwords don't match ${pass} , ${conf}`}
+                    </label>
+                    <Form.Item>
+                      <Button type="primary" onClick={handleSubmit}>
+                        Register
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                  {clientValidError !== undefined && (
+                    <AlertDismissible show content={clientValidError} />
+                  )}
+                  {serverValidError !== undefined && (
+                    <div>{serverValidError}</div>
+                  )}
+                  {sending !== undefined && sending && (
+                    <section {...containerProps}>{indicatorEl}</section>
+                  )}
+                  {done !== undefined && done && (
+                    <div>
+                      <Redirect to={"/dashboard/settings"} />
+                    </div>
+                  )}
+                </>
+              ) : (
                 <AlertDismissible
-                  show
-                  content={aliasAvailableError}
-                  variant="error"
+                  variant="info"
+                  content={
+                    <>
+                      You're already loggedin
+                      <Logout
+                        org={org}
+                        redirect="/account/login"
+                        timeoutDur={0}
+                      />
+                    </>
+                  }
                 />
-              )}
-            </label>
-            {/* TODO list of emails */}
-            {/* TODO private property to emails */}
-            <input type="text" name="email-0" placeholder="Email" />
-            <input type="password" name="password" placeholder="Password" />
-            <input
-              type="password"
-              name="confirm"
-              placeholder="Confirm password"
-            />
-            <label htmlFor="confirm">
-              {!passValid &&
-                pass &&
-                conf &&
-                `Passwords don't match ${pass} , ${conf}`}
-            </label>
-            {clientValidError !== undefined && (
-              <AlertDismissible show content={clientValidError} />
-            )}
-            <Button onClick={handleSubmit}>Register</Button>
-            {serverValidError !== undefined && <div>{serverValidError}</div>}
-            {sending !== undefined && sending && (
+              )
+            ) : (
               <section {...containerProps}>{indicatorEl}</section>
             )}
-            {done !== undefined && done && (
-              <div>
-                <Redirect to={"/dashboard"} />
-              </div>
-            )}
-          </form>
-        ) : (
-          <div>
-            You're already loggedin
-            <Logout org={org} redirect="/login" />
           </div>
-        )
-      ) : (
-        <section {...containerProps}>{indicatorEl}</section>
-      )}
-    </div>
+        </Col>
+        <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
+      </Row>
+    </>
   );
 }

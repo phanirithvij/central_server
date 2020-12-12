@@ -52,11 +52,9 @@ function UseBreakpointDemo() {
 
 export default function App() {
   const screens = useBreakpoint();
-  // TODO sm -> collapse, xs -> hide, md> => show
+  // sm -> collapse default, xs -> hide, md> => show
   const [collapsed, setCollapsed] = useState(screens.sm && !screens.md);
-  console.log(collapsed);
   useEffect(() => {
-    console.log(screens);
     setCollapsed(screens.sm && !screens.md);
   }, [screens]);
   return (
@@ -72,7 +70,6 @@ export default function App() {
               zIndex: 2,
             }}
           >
-            {console.log(screens.xs && !screens.md, collapsed)}
             {!screens.xs && (
               <SideNavBar collapsed={collapsed} setCollapsed={setCollapsed} />
             )}
@@ -81,9 +78,11 @@ export default function App() {
           <Layout>
             <Layout
               style={{
-                padding: "0 24px 24px",
                 marginLeft: !screens.xs ? (collapsed ? 80 : 200) : 0,
                 minHeight: "100vh",
+                paddingLeft: !screens.xs ? 24 : 10,
+                paddingRight: !screens.xs ? 24 : 10,
+                paddingBottom: 24,
                 // top navbar height
                 paddingTop: "66px",
               }}
@@ -92,13 +91,12 @@ export default function App() {
               <Content
                 className="site-layout-background"
                 style={{
-                  padding: 24,
+                  padding: !screens.xs ? 24 : 10,
                   margin: 0,
                   minHeight: 280,
                 }}
               >
                 <div className="App">
-                  <DevBar />
                   <Suspense
                     fallback={
                       <div style={{ minHeight: "100vh" }}>Loading...</div>
@@ -125,6 +123,7 @@ export default function App() {
                     </Switch>
                   </Suspense>
                 </div>
+                <DevBar />
               </Content>
             </Layout>
           </Layout>
@@ -136,7 +135,7 @@ export default function App() {
 
 function DevBar() {
   return (
-    <>
+    <div className="devbar">
       {process.env.NODE_ENV !== "production" && (
         <AlertDismissible
           content={
@@ -153,7 +152,7 @@ function DevBar() {
           variant="info"
         />
       )}
-    </>
+    </div>
   );
 }
 

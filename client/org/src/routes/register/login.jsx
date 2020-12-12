@@ -52,23 +52,31 @@ export default function Login() {
     updateState({});
   }, []);
 
+  let stillMounted = { value: false };
   useEffect(() => {
-    org
-      .loggedin()
-      .then((x) => {
-        // https://stackoverflow.com/a/54118576/8608146
-        if (x.status !== 200) {
-          throw new Error("Not logged in");
-        }
-        return x.json();
-      })
-      .then(() => {
-        setLoggedin(true);
-      })
-      .catch(() => {
-        setLoggedin(false);
-      });
-  }, [org, reload]);
+    stillMounted.value = true;
+    return () => (stillMounted.value = false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (stillMounted.value)
+      org
+        .loggedin()
+        .then((x) => {
+          // https://stackoverflow.com/a/54118576/8608146
+          if (x.status !== 200) {
+            throw new Error("Not logged in");
+          }
+          return x.json();
+        })
+        .then(() => {
+          if (stillMounted.value) setLoggedin(true);
+        })
+        .catch(() => {
+          if (stillMounted.value) setLoggedin(false);
+        });
+  }, [org, reload, stillMounted.value]);
 
   const handleSubmit = (e) => {
     e.preventDefault();

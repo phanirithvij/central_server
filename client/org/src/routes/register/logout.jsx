@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import {Button} from "antd";
-import { Redirect } from "react-router-dom";
+import { Button } from "antd";
+import { Link, Redirect } from "react-router-dom";
 import Org from "../../models/org";
 
 // Must set timeoutDur={0} to redirect immediately
@@ -84,7 +84,8 @@ export default function Logout(props) {
             </>
           ) : (
             <p>
-              Redirecting to {props.redirect} in {waitT} seconds
+              Redirecting to <Link to={props.redirect}>{props.redirect}</Link>
+              in {waitT} seconds
             </p>
           )}
         </div>

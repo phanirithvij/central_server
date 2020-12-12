@@ -26,3 +26,14 @@
 .site-layout-background {
   background: #fff;
 }
+
+.devbar {
+  /* position: fixed; */
+  margin: 0 auto;
+  width: 70%;
+  padding-top: 20px;
+  min-width: 218px;
+  max-width: 76vw;
+  z-index: 8;
+  bottom: 40px;
+}

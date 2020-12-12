@@ -1,3 +1,4 @@
+import { Puff, useLoading } from "@agney/react-loading";
 import {
   DesktopOutlined,
   HomeOutlined,
@@ -12,6 +13,7 @@ import {
 import { Layout, Menu } from "antd";
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import Org from "../models/org";
 
 const { SubMenu } = Menu;
 const { Sider } = Layout;
@@ -52,9 +54,37 @@ export default function SideNavBar(props) {
     </Sider>
   );
 }
+
 export function NavBarComponet(props) {
   // https://stackoverflow.com/a/60736742/8608146
   const location = useLocation();
+  const { containerProps, indicatorEl } = useLoading({
+    loading: true,
+    indicator: <Puff width="20" />,
+  });
+  const [loggedin, setLoggedin] = useState();
+  const [reload, setReload] = useState(false);
+
+  const [org] = useState(new Org());
+
+  useEffect(() => {
+    org
+      .loggedin()
+      .then((x) => {
+        // https://stackoverflow.com/a/54118576/8608146
+        if (x.status !== 200) {
+          throw new Error("Not logged in");
+        }
+        return x.json();
+      })
+      .then((x) => {
+        setLoggedin(true);
+      })
+      .catch(() => {
+        setLoggedin(false);
+      });
+  }, [org, reload]);
+
   return (
     <Menu
       selectedKeys={[location.pathname]}
@@ -87,16 +117,26 @@ export function NavBarComponet(props) {
           style={{ float: "right" }}
           icon={<UserOutlined />}
           title="Account"
+          onTitleClick={() => setReload(!reload)}
         >
-          <Menu.Item key="/account/register" icon={<UserAddOutlined />}>
-            <Link to={"/account/register"}>Register</Link>
-          </Menu.Item>
-          <Menu.Item key="/account/login" icon={<LoginOutlined />}>
-            <Link to={"/account/login"}>Login</Link>
-          </Menu.Item>
-          <Menu.Item key="/logout" icon={<LogoutOutlined />}>
-            <Link to={"/logout"}>Logout</Link>
-          </Menu.Item>
+          {loggedin !== undefined ? (
+            !loggedin ? (
+              <>
+                <Menu.Item key="/account/register" icon={<UserAddOutlined />}>
+                  <Link to={"/account/register"}>Register</Link>
+                </Menu.Item>
+                <Menu.Item key="/account/login" icon={<LoginOutlined />}>
+                  <Link to={"/account/login"}>Login</Link>
+                </Menu.Item>
+              </>
+            ) : (
+              <Menu.Item key="/logout" icon={<LogoutOutlined />}>
+                <Link to={"/logout"}>Logout</Link>
+              </Menu.Item>
+            )
+          ) : (
+            <section {...containerProps}>{indicatorEl}</section>
+          )}
         </SubMenu>
       )}
     </Menu>

@@ -184,11 +184,7 @@ const LocationMarker = React.forwardRef((props, ref) => {
               interactive={true}
               arrow={false}
               delay={[100, 200]}
-              content={
-                <>
-                  Use <p>{label}</p> as Address
-                </>
-              }
+              content={"Use as Address"}
             >
               <i>
                 <SVG className="svgicon" src={copy}>
