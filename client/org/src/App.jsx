@@ -1,8 +1,3 @@
-import {
-  LaptopOutlined,
-  NotificationOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
 // const Home = lazy(() => import("./routes/home"));
 // const Dashboard = lazy(() => import("./routes/dashboard"));
 // const Register = lazy(() => import("./routes/register"));
@@ -12,20 +7,27 @@ import {
 //     default: module.Login,
 //   }))
 // );
-import { Breadcrumb, Layout, Menu } from "antd";
+import { Breadcrumb, Layout } from "antd";
 import "antd/dist/antd.css"; // or 'antd/dist/antd.less'
 import React, { Suspense, useState } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Link,
+  Redirect,
+  Route,
+  Switch,
+  useLocation,
+} from "react-router-dom";
 import "./App.css";
 import NavBar from "./components/Nav";
 import Dashboard from "./routes/dashboard";
 import Home from "./routes/home";
 import Register from "./routes/register";
+import Account from "./routes/register/account";
 import Login from "./routes/register/login";
 import Logout from "./routes/register/logout";
 import ServerBaseURL from "./utils/server";
 
-const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 
 console.log("ServerBaseURL", ServerBaseURL);
@@ -80,11 +82,7 @@ export default function App() {
                 paddingTop: "66px",
               }}
             >
-              <Breadcrumb style={{ margin: "16px 0" }}>
-                <Breadcrumb.Item>Home</Breadcrumb.Item>
-                <Breadcrumb.Item>List</Breadcrumb.Item>
-                <Breadcrumb.Item>App</Breadcrumb.Item>
-              </Breadcrumb>
+              <BreadcrumbBar />
               <Content
                 className="site-layout-background"
                 style={{
@@ -101,11 +99,20 @@ export default function App() {
                   >
                     <Switch>
                       <Route exact path="/" component={Home} />
-                      <Route path="/register" component={Register} />
-                      <Route path="/login" component={Login} />
+                      <Route exact path="/account" component={Account} />
+                      <Route
+                        path="/login"
+                        render={() => <Redirect to={"/account/login"} />}
+                      />
+                      <Route
+                        path="/register"
+                        render={() => <Redirect to={"/account/register"} />}
+                      />
+                      <Route path="/account/register" component={Register} />
+                      <Route path="/account/login" component={Login} />
                       <Route
                         path="/logout"
-                        render={() => <Logout redirect={"/login"} />}
+                        render={() => <Logout redirect={"/account/login"} />}
                       />
                       <Route path="/dashboard" component={Dashboard} />
                     </Switch>
@@ -118,4 +125,31 @@ export default function App() {
       </Router>
     </>
   );
+}
+
+function BreadcrumbBar() {
+  const location = useLocation();
+  const parts = location.pathname.split("/");
+  return (
+    <Breadcrumb style={{ margin: "16px 0" }}>
+      {/*
+        first will be empty as eg:
+        /dashboard/activity => ['','dashboard','activity']
+      */}
+      {parts.slice(1).map((x, i) => (
+        <Breadcrumb.Item key={i}>
+          {/* parts still has "" at index 0 so i+2 brecause slice needs i+1 */}
+          <Link to={parts.slice(0, i + 2).join("/")}>
+            {capitalize(x === "" ? "home" : x)}
+          </Link>
+        </Breadcrumb.Item>
+      ))}
+    </Breadcrumb>
+  );
+}
+
+// https://stackoverflow.com/a/11524251/8608146
+// https://stackoverflow.com/a/7224605/8608146
+function capitalize(s) {
+  return s && s[0].toUpperCase() + s.slice(1);
 }

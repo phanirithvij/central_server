@@ -100,7 +100,7 @@ export default function Login() {
   return (
     <div>
       <h2>Login</h2>
-      <Link to="/register">Register</Link>
+      <Link to="/account/register">Register</Link>
       {loggedin !== undefined ? (
         !loggedin ? (
           <form
@@ -142,7 +142,7 @@ export default function Login() {
             You're already loggedin
             <Logout
               org={org}
-              redirect="/login"
+              redirect="/account/login"
               timeoutDur={0}
               callback={reloadPage}
             />

@@ -170,7 +170,7 @@ export default function Register() {
   return (
     <div>
       <h2>Register</h2>
-      <Link to="/login">Login</Link>
+      <Link to="/account/login">Login</Link>
       {loggedin !== undefined ? (
         !loggedin ? (
           <form

@@ -37,7 +37,7 @@ Bash completions also work for linux systems
   - https://www.troyhunt.com/everything-you-ever-wanted-to-know/
   - https://intersog.com/blog/how-to-write-a-custom-url-shortener-using-golang-and-redis/
 - [ ] Cleanup DB periodically
-  - Delete all expired things like password reset requests  eg. every 3 hrs
+  - Delete all expired things like password reset requests eg. every 3 hrs
   - Delete from DB very old objects by deleted_at time like 2 months
   - https://codereview.stackexchange.com/questions/116066/executing-periodic-tasks
 - [ ] Rate limit every endpoint
@@ -142,7 +142,8 @@ Public views
 /privacy
 /terms
 /org                    - Default homepage for public (REACT)
-  /register               - Organization register & login
+  /account/register         - Organization register
+  /account/login            - Organization login
   /dashboard          - Organization Dashboard
     /activity             - Organization activity
 /docs                   - Documentation
