@@ -2,20 +2,57 @@ import {
   DesktopOutlined,
   HomeOutlined,
   LoginOutlined,
+  LogoutOutlined,
   PieChartOutlined,
   ProfileOutlined,
   SettingOutlined,
   UserAddOutlined,
   UserOutlined,
-  LogoutOutlined,
 } from "@ant-design/icons";
-import { Menu } from "antd";
-import React from "react";
+import { Layout, Menu } from "antd";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const { SubMenu } = Menu;
+const { Sider } = Layout;
 
-export default function NavBar(props) {
+export default function SideNavBar(props) {
+  // const collapsed = props.collapsed;
+  const [collapsed, setCollapsed] = useState(props.collapsed);
+
+  const toggleCollapse = () => {
+    props.setCollapsed?.(!collapsed);
+  };
+
+  useEffect(() => {
+    setCollapsed(props.collapsed);
+  }, [props.collapsed]);
+
+  return (
+    <Sider
+      // breakpoint="sm"
+      // collapsedWidth="0"
+      collapsible
+      onCollapse={toggleCollapse}
+      collapsed={collapsed}
+      style={{
+        overflow: "auto",
+        height: "100vh",
+        position: "fixed",
+        left: 0,
+        width: 200,
+        zIndex: 3,
+      }}
+      className="site-layout-background"
+    >
+      <NavBarComponet
+        style={{ height: "100%", borderRight: 0 }}
+        mode={"inline"}
+      />
+    </Sider>
+  );
+}
+export function NavBarComponet(props) {
   // https://stackoverflow.com/a/60736742/8608146
   const location = useLocation();
   return (
@@ -62,16 +99,6 @@ export default function NavBar(props) {
           </Menu.Item>
         </SubMenu>
       )}
-      {/* {props.mode === "horizontal" && process.env.NODE_ENV !== "production" && (
-        // https://stackoverflow.com/a/50883195/8608146
-        <Menu.Item key="" style={{ float: "right" }}>
-          <div>
-            {window.location.port === "9090"
-              ? "Development: Server rendered assets"
-              : "Development: React client"}
-          </div>
-        </Menu.Item>
-      )} */}
     </Menu>
   );
 }

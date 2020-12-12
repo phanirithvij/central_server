@@ -1,14 +1,19 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "antd";
+import { Button, Form } from "antd";
+import { Row, Col } from "antd";
 import { Link, Redirect } from "react-router-dom";
 import Org from "../../models/org";
 import "./index.css";
 import Logout from "./logout";
+import { Input } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import AlertDismissible from "../../components/Alert";
 
 export default function Login() {
   // Org is the API methods provider as well as store
   const [org] = useState(new Org());
+  const [form] = Form.useForm();
 
   // Used to track if logged in or not
   const [loggedin, setLoggedin] = useState();
@@ -33,6 +38,7 @@ export default function Login() {
       org["emailOrAlias"](e.target.value);
     } else {
       // set name = value
+      console.log(e.target.name, e.target.value);
       org[e.target.name](e.target.value);
     }
   };
@@ -98,59 +104,86 @@ export default function Login() {
       });
   };
   return (
-    <div>
-      <h2>Login</h2>
-      <Link to="/account/register">Register</Link>
-      {loggedin !== undefined ? (
-        !loggedin ? (
-          <form
-            onChange={updateOrg}
-            onSubmit={handleSubmit}
-            id={"formx"}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <input
-              type="text"
-              name="email-alias"
-              placeholder="Email or Alias"
-            />
-            <input type="password" name="password" placeholder="Password" />
-            <Button onClick={handleSubmit}>Login</Button>
-            {serverValidityErrors !== undefined && (
-              <div>
-                {serverValidityErrors.map((x, i) => (
-                  <p key={i}>{x}</p>
-                ))}
-              </div>
-            )}
-            {sending !== undefined && sending && (
+    <>
+      <Row>
+        <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
+        <Col xs={20} sm={16} md={12} lg={10} xl={8}>
+          <div style={{ maxWidth: 700 }}>
+            <h2>Login</h2>
+            <Link to="/account/register">Register</Link>
+            {loggedin !== undefined ? (
+              !loggedin ? (
+                <>
+                  <Form
+                    form={form}
+                    onChange={updateOrg}
+                    id="formx"
+                    style={{ maxWidth: "600px" }}
+                  >
+                    <Form.Item>
+                      <Input
+                        placeholder="Email or Alias"
+                        name="email-alias"
+                        prefix={<UserOutlined />}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      rules={[
+                        {
+                          required: true,
+                          message: "Please input your password!",
+                        },
+                      ]}
+                    >
+                      <Input.Password placeholder="Password" name="password" />
+                    </Form.Item>
+                    <Form.Item>
+                      <Button type="primary" onClick={handleSubmit}>
+                        Login
+                      </Button>
+                    </Form.Item>
+                  </Form>
+
+                  {serverValidityErrors !== undefined && (
+                    <AlertDismissible
+                      variant="error"
+                      content={serverValidityErrors.map((x, i) => (
+                        <p key={i}>{x}</p>
+                      ))}
+                    />
+                  )}
+                  {sending !== undefined && sending && (
+                    <section {...containerProps}>{loaderSpinner}</section>
+                  )}
+                  {done !== undefined && done && (
+                    <div>
+                      <Redirect to={"/dashboard"} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <AlertDismissible
+                  variant="info"
+                  content={
+                    <>
+                      You're already loggedin
+                      <Logout
+                        org={org}
+                        redirect="/account/login"
+                        timeoutDur={0}
+                        callback={reloadPage}
+                      />
+                    </>
+                  }
+                />
+              )
+            ) : (
               <section {...containerProps}>{loaderSpinner}</section>
             )}
-            {done !== undefined && done && (
-              <div>
-                <Redirect to={"/dashboard"} />
-              </div>
-            )}
-          </form>
-        ) : (
-          <div>
-            You're already loggedin
-            <Logout
-              org={org}
-              redirect="/account/login"
-              timeoutDur={0}
-              callback={reloadPage}
-            />
           </div>
-        )
-      ) : (
-        <section {...containerProps}>{loaderSpinner}</section>
-      )}
-    </div>
+        </Col>
+        <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
+      </Row>
+    </>
   );
 }
