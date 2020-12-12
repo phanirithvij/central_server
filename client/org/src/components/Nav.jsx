@@ -7,6 +7,7 @@ import {
   SettingOutlined,
   UserAddOutlined,
   UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import React from "react";
@@ -19,7 +20,7 @@ export default function NavBar(props) {
   const location = useLocation();
   return (
     <Menu
-      defaultSelectedKeys={[location.pathname]}
+      selectedKeys={[location.pathname]}
       mode={props.mode}
       style={{ height: "100%" }}
       theme="dark"
@@ -30,8 +31,8 @@ export default function NavBar(props) {
         </Menu.Item>
       )}
       <SubMenu key="/dashboard" icon={<DesktopOutlined />} title="Dashboard">
-        <Menu.Item key="/dashboard/" icon={<DesktopOutlined />}>
-          <Link to={"/dashboard/"}>Home</Link>
+        <Menu.Item key="/dashboard" icon={<DesktopOutlined />}>
+          <Link to={"/dashboard"}>Home</Link>
         </Menu.Item>
         <Menu.Item key="/dashboard/activity" icon={<PieChartOutlined />}>
           <Link to={"/dashboard/activity"}>Activity</Link>
@@ -55,6 +56,9 @@ export default function NavBar(props) {
           </Menu.Item>
           <Menu.Item key="/account/login" icon={<LoginOutlined />}>
             <Link to={"/account/login"}>Login</Link>
+          </Menu.Item>
+          <Menu.Item key="/logout" icon={<LogoutOutlined />}>
+            <Link to={"/logout"}>Logout</Link>
           </Menu.Item>
         </SubMenu>
       )}

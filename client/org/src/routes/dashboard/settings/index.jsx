@@ -9,6 +9,7 @@ import svgopen from "./map.svg";
 import svgclose from "./mapclose.svg";
 import AlertDismissible from "../../../components/Alert";
 import { Button } from "antd";
+import { Link } from "react-router-dom";
 
 // Must be lazy for it is ~ 1MB, gziped 200 KB
 const Map = lazy(() => import("../../../components/Map"));
@@ -329,7 +330,16 @@ export default function Settings() {
         </div>
       )}
       {serverValidError !== undefined && (
-        <AlertDismissible show content={serverValidError} variant="error" />
+        <AlertDismissible
+          show
+          header={serverValidError}
+          content={
+              <Button>
+                <Link to={"/account/login"}>Login</Link>
+              </Button>
+          }
+          variant="error"
+        />
       )}
     </div>
   );
