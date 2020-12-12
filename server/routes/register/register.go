@@ -87,7 +87,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			// TODO multi email verification
 			o := data.Org()
 			// set this is as the mail email
-			o.Emails[0].Main = true
+			True := true
+			o.Emails[0].Main = &True
 			msgs, err := o.ValidateSub([]string{"Emails", "Alias"})
 			if err != nil {
 				log.Println(err)

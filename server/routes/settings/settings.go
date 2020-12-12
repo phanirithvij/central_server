@@ -124,6 +124,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				return
 			}
 			data.ID = v
+			log.Println(*data)
 			oldOrg, err := data.Find()
 			if err != nil {
 				log.Println(err)
@@ -168,6 +169,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			}
 
 			err = oldOrg.NewUpdate(newOrg)
+			log.Println(oldOrg.Str())
+			log.Println(newOrg.Str())
 			if err != nil {
 				// TODO more descriptive error messages here
 				log.Println(err)

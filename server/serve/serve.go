@@ -231,19 +231,32 @@ func registerTemplates(router *gin.Engine) {
 	router.SetHTMLTemplate(t)
 }
 
+// True true pointer
+func True() *bool {
+	True := true
+	return &True
+}
+
+// False False pointer
+func False() *bool {
+	False := false
+	return &False
+}
+
 func newOrg() *models.Organization {
 	o := models.NewOrganization()
 	o.PasswordHash = utils.Hash("oror")
 	// o.OrgID = "org-oror"
+
 	o.Alias = "oror"
 	o.Emails = []models.Email{
-		{Email: "emaixl@email.emailemail", Private: false, Main: true},
-		{Email: "email3w@email3.email", Private: true},
-		{Email: "emai2lw@x.email", Private: false},
-		{Email: "emxaxi2lwx@email.", Private: true},
-		{Email: "emxaxilwx@xxemail.email", Private: false},
-		{Email: "emailwxxw@exmxail.email", Private: true},
-		{Email: "emailw@wemaixl.email", Private: false},
+		{Email: "emaixl@email.emailemail", Private: False(), Main: True()},
+		{Email: "email3w@email3.email", Private: True()},
+		{Email: "emai2lw@x.email", Private: False()},
+		{Email: "emxaxi2lwx@email.", Private: True()},
+		{Email: "emxaxilwx@xxemail.email", Private: False()},
+		{Email: "emailwxxw@exmxail.email", Private: True()},
+		{Email: "emailw@wemaixl.email", Private: False()},
 	}
 	o.Name = "Or Or Organization"
 	o.OrgDetails.LocationStr = "Hyderabad"

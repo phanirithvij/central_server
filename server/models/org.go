@@ -64,8 +64,10 @@ type Email struct {
 	Email            string `validate:"email" gorm:"uniqueindex:org_email_idx" json:"email"`
 	OrganizationID   uint   `gorm:"uniqueindex:org_email_idx"`
 	OrganizationType string `gorm:"uniqueindex:org_email_idx"`
-	Private          bool   `default:"true"`
-	Main             bool   `default:"false"`
+	// https://stackoverflow.com/a/62711228/8608146
+	// https://gorm.io/docs/create.html#Default-Values
+	Private *bool `default:"true"`
+	Main    *bool `default:"false"`
 }
 
 // OrgDetails the details of the organization
@@ -73,14 +75,14 @@ type OrgDetails struct {
 	LocationStr string  `validate:"printascii"`
 	LocationLL  LongLat `validate:"required" gorm:"embedded;embeddedPrefix:location_"`
 	Description string  `validate:"required,printascii"`
-	Private     bool    `default:"false"`
+	Private     *bool   `default:"false"`
 }
 
 // LongLat longitude and lattitude
 type LongLat struct {
 	Longitude string `validate:"longitude"`
 	Latitude  string `validate:"latitude"`
-	Private   bool   `default:"true"`
+	Private   *bool  `default:"true"`
 }
 
 // NewOrganization returns a new empty organization
@@ -215,10 +217,10 @@ type OrgSubmission struct {
 
 // EmailD ?
 type EmailD struct {
+	Private *bool  `default:"false" json:"private"`
 	Email   string `json:"email"`
-	Private bool   `default:"false" json:"private"`
 	ID      uint   `json:"id"`
-	Main    bool   `json:"main"`
+	Main    *bool  `json:"main"`
 }
 
 // Find finds the org from db
@@ -243,6 +245,16 @@ func (o *Organization) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
+// BeforeUpdate ..
+func (o *Organization) BeforeUpdate(tx *gorm.DB) error {
+	log.Println(tx.Statement.Vars)
+	log.Println(tx.Statement.Schema.Fields)
+	log.Println(tx.Statement.Schema.String())
+	log.Println(tx.Statement.FullSaveAssociations)
+	log.Println(tx.Statement.Changed("Private"))
+	return nil
+}
+
 // NewUpdate updates with new values
 func (o *Organization) NewUpdate(n *Organization) error {
 	// alias, ID are readonly so don't update
@@ -250,10 +262,12 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	n.ID = o.ID
 	// this is needed for some reason
 	o.Emails = n.Emails
+	o.LocationLL = n.LocationLL
+	log.Println(n.Str())
 	// TODO remove emails if emails are removed?
 	if err := o.DB.Model(&o).
 		// this feels optional
-		Session(&gorm.Session{FullSaveAssociations: true}).
+		// Session(&gorm.Session{FullSaveAssociations: true}).
 		Updates(&n).Error; err != nil {
 		return err
 	}
@@ -389,8 +403,10 @@ func (s *OrgSubmission) Org() *Organization {
 	}
 	o.Name = s.Name
 	o.OrgDetails.LocationStr = s.Address
-	o.OrgDetails.LocationLL.Private = s.LocationPrivate
-	o.OrgDetails.Private = s.Private
+	privateLoc := s.LocationPrivate
+	o.OrgDetails.LocationLL.Private = &privateLoc
+	private := s.Private
+	o.OrgDetails.Private = &private
 	if len(s.Location) == 2 {
 		o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(s.Location[0], 'f', -1, 64)
 		o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(s.Location[1], 'f', -1, 64)
@@ -415,8 +431,13 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 	}
 	s.Name = o.Name
 	s.Address = o.OrgDetails.LocationStr
-	s.LocationPrivate = o.OrgDetails.LocationLL.Private
-	s.Private = o.OrgDetails.Private
+
+	privateLoc := o.OrgDetails.LocationLL.Private
+	s.LocationPrivate = *privateLoc
+
+	private := o.OrgDetails.Private
+	s.Private = *private
+
 	if o.OrgDetails.LocationLL.Longitude != "" && o.OrgDetails.LocationLL.Latitude != "" {
 		s.Location = []float64{0, 0}
 		s.Location[0], _ = strconv.ParseFloat(o.OrgDetails.LocationLL.Latitude, 64)

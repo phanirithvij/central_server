@@ -84,7 +84,7 @@ export default function Logout(props) {
             </>
           ) : (
             <p>
-              Redirecting to <Link to={props.redirect}>{props.redirect}</Link>
+              Redirecting to <Link to={props.redirect}>{props.redirect}</Link>{" "}
               in {waitT} seconds
             </p>
           )}

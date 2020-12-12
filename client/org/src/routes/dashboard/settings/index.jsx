@@ -1,22 +1,26 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import Tippy from "@tippyjs/react";
+import { Button, Checkbox, Col, Divider, Form, Input, Row } from "antd";
 import { lazy, useEffect, useState } from "react";
 import SVG from "react-inlinesvg";
+import { Link } from "react-router-dom";
 import "tippy.js/dist/tippy.css"; // optional
+import AlertDismissible from "../../../components/Alert";
 import Org from "../../../models/org";
 import "./index.css";
 import svgopen from "./map.svg";
 import svgclose from "./mapclose.svg";
-import AlertDismissible from "../../../components/Alert";
-import { Button } from "antd";
-import { Link } from "react-router-dom";
+import Logout from "../../register/logout";
 
+const { TextArea } = Input;
 // Must be lazy for it is ~ 1MB, gziped 200 KB
 const Map = lazy(() => import("../../../components/Map"));
 
 export default function Settings() {
   const [mapVis, setmapVis] = useState(false);
   const [passValid, setPassValid] = useState(false);
+  const [form] = Form.useForm();
+  window.form = form;
   const [pass, setPass] = useState();
   const [conf, setConf] = useState();
   const [org] = useState(new Org());
@@ -26,8 +30,6 @@ export default function Settings() {
   const [loggedin, setLoggedin] = useState();
   const [loggedinJson, setLoggedinJson] = useState();
   const [done, setDone] = useState();
-
-  const [emails, setEmails] = useState();
 
   const { containerProps, indicatorEl } = useLoading({
     loading: true,
@@ -64,20 +66,31 @@ export default function Settings() {
       if (key === "emails") {
         org["emails"](json[key]);
         // console.log(org._emailList());
-        setEmails(org._emailList());
+        let ems = org._emailList();
+        form.setFieldsValue([{ name: key, value: ems }]);
         return;
       }
+
       // console.log(org[key], key);
       org[key](json[key]);
       if (typeof json[key] === "boolean") {
-        document.querySelector(`input[name="${key}"]`).checked = json[key];
+        form.setFields([{ name: key, value: json[key] }]);
+        // form.setFields([{ name: key, checked: json[key] }]);
+        // document.querySelector(`input[name="${key}"]`).checked = json[key];
       } else {
+        let input = document.querySelector(`input[name="${key}"]`);
         if (["address", "description"].includes(key)) {
-          document.querySelector(`textarea[name="${key}"]`).value = json[key];
-        } else document.querySelector(`input[name="${key}"]`).value = json[key];
+          input = document.querySelector(`textarea[name="${key}"]`);
+        }
+        form.setFields([{ name: key, value: json[key] }]);
+        // input.value = json[key];
+        if (input?.disabled) {
+          input.placeholder = `Alias:\t${json[key]}`;
+        }
+        // console.log(key, json[key], input.value);
       }
     });
-  }, [loggedinJson, org]);
+  }, [loggedinJson, org, form]);
 
   useEffect(() => {
     org
@@ -85,12 +98,10 @@ export default function Settings() {
       .then(async (x) => {
         switch (x.status) {
           case 401:
-            // TODO not logged in redirect to login page
             setServerValidError("Not logged in, please login");
             break;
 
           case 404:
-            // TODO Logged in but org doesn't exist
             // Show user that warning and a logout button
             setServerValidError(
               "Organization doesn't exist on our server please mail us if you believe this to be a mistake."
@@ -109,7 +120,10 @@ export default function Settings() {
             break;
         }
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        setServerValidError(err.message);
+        console.error(err);
+      });
   }, [org]);
 
   const updateOrg = (e) => {
@@ -147,15 +161,11 @@ export default function Settings() {
       );
     }
   };
+
   // triggered when clicked on the copy icons in the marker popup
   const useCallback = (type, value) => {
     org[type](value);
-    let elem = "input";
-    if (type === "address") {
-      elem = "textarea";
-    }
-    const inp = document.querySelector(`${elem}[name="${type}"]`);
-    inp.value = value.toString();
+    form.setFields([{ name: type, value: value }]);
   };
 
   const handleSubmit = (e) => {
@@ -197,150 +207,272 @@ export default function Settings() {
       })
       .catch((err) => {
         setSending(false);
+        setServerValidError("Could not reach the server, please try again.");
         console.error(err);
       });
   };
   return (
-    <div>
-      {/* Org alias will be undefined only if not loggedin  */}
-      {loggedin !== undefined && loggedin && (
-        <div className="form-wrap">
-          <form onChange={updateOrg} onSubmit={handleSubmit} className="formx">
-            {org.$name !== undefined && org.$name === "" && (
-              <AlertDismissible
-                show
-                content={"Please add all the details"}
-                variant="info"
-              />
-            )}
-            <input type="text" name="name" placeholder="Name" />
-            <input type="text" name="alias" placeholder="Alias" />
-            {/* TODO list of emails */}
-            {/* TODO private property to emails */}
-            {emails !== undefined &&
-              emails.map((email, index) => (
-                <div key={index}>
-                  {email.main && (
-                    <>
-                      <label htmlFor={`email-${index}`}>Main Email</label>
-                      <br />
-                    </>
+    <>
+      <Row>
+        <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
+        <Col xs={20} sm={16} md={12} lg={10} xl={8}>
+          <div>
+            {/* Org alias will be undefined only if not loggedin  */}
+            {loggedin !== undefined && loggedin && (
+              <>
+                <Form
+                  form={form}
+                  onChange={updateOrg}
+                  id="formx"
+                  style={{ maxWidth: "600px" }}
+                >
+                  {org.$name !== undefined && org.$name === "" && (
+                    <AlertDismissible
+                      show
+                      content={"Please add all the details"}
+                      variant="info"
+                    />
                   )}
-                  <input
-                    type="text"
-                    name={`email-${index}`}
-                    placeholder={
-                      index === 0 ? "Email Primary" : `Email ${index + 1}`
-                    }
-                    defaultValue={email.email}
-                  />
-                  <br />
-                  <label htmlFor={`email-${index}`}>Private</label>
-                  <input
-                    type="checkbox"
-                    defaultChecked={email.private}
-                    name={`email-private-${index}`}
-                  />
-                </div>
-              ))}
-            {org.$description !== undefined && org.$description === "" && (
-              <AlertDismissible
-                show
-                content={"Please add a description"}
-                variant="info"
-              />
-            )}
-            <textarea
-              type="text"
-              name="description"
-              placeholder="Description"
-            />
-            {org.$address !== undefined && org.$address === "" && (
-              <AlertDismissible
-                show
-                content={`Please add an Address,
+                  <Form.Item
+                    name="name"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please set a Name",
+                      },
+                    ]}
+                  >
+                    <Input name="name" placeholder="Organization Name" />
+                  </Form.Item>
+                  <Form.Item
+                    name="alias"
+                    rules={[
+                      {
+                        required: false,
+                        message: "This can't be changed",
+                      },
+                    ]}
+                  >
+                    <Input name="alias" disabled placeholder="Alias" />
+                  </Form.Item>
+                  {/* TODO list of emails */}
+                  {/* TODO private property to emails */}
+
+                  <Form.List name="emails">
+                    {(fields, { add, remove }, { errors }) => {
+                      <>
+                        {fields.map((field, index) => (
+                          <div key={field.key}>
+                            <Divider>Field {index + 1}</Divider>
+                            <Form.Item
+                              name={[field.name, "email"]}
+                              label="Name"
+                              rules={[{ required: true }]}
+                            >
+                              <Input placeholder="field name" />
+                            </Form.Item>
+                            <Form.Item
+                              label="Type"
+                              name={[field.name, "private"]}
+                              rules={[{ required: true }]}
+                              valuePropName="checked"
+                            >
+                              <Checkbox placeholder="Private" />
+                            </Form.Item>
+                            <Form.Item
+                              name={[field.name, "main"]}
+                              label="Main Email"
+                              valuePropName="checked"
+                            >
+                              <Checkbox placeholder="Main Email" />
+                            </Form.Item>
+                          </div>
+                        ))}
+                      </>;
+                    }}
+                  </Form.List>
+
+                  {org.$description !== undefined &&
+                    org.$description === "" && (
+                      <AlertDismissible
+                        show
+                        content={"Please add a description"}
+                        variant="info"
+                      />
+                    )}
+                  <Form.Item
+                    name="description"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please add Description",
+                      },
+                    ]}
+                  >
+                    <TextArea
+                      autoSize
+                      showCount
+                      maxLength={600}
+                      name="description"
+                      placeholder="Description"
+                    />
+                  </Form.Item>
+                  {org.$address !== undefined && org.$address === "" && (
+                    <AlertDismissible
+                      show
+                      content={`Please add an Address,
                   You can use the map icon to select your address`}
-                variant="info"
-              />
+                      variant="info"
+                    />
+                  )}
+                  <Form.Item name="address">
+                    <TextArea autoSize name="address" placeholder="Address" />
+                  </Form.Item>
+                  <Form.Item
+                    name="location"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please input Location",
+                      },
+                    ]}
+                  >
+                    <Input name="location" placeholder="Location Lat, Long" />
+                  </Form.Item>
+                  <div className="mapctrl">
+                    <Tippy
+                      arrow={false}
+                      placement={"right"}
+                      delay={[1000, 200]}
+                      content={`${!mapVis ? "Show" : "Hide"} Map`}
+                    >
+                      {/* https://github.com/atomiks/tippyjs-react/issues/218 */}
+                      <i>
+                        <SVG
+                          className={`mapicon ${!mapVis ? "open" : ""}`}
+                          onClick={() => setmapVis(!mapVis)}
+                          title={`${!mapVis ? "Show" : "Hide"} Map`}
+                          src={mapVis ? svgclose : svgopen}
+                        ></SVG>
+                      </i>
+                    </Tippy>
+                  </div>
+                  {/* https://github.com/ant-design/ant-design/issues/20803#issuecomment-601626759 */}
+                  <Form.Item
+                    valuePropName="checked"
+                    name="privateLoc"
+                    label="Location is private"
+                  >
+                    <Checkbox name="privateLoc" />
+                  </Form.Item>
+                  <Form.Item
+                    valuePropName="checked"
+                    name="private"
+                    label="Organization is private"
+                  >
+                    <Checkbox name="private" />
+                  </Form.Item>
+                  <Divider />
+                  <label htmlFor="oldPassword">Change Password</label>
+                  <Form.Item name="oldPassword">
+                    <Input.Password
+                      name="oldPassword"
+                      placeholder="Old Password"
+                    />
+                  </Form.Item>
+                  <Form.Item name="newPassword">
+                    <Input.Password name="newPassword" placeholder="Password" />
+                  </Form.Item>
+                  <Form.Item name="confirm">
+                    <Input.Password
+                      type="password"
+                      name="confirm"
+                      placeholder="Confirm password"
+                    />
+                  </Form.Item>
+                  <label htmlFor="confirm">
+                    {!passValid &&
+                      pass &&
+                      conf &&
+                      `Passwords don't match ${pass} , ${conf}`}
+                  </label>
+                  {clientValidError !== undefined && (
+                    <AlertDismissible
+                      show
+                      content={clientValidError}
+                      variant="warning"
+                    />
+                  )}
+                  <Button onClick={handleSubmit}>Update</Button>
+                </Form>
+                {done !== undefined && done && (
+                  <AlertDismissible
+                    show
+                    content={"Updated successfully!"}
+                    variant="success"
+                  />
+                )}
+                {sending !== undefined && sending && (
+                  <section {...containerProps}>{indicatorEl}</section>
+                )}
+                {mapVis && <Map copyCallback={useCallback} />}
+              </>
             )}
-            <textarea type="text" name="address" placeholder="Address" />
-            <input
-              type="text"
-              name="location"
-              placeholder="Location Lat, Long"
-            />
-            <div className="mapctrl">
-              <Tippy
-                arrow={false}
-                placement={"right"}
-                delay={[1000, 200]}
-                content={`${!mapVis ? "Show" : "Hide"} Map`}
-              >
-                {/* https://github.com/atomiks/tippyjs-react/issues/218 */}
-                <i>
-                  <SVG
-                    className={`mapicon ${!mapVis ? "open" : ""}`}
-                    onClick={() => setmapVis(!mapVis)}
-                    title={`${!mapVis ? "Show" : "Hide"} Map`}
-                    src={mapVis ? svgclose : svgopen}
-                  ></SVG>
-                </i>
-              </Tippy>
-            </div>
-            <input type="checkbox" name="privateLoc" />
-            <input type="checkbox" name="private" />
-            <label htmlFor="oldPassword">Change Password</label>
-            <input
-              type="password"
-              name="oldPassword"
-              placeholder="Old Password"
-            />
-            <input type="password" name="newPassword" placeholder="Password" />
-            <input
-              type="password"
-              name="confirm"
-              placeholder="Confirm password"
-            />
-            <label htmlFor="confirm">
-              {!passValid &&
-                pass &&
-                conf &&
-                `Passwords don't match ${pass} , ${conf}`}
-            </label>
-            {clientValidError !== undefined && (
+            {serverValidError !== undefined && (
               <AlertDismissible
                 show
-                content={clientValidError}
-                variant="warning"
+                header={serverValidError}
+                content={
+                  <>
+                    {serverValidError.includes("login") && (
+                      <Button>
+                        <Link to={"/account/login"}>Login</Link>
+                      </Button>
+                    )}
+                    {serverValidError.includes("doesn't exist") && (
+                      <Logout
+                        org={org}
+                        redirect="/account/login"
+                        timeoutDur={0}
+                      />
+                    )}
+                  </>
+                }
+                variant="error"
               />
             )}
-            <Button onClick={handleSubmit}>Update</Button>
-            {done !== undefined && done && (
-              <AlertDismissible
-                show
-                content={"Updated successfully!"}
-                variant="success"
-              />
-            )}
-            {sending !== undefined && sending && (
-              <section {...containerProps}>{indicatorEl}</section>
-            )}
-          </form>
-          {mapVis && <Map copyCallback={useCallback} />}
-        </div>
-      )}
-      {serverValidError !== undefined && (
-        <AlertDismissible
-          show
-          header={serverValidError}
-          content={
-              <Button>
-                <Link to={"/account/login"}>Login</Link>
-              </Button>
-          }
-          variant="error"
+          </div>
+        </Col>
+        <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
+      </Row>
+    </>
+  );
+}
+
+function EmailPrivatePair({ index, email, form }) {
+  let field = { name: "email" };
+  console.log(index, email, field, form);
+  return (
+    <>
+      <Form.Item name={field.name}>
+        {field && (
+          <>
+            <label htmlFor={field.name}>Main Email</label>
+            <br />
+          </>
+        )}
+        <Input
+          name={field.name}
+          placeholder={index === 0 ? "Primary Email" : `Email ${index + 1}`}
         />
-      )}
-    </div>
+      </Form.Item>
+      <Form.Item
+        valuePropName="checked"
+        name={`${field.name}-p`}
+        label="Private"
+      >
+        <Checkbox name={`${field.name}-p`} />
+      </Form.Item>
+    </>
   );
 }
