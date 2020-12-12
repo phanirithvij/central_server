@@ -211,8 +211,8 @@ type OrgSubmission struct {
 	Emails          []EmailD  `json:"emails"`
 	Location        []float64 `json:"location"`
 	Name            string    `json:"name"`
-	Private         bool      `json:"private"`
-	LocationPrivate bool      `json:"privateLoc"`
+	Private         *bool     `json:"private"`
+	LocationPrivate *bool     `json:"privateLoc"`
 }
 
 // EmailD ?
@@ -247,11 +247,9 @@ func (o *Organization) BeforeCreate(tx *gorm.DB) error {
 
 // BeforeUpdate ..
 func (o *Organization) BeforeUpdate(tx *gorm.DB) error {
-	log.Println(tx.Statement.Vars)
-	log.Println(tx.Statement.Schema.Fields)
-	log.Println(tx.Statement.Schema.String())
-	log.Println(tx.Statement.FullSaveAssociations)
+	// TODO if organization type changed add it to public clients?
 	log.Println(tx.Statement.Changed("Private"))
+	// TODO if main email changed send email verification
 	return nil
 }
 
@@ -260,16 +258,48 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	// alias, ID are readonly so don't update
 	n.Alias = o.Alias
 	n.ID = o.ID
+	// remove any emails
+	removeList := []uint{}
+	orEmails := []string{}
+	newEmails := []string{}
+	for _, or := range o.Emails {
+		orEmails = append(orEmails, or.Email)
+	}
+	for _, ne := range n.Emails {
+		newEmails = append(newEmails, ne.Email)
+	}
+	for _, or := range o.Emails {
+		for _, ne := range n.Emails {
+			if or.Email == ne.Email {
+				// if email matched => found old email in new list
+				// so not deleted
+				break
+			}
+		}
+		// full loop executed so not found add it to deleted
+		removeList = append(removeList, or.ID)
+	}
+	log.Println(removeList)
+	log.Println(orEmails)
+	log.Println(newEmails)
+
 	// this is needed for some reason
 	o.Emails = n.Emails
+
+	// updates and insterts will be done by gorm
 	o.LocationLL = n.LocationLL
-	log.Println(n.Str())
-	// TODO remove emails if emails are removed?
+
 	if err := o.DB.Model(&o).
 		// this feels optional
-		// Session(&gorm.Session{FullSaveAssociations: true}).
+		Session(&gorm.Session{FullSaveAssociations: true}).
 		Updates(&n).Error; err != nil {
 		return err
+	}
+
+	if len(removeList) > 0 {
+		if err := o.DB.Delete(&Email{}, removeList).Error; err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -403,10 +433,8 @@ func (s *OrgSubmission) Org() *Organization {
 	}
 	o.Name = s.Name
 	o.OrgDetails.LocationStr = s.Address
-	privateLoc := s.LocationPrivate
-	o.OrgDetails.LocationLL.Private = &privateLoc
-	private := s.Private
-	o.OrgDetails.Private = &private
+	o.OrgDetails.LocationLL.Private = s.LocationPrivate
+	o.OrgDetails.Private = s.Private
 	if len(s.Location) == 2 {
 		o.OrgDetails.LocationLL.Latitude = strconv.FormatFloat(s.Location[0], 'f', -1, 64)
 		o.OrgDetails.LocationLL.Longitude = strconv.FormatFloat(s.Location[1], 'f', -1, 64)
@@ -432,11 +460,8 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 	s.Name = o.Name
 	s.Address = o.OrgDetails.LocationStr
 
-	privateLoc := o.OrgDetails.LocationLL.Private
-	s.LocationPrivate = *privateLoc
-
-	private := o.OrgDetails.Private
-	s.Private = *private
+	s.LocationPrivate = o.OrgDetails.LocationLL.Private
+	s.Private = o.OrgDetails.Private
 
 	if o.OrgDetails.LocationLL.Longitude != "" && o.OrgDetails.LocationLL.Latitude != "" {
 		s.Location = []float64{0, 0}

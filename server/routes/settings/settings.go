@@ -86,7 +86,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-			c.JSON(http.StatusOK, o.OrgSubmission())
+			sub := o.OrgSubmission()
+			c.JSON(http.StatusOK, sub)
 		})
 
 		optsCors := cors.New(cors.Config{
@@ -168,8 +169,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				}
 			}
 
-			err = oldOrg.NewUpdate(newOrg)
 			log.Println(oldOrg.Str())
+			err = oldOrg.NewUpdate(newOrg)
 			log.Println(newOrg.Str())
 			if err != nil {
 				// TODO more descriptive error messages here

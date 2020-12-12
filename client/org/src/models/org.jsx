@@ -146,6 +146,17 @@ export default class Org {
     return this.create(true);
   }
 
+  updateSettings(form) {
+    return fetch(OrgSettingsURL, {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(form),
+    });
+  }
+
   // fetch the org from the server
   fetch() {
     return fetch(OrgSettingsURL, {

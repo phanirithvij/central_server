@@ -1,16 +1,17 @@
 import { Puff, useLoading } from "@agney/react-loading";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import Tippy from "@tippyjs/react";
-import { Button, Checkbox, Col, Divider, Form, Input, Row } from "antd";
+import { Alert, Button, Checkbox, Col, Divider, Form, Input, Row } from "antd";
 import { lazy, useEffect, useState } from "react";
 import SVG from "react-inlinesvg";
 import { Link } from "react-router-dom";
 import "tippy.js/dist/tippy.css"; // optional
 import AlertDismissible from "../../../components/Alert";
 import Org from "../../../models/org";
+import Logout from "../../register/logout";
 import "./index.css";
 import svgopen from "./map.svg";
 import svgclose from "./mapclose.svg";
-import Logout from "../../register/logout";
 
 const { TextArea } = Input;
 // Must be lazy for it is ~ 1MB, gziped 200 KB
@@ -30,6 +31,7 @@ export default function Settings() {
   const [loggedin, setLoggedin] = useState();
   const [loggedinJson, setLoggedinJson] = useState();
   const [done, setDone] = useState();
+  const [reload, setReload] = useState(false);
 
   const { containerProps, indicatorEl } = useLoading({
     loading: true,
@@ -67,7 +69,8 @@ export default function Settings() {
         org["emails"](json[key]);
         // console.log(org._emailList());
         let ems = org._emailList();
-        form.setFieldsValue([{ name: key, value: ems }]);
+        form.setFieldsValue({ emails: ems });
+        form.setFields([{ name: "emails", value: ems }]);
         return;
       }
 
@@ -89,6 +92,8 @@ export default function Settings() {
         }
         // console.log(key, json[key], input.value);
       }
+      // need to set state to refesh any alerts guiding empty fields
+      setReload(!reload);
     });
   }, [loggedinJson, org, form]);
 
@@ -185,7 +190,7 @@ export default function Settings() {
     }
     setSending(true);
     org
-      .update()
+      .updateSettings(form.getFieldsValue())
       .then(async (res) => {
         setSending(false);
         const jsonD = await res.json();
@@ -220,13 +225,8 @@ export default function Settings() {
             {/* Org alias will be undefined only if not loggedin  */}
             {loggedin !== undefined && loggedin && (
               <>
-                <Form
-                  form={form}
-                  onChange={updateOrg}
-                  id="formx"
-                  style={{ maxWidth: "600px" }}
-                >
-                  {org.$name !== undefined && org.$name === "" && (
+                <Form form={form} id="formx" style={{ maxWidth: "600px" }}>
+                  {form.getFieldValue("name") === "" && (
                     <AlertDismissible
                       show
                       content={"Please add all the details"}
@@ -255,51 +255,100 @@ export default function Settings() {
                   >
                     <Input name="alias" disabled placeholder="Alias" />
                   </Form.Item>
+                  <Form.Item
+                    valuePropName="checked"
+                    name="private"
+                    label="Organization is private"
+                  >
+                    <Checkbox name="private" />
+                  </Form.Item>
                   {/* TODO list of emails */}
                   {/* TODO private property to emails */}
 
+                  <Divider>Emails</Divider>
                   <Form.List name="emails">
-                    {(fields, { add, remove }, { errors }) => {
+                    {(fields, { add, remove }, { errors }) => (
                       <>
                         {fields.map((field, index) => (
-                          <div key={field.key}>
-                            <Divider>Field {index + 1}</Divider>
-                            <Form.Item
-                              name={[field.name, "email"]}
-                              label="Name"
-                              rules={[{ required: true }]}
-                            >
-                              <Input placeholder="field name" />
-                            </Form.Item>
-                            <Form.Item
-                              label="Type"
-                              name={[field.name, "private"]}
-                              rules={[{ required: true }]}
-                              valuePropName="checked"
-                            >
-                              <Checkbox placeholder="Private" />
-                            </Form.Item>
-                            <Form.Item
-                              name={[field.name, "main"]}
-                              label="Main Email"
-                              valuePropName="checked"
-                            >
-                              <Checkbox placeholder="Main Email" />
-                            </Form.Item>
-                          </div>
+                          <Form.Item key={index}>
+                            {form.getFieldValue([
+                              "emails",
+                              field.name,
+                              "main",
+                            ]) && <Alert description={"Primary Email"} />}
+                            <Row justify="space-around" align="middle">
+                              <Col
+                                style={{
+                                  flex: "0 0 100%",
+                                  maxWidth: "85%",
+                                }}
+                              >
+                                <Form.Item
+                                  name={[field.name, "email"]}
+                                  label="Email"
+                                  rules={[{ required: true }]}
+                                >
+                                  <Input placeholder={`Email ${index}`} />
+                                </Form.Item>
+                                <Form.Item
+                                  label="Private"
+                                  name={[field.name, "private"]}
+                                  rules={[{ required: true }]}
+                                  valuePropName="checked"
+                                >
+                                  <Checkbox placeholder="Private" />
+                                </Form.Item>
+                                <Form.Item
+                                  name={[field.name, "main"]}
+                                  rules={[{ required: true }]}
+                                  hidden
+                                >
+                                  <Input />
+                                </Form.Item>
+                                <Form.Item
+                                  name={[field.name, "id"]}
+                                  rules={[{ required: true }]}
+                                  hidden
+                                >
+                                  <Input />
+                                </Form.Item>
+                              </Col>
+                              <Col span={1}>
+                                {!form.getFieldValue([
+                                  "emails",
+                                  field.name,
+                                  "main",
+                                ]) && (
+                                  <MinusCircleOutlined
+                                    className="dynamic-delete-button"
+                                    onClick={() => remove(field.name)}
+                                  />
+                                )}
+                              </Col>
+                            </Row>
+                          </Form.Item>
                         ))}
-                      </>;
-                    }}
+                        <Form.Item>
+                          <Button
+                            type="dashed"
+                            onClick={() => add()}
+                            style={{ width: "60%" }}
+                            icon={<PlusOutlined />}
+                          >
+                            Add Email
+                          </Button>
+                        </Form.Item>
+                      </>
+                    )}
                   </Form.List>
 
-                  {org.$description !== undefined &&
-                    org.$description === "" && (
-                      <AlertDismissible
-                        show
-                        content={"Please add a description"}
-                        variant="info"
-                      />
-                    )}
+                  {form.getFieldValue("description") === "" && (
+                    <AlertDismissible
+                      show
+                      content={"Please add a description"}
+                      variant="info"
+                    />
+                  )}
                   <Form.Item
                     name="description"
                     rules={[
@@ -317,7 +366,7 @@ export default function Settings() {
                       placeholder="Description"
                     />
                   </Form.Item>
-                  {org.$address !== undefined && org.$address === "" && (
+                  {form.getFieldValue("address") === "" && (
                     <AlertDismissible
                       show
                       content={`Please add an Address,
@@ -365,15 +414,7 @@ export default function Settings() {
                   >
                     <Checkbox name="privateLoc" />
                   </Form.Item>
-                  <Form.Item
-                    valuePropName="checked"
-                    name="private"
-                    label="Organization is private"
-                  >
-                    <Checkbox name="private" />
-                  </Form.Item>
-                  <Divider />
-                  <label htmlFor="oldPassword">Change Password</label>
+                  <Divider orientation="left">Change Password</Divider>
                   <Form.Item name="oldPassword">
                     <Input.Password
                       name="oldPassword"

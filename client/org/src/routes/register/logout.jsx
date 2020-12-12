@@ -75,7 +75,9 @@ export default function Logout(props) {
       {loggedout === undefined ? (
         <Button onClick={logOut}>Logout</Button>
       ) : !loggedout ? (
-        <div>Logout Failed, Already Logged out</div>
+        <div>
+          Logout Failed <a href={window.location.pathname}>refresh?</a>
+        </div>
       ) : (
         <div>
           {redirect && waitDone ? (
