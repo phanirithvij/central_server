@@ -268,20 +268,27 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	for _, ne := range n.Emails {
 		newEmails = append(newEmails, ne.Email)
 	}
+loop:
 	for _, or := range o.Emails {
 		for _, ne := range n.Emails {
 			if or.Email == ne.Email {
 				// if email matched => found old email in new list
 				// so not deleted
-				break
+				break loop
 			}
 		}
 		// full loop executed so not found add it to deleted
-		removeList = append(removeList, or.ID)
+		if or.Main != nil {
+			if !*or.Main {
+				removeList = append(removeList, or.ID)
+			} else {
+				// TODO this happened once
+				log.Println("Trying to delete the main email")
+				log.Println("Fix any client side bugs")
+			}
+		}
 	}
-	log.Println(removeList)
-	log.Println(orEmails)
-	log.Println(newEmails)
+	log.Println("Deleting emails with ids", removeList)
 
 	// this is needed for some reason
 	o.Emails = n.Emails
