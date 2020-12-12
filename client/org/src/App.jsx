@@ -44,7 +44,7 @@ export default function App() {
             style={{
               position: "fixed",
               width: "100%",
-              paddingLeft: !collapsed && "220px",
+              paddingLeft: !collapsed ? "220px": "100px",
               paddingRight: "3vw",
               zIndex: 2,
             }}
@@ -76,7 +76,7 @@ export default function App() {
             <Layout
               style={{
                 padding: "0 24px 24px",
-                marginLeft: !collapsed ? 200 : null,
+                marginLeft: !collapsed ? 200 : 80,
                 minHeight: "100vh",
                 // top navbar height
                 paddingTop: "66px",

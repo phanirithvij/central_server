@@ -62,7 +62,7 @@ export default function NavBar(props) {
           </Menu.Item>
         </SubMenu>
       )}
-      {props.mode === "horizontal" && process.env.NODE_ENV !== "production" && (
+      {/* {props.mode === "horizontal" && process.env.NODE_ENV !== "production" && (
         // https://stackoverflow.com/a/50883195/8608146
         <Menu.Item key="" style={{ float: "right" }}>
           <div>
@@ -71,7 +71,7 @@ export default function NavBar(props) {
               : "Development: React client"}
           </div>
         </Menu.Item>
-      )}
+      )} */}
     </Menu>
   );
 }
