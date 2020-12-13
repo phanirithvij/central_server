@@ -23,6 +23,9 @@
 
 
 /* Scale all checboxes */
+/* https://stackoverflow.com/questions/306924/can-i-change-the-checkbox-size-using-css#comment84571624_24688640 */
+/* TODO detect if Mac and don't do it */
+/* https://stackoverflow.com/questions/8493589/is-there-a-css-media-query-to-detect-windows */
 .ant-checkbox-wrapper {
-    transform: scale(1.4) !important;
+    transform: scale(1.3) !important;
 }

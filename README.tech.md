@@ -43,7 +43,13 @@ Bash completions also work for linux systems
 - [ ] Rate limit every endpoint
   - Pressing Enter key on login page is enough to DDOS us
   - Check serve.go metrics example
-- [ ] Antd Forms
+- [x] Antd Forms
+- [ ] Todo redux or some state management
+  - [ ] As of now Checking if logged in takes one request to server
+    - And it is done on Navbar, AppInternal, Login, Logout, Register, Dashboard
+      etc. So too many requests for just getting a boolean.
+    - Use only one request save in the state management store then get from it
+  - [ ] Remove Org class
 - [ ] Antd Tooltip
 
 ## Dev notes

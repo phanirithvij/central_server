@@ -122,9 +122,15 @@ Incident
     - [ ] Can undelete if wanted
     - [ ] Delete reason -> [Deletd by Organization, Banned, Suspended]
 
-- [ ] Org readonly dashboard
-- [ ] Org dashboard profile
-- [ ] List of public orgs on homepage
+- [ ] Expose Org Server Homepage so we can link to it
+  - [ ] At $serverURL/home
+  - [ ] (Later) Open Link in app
+    - https://pub.dev/packages/uni_links
+
+- [ ] Org readonly activity dashboard
+  - [ ] Any update changes in settings
+- [x] Org dashboard profile
+- [x] List of public orgs on homepage
   - [x] Api enpoint
 
 > TOMMOROW

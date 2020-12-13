@@ -63,7 +63,11 @@ func Serve(port int, debug bool) {
 	o.Validate()
 
 	// Migrate the schema
-	err := db.AutoMigrate(&models.Organization{}, &models.Email{}, &models.Server{})
+	err := db.AutoMigrate(
+		&models.Organization{},
+		&models.Email{},
+		&models.Server{},
+	)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -245,26 +249,28 @@ func False() *bool {
 
 func newOrg() *models.Organization {
 	o := models.NewOrganization()
-	o.PasswordHash = utils.Hash("oror")
+	o.PasswordHash = utils.Hash("sample")
+	// TODO 0 ID should not exist
+	// Because I wrote a check somewhere when id is 0 send error response
 	o.ID = 1
 
 	o.Private = False()
-	o.Alias = "oror"
+	o.Alias = "sample"
 	o.Emails = []models.Email{
-		{Email: "emaixl@email.emailemail", Private: False(), Main: True()},
-		{Email: "email3w@email3.email", Private: True()},
-		{Email: "emai2lw@x.email", Private: False()},
-		{Email: "emxaxi2lwx@email.", Private: True()},
-		{Email: "emxaxilwx@xxemail.email", Private: False()},
-		{Email: "emailwxxw@exmxail.email", Private: True()},
-		{Email: "emailw@wemaixl.email", Private: False()},
+		// Main private email which is used for login
+		{Email: "emaixl@email.emailemail", Private: True(), Main: True()},
+		// Secondary public email
+		{Email: "email3w@email3.email", Private: False()},
 	}
 
-	o.Name = "Or Or Organization"
+	o.Name = "Sample Organization"
 	o.OrgDetails.LocationStr = "Hyderabad"
 	o.OrgDetails.LocationLL.Latitude = "17.235650"
 	o.OrgDetails.LocationLL.Longitude = "79.124817"
-	o.OrgDetails.Description = "string"
+	o.OrgDetails.Description = "Sample Description"
+	o.NewServer()
+	o.Server.URL = "http://localhost:8080"
+	o.Server.Nick = "SampleDBX1"
 	return o
 }
 

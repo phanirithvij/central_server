@@ -86,7 +86,7 @@ export function NavBarComponet(props) {
   }, [org, reload]);
 
   useEffect(() => {
-    setReload(!reload);
+    setReload(reload=>!reload);
   }, [location.pathname]);
 
   return (

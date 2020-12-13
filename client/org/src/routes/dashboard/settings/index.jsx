@@ -76,7 +76,7 @@ export default function Settings() {
       }
 
       // console.log(org[key], key);
-      org[key](json[key]);
+      // org[key](json[key]);
       if (typeof json[key] === "boolean") {
         form.setFields([{ name: key, value: json[key] }]);
         // form.setFields([{ name: key, checked: json[key] }]);
@@ -139,21 +139,23 @@ export default function Settings() {
   };
 
   const handleSubmit = (e) => {
+    // clear any previous server errors
+    setServerValidError(undefined);
     e.preventDefault();
-    if (org.$password && org._confirm) {
+    const values = form.getFieldsValue();
+    if (values.password && values.confirm) {
       // we modfied the password
-      if (passValid && org.$password === org._confirm) {
+      if (passValid && values.password === values.confirm) {
       } else {
         setClientValidError("Password is not a valid password");
         return;
       }
     }
-    if (org.$location && org.$location.length === 2) {
+    if (values.location) {
     } else {
       setClientValidError("Location is required");
       return;
     }
-    const values = form.getFieldsValue();
     // if string convert to array of lat, long
     if (typeof values.location === "string") {
       let loc = values.location.split(",");
@@ -355,6 +357,9 @@ export default function Settings() {
                       placeholder="Description"
                     />
                   </Form.Item>
+
+                  <Divider orientation="left">Address and Location</Divider>
+
                   {form.getFieldValue("address") === "" && (
                     <AlertDismissible
                       show
@@ -403,6 +408,22 @@ export default function Settings() {
                   >
                     <Checkbox name="privateLoc" />
                   </Form.Item>
+
+                  <Divider orientation="left">Server Configuration</Divider>
+                  <Form.Item name="serverAlias">
+                    <Input name="serverAlias" placeholder="Server nick name" />
+                  </Form.Item>
+                  <Form.Item name="server">
+                    <Input name="server" placeholder="Server URL" />
+                  </Form.Item>
+                  <Form.Item
+                    name={"serverID"}
+                    rules={[{ required: true }]}
+                    hidden
+                  >
+                    <Input />
+                  </Form.Item>
+
                   <Divider orientation="left">Change Password</Divider>
                   <Form.Item name="oldPassword">
                     <Input.Password

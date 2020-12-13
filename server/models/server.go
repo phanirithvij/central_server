@@ -10,13 +10,15 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/mcuadros/go-defaults"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // Server an organization server
 type Server struct {
 	gorm.Model
-	URL   string `validate:"url" json:"url"`
-	Alias string `validate:"alphanum" json:"alias"`
+	URL   string `validate:"url" json:"url" gorm:"uniqueindex:server_org_idx"`
+	Nick  string `validate:"alphanum" json:"alias" gorm:"uniqueindex:server_org_idx"`
+	OrgID uint
 }
 
 // NewServer returns a new empty server
@@ -59,4 +61,24 @@ func (s *Server) Validate() ([]string, error) {
 		return msgs, errx
 	}
 	return []string{}, nil
+}
+
+// BeforeCreate before creating fix the conflicts for primarykey
+func (s *Server) BeforeCreate(tx *gorm.DB) (err error) {
+	cols := []clause.Column{}
+	// prefix is email_
+	// TODO get prefix from tx somehow?
+	colsNames := []string{"updated_at", "nick", "url"}
+	for _, field := range tx.Statement.Schema.PrimaryFields {
+		cols = append(cols, clause.Column{Name: field.DBName})
+		colsNames = append(colsNames, field.DBName)
+	}
+	// https://gorm.io/docs/create.html#Upsert-On-Conflict
+	// https://github.com/go-gorm/gorm/issues/3611#issuecomment-729673788
+	tx.Statement.AddClause(clause.OnConflict{
+		Columns:   cols,
+		DoUpdates: clause.AssignmentColumns(colsNames),
+		// DoNothing: true,
+	})
+	return nil
 }

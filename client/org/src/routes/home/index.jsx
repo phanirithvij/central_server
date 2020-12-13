@@ -1,5 +1,6 @@
+import { Puff, useLoading } from "@agney/react-loading";
 import { DatabaseOutlined } from "@ant-design/icons";
-import { Alert, Card, Col, Row, Switch } from "antd";
+import { Alert, Card, Col, Row } from "antd";
 import { useEffect, useState } from "react";
 import "tippy.js/dist/tippy.css"; // optional
 import { PublicListURL } from "../../utils/server";
@@ -19,8 +20,14 @@ function OrgCard({ info }) {
     <>
       <Card
         loading={loading}
-        style={{ width: 300, marginTop: 16 }}
-        actions={[<DatabaseOutlined key="datasets" />]}
+        style={{ marginTop: 16 }}
+        actions={[
+          <>
+            <a href={`${info.server}/home`}>
+              <DatabaseOutlined key="datasets" />
+            </a>
+          </>,
+        ]}
       >
         <Meta title={info?.name} description={info?.description} />
       </Card>
@@ -38,24 +45,35 @@ function HomeInt() {
   // Fetch public info
   useEffect(() => {
     setLoading(true);
-    fetch(PublicListURL).then(async (res) => {
-      let jsonD = await res.json();
-      switch (res.status) {
-        case 200:
-          console.log(jsonD);
-          setCards(jsonD);
-          break;
+    fetch(PublicListURL)
+      .then(async (res) => {
+        let jsonD = await res.json();
+        switch (res.status) {
+          case 200:
+            console.log(jsonD);
+            setCards(jsonD);
+            break;
 
-        case 404:
-          setError({...jsonD, code: 404});
-          break;
+          case 404:
+            setError({ ...jsonD, code: 404 });
+            break;
 
-        default:
-          break;
-      }
-      setLoading(false);
-    });
+          default:
+            break;
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        setError({ messages: ['You are offline'], error: "", code: 'offline' });
+      });
   }, []);
+
+  // a loading spinner thing
+  const { containerProps, indicatorEl: loaderSpinner } = useLoading({
+    loading: true,
+    indicator: <Puff width="50" />,
+  });
 
   return (
     <div>
@@ -72,6 +90,7 @@ function HomeInt() {
           {cards.map((card, index) => (
             <OrgCard key={index} info={card} />
           ))}
+          {loading && <section {...containerProps}>{loaderSpinner}</section>}
         </Col>
         <Col xs={2} sm={4} md={6} lg={7} xl={8}></Col>
       </Row>

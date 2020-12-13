@@ -137,8 +137,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				return
 			}
 			// update any non empty fields from data.Org() to org and save
-			//
-
+			log.Println(data.ServerAlias, data.ServerURL)
 			newOrg := data.Org()
 			// Allow update only after email verification
 			// TODO multi email verification

@@ -37,8 +37,10 @@ type Organization struct {
 	// https://stackoverflow.com/a/5489759/8608146
 	PasswordHash  string `gorm:"check:password_empty,password_hash <> '';not null;"`
 	GormModelNoID `gorm:"embedded;embeddedPrefix:org_"`
-	Servers       []*Server `gorm:"ForeignKey:ID"`
-	DB            *gorm.DB  `json:"-" gorm:"-" validate:"-"`
+	Server        *Server  `gorm:"foreignKey:OrgID"`
+	DB            *gorm.DB `json:"-" gorm:"-" validate:"-"`
+	// TODO support multiple servers as a backup or something
+	// Servers       []*Server `gorm:"ForeignKey:ID"`
 }
 
 // OrganizationPublic all the public feilds that can be configured by the organization
@@ -103,7 +105,7 @@ func NewEmail() *Email {
 // NewServer a new server for the organization
 func (o *Organization) NewServer() *Server {
 	s := NewServer()
-	o.Servers = append(o.Servers, s)
+	o.Server = s
 	return s
 }
 
@@ -213,6 +215,9 @@ type OrgSubmission struct {
 	Name            string    `json:"name"`
 	Private         *bool     `json:"private"`
 	LocationPrivate *bool     `json:"privateLoc"`
+	ServerURL       string    `json:"server"`
+	ServerAlias     string    `json:"serverAlias"`
+	ServerID        uint      `json:"serverID"`
 }
 
 // EmailD ?
@@ -231,7 +236,7 @@ func (o *Organization) PublicList() ([]*OrgSubmission, error) {
 	orgs := []Organization{}
 
 	tx := o.DB.Preload(clause.Associations).
-		Where("private = false").First(&orgs)
+		Where("private = false").Find(&orgs)
 
 	if tx.Error != nil {
 		return nil, tx.Error
@@ -241,6 +246,7 @@ func (o *Organization) PublicList() ([]*OrgSubmission, error) {
 	}
 
 	oss := []*OrgSubmission{}
+	// TODO or don't fully load associations and query them with Where
 	for _, orgx := range orgs {
 		filteredEmails := []Email{}
 		for _, em := range orgx.Emails {
@@ -317,6 +323,10 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	for _, ne := range n.Emails {
 		newEmails = append(newEmails, ne.Email)
 	}
+
+	// TODO look at https://gorm.io/docs/associations.html#Append-Associations
+	// It provides Append, Replace etc.
+
 	for _, or := range o.Emails {
 		del := true
 		for _, ne := range n.Emails {
@@ -344,8 +354,9 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	}
 	log.Println("Deleting emails with ids", removeList)
 
-	// this is needed for some reason
+	// these are needed for some reason
 	o.Emails = n.Emails
+	o.Server = n.Server
 
 	// updates and insterts will be done by gorm
 	o.LocationLL = n.LocationLL
@@ -501,6 +512,10 @@ func (s *OrgSubmission) Org() *Organization {
 	}
 	o.Name = s.Name
 	o.OrgDetails.LocationStr = s.Address
+	o.NewServer()
+	o.Server.Nick = s.ServerAlias
+	o.Server.URL = s.ServerURL
+	o.Server.ID = s.ServerID
 	o.OrgDetails.LocationLL.Private = s.LocationPrivate
 	o.OrgDetails.Private = s.Private
 	if len(s.Location) == 2 {
@@ -530,6 +545,11 @@ func (o *Organization) OrgSubmission() *OrgSubmission {
 
 	s.LocationPrivate = o.OrgDetails.LocationLL.Private
 	s.Private = o.OrgDetails.Private
+
+	// single server info
+	s.ServerAlias = o.Server.Nick
+	s.ServerURL = o.Server.URL
+	s.ServerID = o.Server.ID
 
 	if o.OrgDetails.LocationLL.Longitude != "" && o.OrgDetails.LocationLL.Latitude != "" {
 		s.Location = []float64{0, 0}

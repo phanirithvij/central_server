@@ -21,6 +21,7 @@ import {
 import "./App.css";
 import AlertDismissible from "./components/Alert";
 import SideNavBar, { NavBarComponet } from "./components/Nav";
+import Org from "./models/org";
 import Dashboard from "./routes/dashboard";
 import Home from "./routes/home";
 import Register from "./routes/register";
@@ -51,85 +52,122 @@ function UseBreakpointDemo() {
 }
 
 export default function App() {
+  return (
+    <Router basename={process.env.REACT_APP_BASE_URL}>
+      <AppInternal />
+    </Router>
+  );
+}
+
+function AppInternal() {
   const screens = useBreakpoint();
   // sm -> collapse default, xs -> hide, md> => show
   const [collapsed, setCollapsed] = useState(screens.sm && !screens.md);
   useEffect(() => {
     setCollapsed(screens.sm && !screens.md);
   }, [screens]);
+
+  const [loggedin, setLoggedin] = useState();
+  const [reload, setReload] = useState(false);
+  const location = useLocation();
+  const [org] = useState(new Org());
+  const [showSidenav, setShowSidenav] = useState(
+    !screens.xs && loggedin !== undefined && loggedin
+  );
+
+  useEffect(() => {
+    org
+      .loggedin()
+      .then((x) => {
+        // https://stackoverflow.com/a/54118576/8608146
+        if (x.status !== 200) {
+          throw new Error("Not logged in");
+        }
+        return x.json();
+      })
+      .then((x) => {
+        setLoggedin(true);
+      })
+      .catch(() => {
+        setLoggedin(false);
+      });
+  }, [org, reload]);
+
+  useEffect(() => {
+    setShowSidenav(!screens.xs && loggedin !== undefined && loggedin);
+  }, [loggedin, screens]);
+
+  useEffect(() => {
+    setReload((reload) => !reload);
+  }, [location.pathname]);
+
   return (
-    <>
-      <Router basename={process.env.REACT_APP_BASE_URL}>
-        <Layout>
-          <Header
+    <Layout>
+      <Header
+        style={{
+          position: "fixed",
+          width: "100%",
+          paddingLeft: showSidenav ? (collapsed ? 100 : 220) : 0,
+          paddingRight: "3vw",
+          zIndex: 2,
+        }}
+      >
+        {showSidenav && (
+          <SideNavBar collapsed={collapsed} setCollapsed={setCollapsed} />
+        )}
+        <NavBarComponet mode={"horizontal"} />
+      </Header>
+      <Layout>
+        <Layout
+          style={{
+            marginLeft: showSidenav ? (collapsed ? 80 : 200) : 0,
+            minHeight: "100vh",
+            paddingLeft: showSidenav ? 24 : 10,
+            paddingRight: showSidenav ? 24 : 10,
+            paddingBottom: 24,
+            // top navbar height
+            paddingTop: "66px",
+          }}
+        >
+          <BreadcrumbBar />
+          <Content
+            className="site-layout-background"
             style={{
-              position: "fixed",
-              width: "100%",
-              paddingLeft: !screens.xs ? (collapsed ? 100 : 220) : 0,
-              paddingRight: "3vw",
-              zIndex: 2,
+              padding: showSidenav ? 24 : 10,
+              margin: 0,
+              minHeight: 280,
             }}
           >
-            {!screens.xs && (
-              <SideNavBar collapsed={collapsed} setCollapsed={setCollapsed} />
-            )}
-            <NavBarComponet mode={"horizontal"} />
-          </Header>
-          <Layout>
-            <Layout
-              style={{
-                marginLeft: !screens.xs ? (collapsed ? 80 : 200) : 0,
-                minHeight: "100vh",
-                paddingLeft: !screens.xs ? 24 : 10,
-                paddingRight: !screens.xs ? 24 : 10,
-                paddingBottom: 24,
-                // top navbar height
-                paddingTop: "66px",
-              }}
-            >
-              <BreadcrumbBar />
-              <Content
-                className="site-layout-background"
-                style={{
-                  padding: !screens.xs ? 24 : 10,
-                  margin: 0,
-                  minHeight: 280,
-                }}
+            <div className="App">
+              <Suspense
+                fallback={<div style={{ minHeight: "100vh" }}>Loading...</div>}
               >
-                <div className="App">
-                  <Suspense
-                    fallback={
-                      <div style={{ minHeight: "100vh" }}>Loading...</div>
-                    }
-                  >
-                    <Switch>
-                      <Route exact path="/" component={Home} />
-                      <Route exact path="/account" component={Account} />
-                      <Route
-                        path="/login"
-                        render={() => <Redirect to={"/account/login"} />}
-                      />
-                      <Route
-                        path="/register"
-                        render={() => <Redirect to={"/account/register"} />}
-                      />
-                      <Route path="/account/register" component={Register} />
-                      <Route path="/account/login" component={Login} />
-                      <Route
-                        path="/logout"
-                        render={() => <Logout redirect={"/account/login"} />}
-                      />
-                      <Route path="/dashboard" component={Dashboard} />
-                    </Switch>
-                  </Suspense>
-                </div>
-                <DevBar />
-              </Content>
-            </Layout>
-          </Layout>
+                <Switch>
+                  <Route exact path="/" component={Home} />
+                  <Route exact path="/account" component={Account} />
+                  <Route
+                    path="/login"
+                    render={() => <Redirect to={"/account/login"} />}
+                  />
+                  <Route
+                    path="/register"
+                    render={() => <Redirect to={"/account/register"} />}
+                  />
+                  <Route path="/account/register" component={Register} />
+                  <Route path="/account/login" component={Login} />
+                  <Route
+                    path="/logout"
+                    render={() => <Logout redirect={"/account/login"} />}
+                  />
+                  <Route path="/dashboard" component={Dashboard} />
+                </Switch>
+              </Suspense>
+            </div>
+            <DevBar />
+          </Content>
         </Layout>
-      </Router>
-    </>
+      </Layout>
+    </Layout>
   );
 }
 

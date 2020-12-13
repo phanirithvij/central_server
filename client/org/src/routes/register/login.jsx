@@ -38,7 +38,6 @@ export default function Login() {
       org["emailOrAlias"](e.target.value);
     } else {
       // set name = value
-      console.log(e.target.name, e.target.value);
       org[e.target.name](e.target.value);
     }
   };
