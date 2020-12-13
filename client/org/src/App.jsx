@@ -142,7 +142,7 @@ function DevBar() {
             <>
               <UseBreakpointDemo />
               <p>
-                Development
+                Development{" "}
                 {window.location.port === "9000"
                   ? "Server Served files"
                   : "Client React"}
