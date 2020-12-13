@@ -310,22 +310,28 @@ func (o *Organization) NewUpdate(n *Organization) error {
 		newEmails = append(newEmails, ne.Email)
 	}
 	for _, or := range o.Emails {
+		del := true
 		for _, ne := range n.Emails {
 			if or.Email == ne.Email {
 				// if email matched => found old email in new list
 				// so not deleted
+				del = false
 				break
 			}
 		}
-		// full loop executed so not found add it to deleted
-		if or.Main != nil {
-			if !*or.Main {
-				removeList = append(removeList, or.ID)
+		if del {
+			if or.Main != nil {
+				if !*or.Main {
+					// full loop executed so not found add it to deleted
+					log.Println("Deleting email", or)
+					removeList = append(removeList, or.ID)
+				} else {
+					// skip if main email
+				}
 			} else {
-				// skip if main email
+				log.Println("Deleting email", or)
+				removeList = append(removeList, or.ID)
 			}
-		} else {
-			removeList = append(removeList, or.ID)
 		}
 	}
 	log.Println("Deleting emails with ids", removeList)
@@ -474,7 +480,10 @@ func (s *OrgSubmission) Org() *Organization {
 	o.Alias = s.Alias
 	o.Emails = []Email{}
 	for _, e := range s.Emails {
-		log.Println(e.Private)
+		// TODO private is true always initially bug
+		if e.Private != nil {
+			log.Println(*e.Private)
+		}
 		o.Emails = append(o.Emails,
 			Email{
 				Email:   e.Email,
