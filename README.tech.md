@@ -51,6 +51,9 @@ Bash completions also work for linux systems
     - Use only one request save in the state management store then get from it
   - [ ] Remove Org class
 - [ ] Antd Tooltip
+- [ ] No tooltip on mobile
+- [ ] Scroll down to map on map icon click
+
 
 ## Dev notes
 
