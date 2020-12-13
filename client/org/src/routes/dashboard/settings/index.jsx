@@ -212,7 +212,7 @@ export default function Settings() {
         <Col xs={20} sm={16} md={12} lg={10} xl={8}>
           <div>
             {/* Org alias will be undefined only if not loggedin  */}
-            {loggedin !== undefined && loggedin && (
+            {loggedin !== undefined && loggedin ? (
               <>
                 <Form form={form} id="formx" style={{ maxWidth: "600px" }}>
                   {form.getFieldValue("name") === "" && (
@@ -447,6 +447,8 @@ export default function Settings() {
                 )}
                 {mapVis && <Map copyCallback={useCallback} />}
               </>
+            ) : (
+              <section {...containerProps}>{indicatorEl}</section>
             )}
             {serverValidError !== undefined && (
               <AlertDismissible

@@ -246,7 +246,7 @@ func False() *bool {
 func newOrg() *models.Organization {
 	o := models.NewOrganization()
 	o.PasswordHash = utils.Hash("oror")
-	// o.OrgID = "org-oror"
+	o.ID = 1
 
 	o.Private = False()
 	o.Alias = "oror"

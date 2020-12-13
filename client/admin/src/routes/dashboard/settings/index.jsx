@@ -1,11 +1,11 @@
 import { Puff, useLoading } from "@agney/react-loading";
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import Tippy from "@tippyjs/react";
+import "tippy.js/dist/tippy.css"; // optional
 import { Alert, Button, Checkbox, Col, Divider, Form, Input, Row } from "antd";
 import { lazy, useEffect, useState } from "react";
 import SVG from "react-inlinesvg";
 import { Link } from "react-router-dom";
-import "tippy.js/dist/tippy.css"; // optional
 import AlertDismissible from "../../../components/Alert";
 import Org from "../../../models/org";
 import Logout from "../../register/logout";

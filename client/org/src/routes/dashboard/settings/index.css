@@ -20,3 +20,9 @@
     color: #999;
     transition: all 0.3s;
 }
+
+
+/* Scale all checboxes */
+.ant-checkbox-wrapper {
+    transform: scale(1.4) !important;
+}

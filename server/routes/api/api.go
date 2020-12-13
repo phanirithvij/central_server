@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/config"
 	"github.com/phanirithvij/central_server/server/routes"
@@ -29,7 +30,18 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 
 			home := v1gp.Group("/home")
 			{
-				home.GET("/public", v1.PublicList)
+
+				allowCors := cors.New(cors.Config{
+					AllowOrigins: []string{"http://localhost:3000", "http://localhost:3001"},
+				})
+				home.GET("/public", allowCors, v1.PublicList)
+				optionsCors := (cors.New(cors.Config{
+					AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001"},
+					AllowMethods:     []string{"POST", "GET"},
+					AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
+					AllowCredentials: true,
+				}))
+				home.OPTIONS("/public", optionsCors)
 			}
 
 			versions = append(versions, "v1")

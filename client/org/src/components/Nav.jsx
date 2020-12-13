@@ -85,6 +85,10 @@ export function NavBarComponet(props) {
       });
   }, [org, reload]);
 
+  useEffect(() => {
+    setReload(!reload);
+  }, [location.pathname]);
+
   return (
     <Menu
       selectedKeys={[location.pathname]}
@@ -97,27 +101,37 @@ export function NavBarComponet(props) {
           <Link to={"/"}>Home</Link>
         </Menu.Item>
       )}
-      <SubMenu key="/dashboard" icon={<DesktopOutlined />} title="Dashboard">
-        <Menu.Item key="/dashboard" icon={<DesktopOutlined />}>
-          <Link to={"/dashboard"}>Home</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/activity" icon={<PieChartOutlined />}>
-          <Link to={"/dashboard/activity"}>Activity</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/settings" icon={<SettingOutlined />}>
-          <Link to={"/dashboard/settings"}>Settings</Link>
-        </Menu.Item>
-        <Menu.Item key="/dashboard/profile" icon={<ProfileOutlined />}>
-          <Link to={"/dashboard/profile"}>Profile</Link>
-        </Menu.Item>
-      </SubMenu>
+      {loggedin !== undefined ? (
+        loggedin && (
+          <SubMenu
+            key="/dashboard"
+            icon={<DesktopOutlined />}
+            title="Dashboard"
+          >
+            <Menu.Item key="/dashboard" icon={<DesktopOutlined />}>
+              <Link to={"/dashboard"}>Home</Link>
+            </Menu.Item>
+            <Menu.Item key="/dashboard/activity" icon={<PieChartOutlined />}>
+              <Link to={"/dashboard/activity"}>Activity</Link>
+            </Menu.Item>
+            <Menu.Item key="/dashboard/settings" icon={<SettingOutlined />}>
+              <Link to={"/dashboard/settings"}>Settings</Link>
+            </Menu.Item>
+            <Menu.Item key="/dashboard/profile" icon={<ProfileOutlined />}>
+              <Link to={"/dashboard/profile"}>Profile</Link>
+            </Menu.Item>
+          </SubMenu>
+        )
+      ) : (
+        <section {...containerProps}>{indicatorEl}</section>
+      )}
+
       {props.mode === "horizontal" && (
         <SubMenu
           key="/account"
           style={{ float: "right" }}
           icon={<UserOutlined />}
           title="Account"
-          onTitleClick={() => setReload(!reload)}
         >
           {loggedin !== undefined ? (
             !loggedin ? (
