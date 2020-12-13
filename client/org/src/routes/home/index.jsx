@@ -65,7 +65,7 @@ function HomeInt() {
       })
       .catch((err) => {
         setLoading(false);
-        setError({ messages: ['You are offline'], error: "", code: 'offline' });
+        setError({ messages: ['Server could not be reached'], error: "Failed to fetch", code: '' });
       });
   }, []);
 
