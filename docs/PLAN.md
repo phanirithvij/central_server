@@ -125,6 +125,7 @@ Incident
 - [ ] Org readonly dashboard
 - [ ] Org dashboard profile
 - [ ] List of public orgs on homepage
+  - [x] Api enpoint
 
 > TOMMOROW
 

@@ -1,10 +1,12 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/phanirithvij/central_server/server/models"
+	"gorm.io/gorm"
 )
 
 type urlParams struct {
@@ -15,11 +17,19 @@ type urlParams struct {
 func PublicList(c *gin.Context) {
 	org := models.NewOrganization()
 	list, err := org.PublicList()
+	msgs := []string{}
+	status := http.StatusOK
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		if errors.Is(err, models.ErrNoResultsFound) || errors.Is(err, gorm.ErrRecordNotFound) {
+			msgs = append(msgs, "No results found")
+			status = http.StatusNotFound
+		} else {
+			status = http.StatusInternalServerError
+		}
+		c.JSON(status, gin.H{
 			"error":    err.Error(),
 			"status":   "failed",
-			"messages": []string{"PublicList could not be retreived"},
+			"messages": msgs,
 		})
 		return
 	}
@@ -27,8 +37,8 @@ func PublicList(c *gin.Context) {
 	// https://github.com/gin-gonic/gin/issues/742
 	c.BindQuery(p)
 	if p.Pretty != "" {
-		c.IndentedJSON(http.StatusOK, list)
+		c.IndentedJSON(status, list)
 		return
 	}
-	c.JSON(http.StatusOK, list)
+	c.JSON(status, list)
 }

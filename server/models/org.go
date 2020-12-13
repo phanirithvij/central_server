@@ -249,6 +249,11 @@ func (o *Organization) PublicList() ([]*OrgSubmission, error) {
 			}
 		}
 		orgx.Emails = filteredEmails
+		privLoc := orgx.LocationLL.Private
+		if privLoc != nil && *privLoc {
+			// if privare location remove it
+			orgx.LocationLL = LongLat{}
+		}
 		oss = append(oss, orgx.OrgSubmission())
 	}
 	return oss, nil
@@ -286,11 +291,14 @@ func (o *Organization) BeforeCreate(tx *gorm.DB) error {
 	return nil
 }
 
-// BeforeUpdate ..
+// BeforeUpdate hook to determine if any thing needs to be done
 func (o *Organization) BeforeUpdate(tx *gorm.DB) error {
 	// TODO if organization type changed add it to public clients?
 	log.Println(tx.Statement.Changed("Private"))
 	// TODO if main email changed send email verification
+	// THis will not work because gorm is INSERTing emails on update
+	// So do it in BeforeCreate of Email{}
+	log.Println(tx.Statement.Changed("Emails"))
 	return nil
 }
 
