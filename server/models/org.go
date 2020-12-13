@@ -323,20 +323,18 @@ func (o *Organization) NewUpdate(n *Organization) error {
 			if or.Main != nil {
 				if !*or.Main {
 					// full loop executed so not found add it to deleted
-					log.Println("Deleting email", or)
+					log.Println("Deleting email", or.Email)
 					removeList = append(removeList, or.ID)
 				} else {
 					// skip if main email
 				}
 			} else {
-				log.Println("Deleting email", or)
+				log.Println("Deleting email", or.Email)
 				removeList = append(removeList, or.ID)
 			}
 		}
 	}
 	log.Println("Deleting emails with ids", removeList)
-	log.Println(orEmails)
-	log.Println(newEmails)
 
 	// this is needed for some reason
 	o.Emails = n.Emails
