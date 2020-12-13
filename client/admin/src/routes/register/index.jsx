@@ -232,8 +232,6 @@ export default function Register() {
                       </label>
                     </Form.Item>
                     <Form.Item>
-                      {/* TODO list of emails */}
-                      {/* TODO private property to emails */}{" "}
                       <Input
                         name="email-0"
                         prefix={<UserOutlined />}

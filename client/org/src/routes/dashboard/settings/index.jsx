@@ -69,6 +69,7 @@ export default function Settings() {
         org["emails"](json[key]);
         // console.log(org._emailList());
         let ems = org._emailList();
+        // TODO only one of these
         form.setFieldsValue({ emails: ems });
         form.setFields([{ name: "emails", value: ems }]);
         return;
@@ -152,9 +153,24 @@ export default function Settings() {
       setClientValidError("Location is required");
       return;
     }
+    const values = form.getFieldsValue();
+    // if string convert to array of lat, long
+    if (typeof values.location === "string") {
+      let loc = values.location.split(",");
+      if (loc.length !== 2) {
+        setClientValidError("Location is not valid");
+        return;
+      }
+      loc = loc.map((l) => parseFloat(l));
+      if (isNaN(loc[0]) || isNaN(loc[1])) {
+        setClientValidError("Location is not valid");
+        return;
+      }
+      values.location = loc;
+    }
     setSending(true);
     org
-      .updateSettings(form.getFieldsValue())
+      .updateSettings(values)
       .then(async (res) => {
         setSending(false);
         const jsonD = await res.json();
@@ -165,7 +181,16 @@ export default function Settings() {
             break;
           case 200:
             // successfully updted
+            // TODO update form
+            console.log("Update form???", jsonD);
+            setLoggedinJson(jsonD);
             setDone(true);
+
+            // close info in 3 secs
+            setTimeout(() => {
+              setDone(undefined);
+            }, 3000);
+
             break;
           case 500:
             setServerValidError(jsonD["error"]);

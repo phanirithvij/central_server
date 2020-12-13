@@ -226,9 +226,6 @@ export default function Settings() {
                   >
                     <Checkbox name="private" />
                   </Form.Item>
-                  {/* TODO list of emails */}
-                  {/* TODO private property to emails */}
-
                   <Divider>Emails</Divider>
                   <Form.List name="emails">
                     {(fields, { add, remove }, { errors }) => (

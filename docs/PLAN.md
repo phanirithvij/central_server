@@ -122,6 +122,10 @@ Incident
     - [ ] Can undelete if wanted
     - [ ] Delete reason -> [Deletd by Organization, Banned, Suspended]
 
+- [ ] Org readonly dashboard
+- [ ] Org dashboard profile
+- [ ] List of public orgs on homepage
+
 > TOMMOROW
 
 - [ ] Org server url connect to central server

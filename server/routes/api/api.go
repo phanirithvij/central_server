@@ -21,13 +21,25 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 		{
 			v1gp.GET("/", v1.Read)
 			v1gp.GET("/read", v1.Read)
+
+			orgrp := v1gp.Group("/orgs")
+			{
+				orgrp.GET("/:orgid/info", v1.OrgInfo)
+			}
+
+			home := v1gp.Group("/home")
+			{
+				home.GET("/public", v1.PublicList)
+			}
+
 			versions = append(versions, "v1")
 		}
 		v2gp := apiG.Group("/v2")
 		{
 			v2gp.GET("/", v2.Read)
 			v2gp.GET("/read", v2.Read)
-			versions = append(versions, "v2")
+			// uncomment the next line when v2 api is ready
+			// versions = append(versions, "v2")
 		}
 		apiG.GET("/", func(c *gin.Context) {
 			c.Redirect(http.StatusPermanentRedirect, apiG.BasePath()+"/versions")

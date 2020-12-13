@@ -72,7 +72,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			// Enable CORS for react client when in dev
 			// cors.Cors(c, cors.Creds(true))
 
-			// TODO get the currently loggedin orgid
+			// get the currently loggedin orgid
 			// then get it from db
 			session := sessions.DefaultMany(c, "org")
 			_, ok := session.Get("org-id").(uint)
@@ -122,7 +122,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 			method := EmailX
 
 			o := data.Org()
-			// TODO see if any one of these is valid and use that
+			// see if any one of these is valid and use that
 			_, err = o.ValidateSub([]string{"Alias", "Emails"})
 			log.Println(err)
 			if err != nil {

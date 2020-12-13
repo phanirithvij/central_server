@@ -81,8 +81,6 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 				return
 			}
-			// TODO frontend email private option
-			// TODO don't ask all these details when signing up
 			// Ask after email verification
 			// TODO multi email verification
 			o := data.Org()

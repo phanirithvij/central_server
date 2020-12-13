@@ -63,7 +63,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 
 		settings.GET("/", credCors, func(c *gin.Context) {
 			// Enable CORS for react client when in dev
-			// TODO get the currently loggedin orgid
+			// get the currently loggedin orgid
 			// then get it from db
 			session := sessions.DefaultMany(c, "org")
 			data := &models.OrgSubmission{}
@@ -169,9 +169,9 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				}
 			}
 
-			log.Println(oldOrg.Str())
+			// log.Println(oldOrg.Str())
 			err = oldOrg.NewUpdate(newOrg)
-			log.Println(newOrg.Str())
+			// log.Println(newOrg.Str())
 			if err != nil {
 				// TODO more descriptive error messages here
 				log.Println(err)
@@ -182,7 +182,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 				})
 				return
 			}
-			c.JSON(http.StatusOK, oldOrg)
+			c.JSON(http.StatusOK, oldOrg.OrgSubmission())
 		})
 	}
 	routes.RegisterSelf(config.Settings)

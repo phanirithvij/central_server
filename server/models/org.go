@@ -66,8 +66,8 @@ type Email struct {
 	OrganizationType string `gorm:"uniqueindex:org_email_idx"`
 	// https://stackoverflow.com/a/62711228/8608146
 	// https://gorm.io/docs/create.html#Default-Values
-	Private *bool `default:"true"`
-	Main    *bool `default:"false"`
+	Private *bool `gorm:"not null;default:true"`
+	Main    *bool `gorm:"not null;default:false"`
 }
 
 // OrgDetails the details of the organization
@@ -75,14 +75,14 @@ type OrgDetails struct {
 	LocationStr string  `validate:"printascii"`
 	LocationLL  LongLat `validate:"required" gorm:"embedded;embeddedPrefix:location_"`
 	Description string  `validate:"required,printascii"`
-	Private     *bool   `default:"false"`
+	Private     *bool   `gorm:"not null;default:false"`
 }
 
 // LongLat longitude and lattitude
 type LongLat struct {
 	Longitude string `validate:"longitude"`
 	Latitude  string `validate:"latitude"`
-	Private   *bool  `default:"true"`
+	Private   *bool  `gorm:"default:true"`
 }
 
 // NewOrganization returns a new empty organization
@@ -223,13 +223,47 @@ type EmailD struct {
 	Main    *bool  `json:"main"`
 }
 
+// PublicList a list of public organizations
+func (o *Organization) PublicList() ([]*OrgSubmission, error) {
+	if o.DB == nil {
+		return nil, errors.New("DB was not initialized?")
+	}
+	orgs := []Organization{}
+
+	tx := o.DB.Preload(clause.Associations).
+		Where("private = false").First(&orgs)
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	if tx.RowsAffected <= 0 {
+		return nil, ErrNoResultsFound
+	}
+
+	oss := []*OrgSubmission{}
+	for _, orgx := range orgs {
+		filteredEmails := []Email{}
+		for _, em := range orgx.Emails {
+			if em.Private != nil && !*em.Private {
+				filteredEmails = append(filteredEmails, em)
+			}
+		}
+		orgx.Emails = filteredEmails
+		oss = append(oss, orgx.OrgSubmission())
+	}
+	return oss, nil
+}
+
 // Find finds the org from db
-func (s *OrgSubmission) Find() (*Organization, error) {
-	o := s.Org()
-	o.ID = s.ID
-	db := o.DB
+func (o *Organization) Find() (*Organization, error) {
+	if o.DB == nil {
+		return nil, errors.New("DB was nil")
+	}
+	if o.ID == 0 {
+		return nil, errors.New("ID was not set or set to zero")
+	}
 	// https://gorm.io/docs/preload.html#Preload-All
-	tx := db.Preload(clause.Associations).Find(&o)
+	tx := o.DB.Preload(clause.Associations).Find(&o)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -237,6 +271,13 @@ func (s *OrgSubmission) Find() (*Organization, error) {
 		return nil, ErrNoResultsFound
 	}
 	return o, nil
+}
+
+// Find finds the org from db shortcut
+func (s *OrgSubmission) Find() (*Organization, error) {
+	o := s.Org()
+	o.ID = s.ID
+	return o.Find()
 }
 
 // BeforeCreate ..
@@ -268,13 +309,12 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	for _, ne := range n.Emails {
 		newEmails = append(newEmails, ne.Email)
 	}
-loop:
 	for _, or := range o.Emails {
 		for _, ne := range n.Emails {
 			if or.Email == ne.Email {
 				// if email matched => found old email in new list
 				// so not deleted
-				break loop
+				break
 			}
 		}
 		// full loop executed so not found add it to deleted
@@ -282,13 +322,15 @@ loop:
 			if !*or.Main {
 				removeList = append(removeList, or.ID)
 			} else {
-				// TODO this happened once
-				log.Println("Trying to delete the main email")
-				log.Println("Fix any client side bugs")
+				// skip if main email
 			}
+		} else {
+			removeList = append(removeList, or.ID)
 		}
 	}
 	log.Println("Deleting emails with ids", removeList)
+	log.Println(orEmails)
+	log.Println(newEmails)
 
 	// this is needed for some reason
 	o.Emails = n.Emails
@@ -304,7 +346,11 @@ loop:
 	}
 
 	if len(removeList) > 0 {
-		if err := o.DB.Delete(&Email{}, removeList).Error; err != nil {
+		// Perma delete emails because user may add it again
+		// then non conflict should occur
+		if err := o.DB.
+			Unscoped().
+			Delete(&Email{}, removeList).Error; err != nil {
 			return err
 		}
 	}
@@ -424,11 +470,11 @@ func (b *Email) BeforeUpdate(tx *gorm.DB) (err error) {
 
 // Org struct conversion, use Find() if needed from db
 func (s *OrgSubmission) Org() *Organization {
-	// TODO get from DB
 	o := NewOrganization()
 	o.Alias = s.Alias
 	o.Emails = []Email{}
 	for _, e := range s.Emails {
+		log.Println(e.Private)
 		o.Emails = append(o.Emails,
 			Email{
 				Email:   e.Email,

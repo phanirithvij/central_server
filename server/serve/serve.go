@@ -248,6 +248,7 @@ func newOrg() *models.Organization {
 	o.PasswordHash = utils.Hash("oror")
 	// o.OrgID = "org-oror"
 
+	o.Private = False()
 	o.Alias = "oror"
 	o.Emails = []models.Email{
 		{Email: "emaixl@email.emailemail", Private: False(), Main: True()},
@@ -258,6 +259,7 @@ func newOrg() *models.Organization {
 		{Email: "emailwxxw@exmxail.email", Private: True()},
 		{Email: "emailw@wemaixl.email", Private: False()},
 	}
+
 	o.Name = "Or Or Organization"
 	o.OrgDetails.LocationStr = "Hyderabad"
 	o.OrgDetails.LocationLL.Latitude = "17.235650"
