@@ -134,6 +134,7 @@ Incident
   - [x] Api enpoint
 
 - [ ] Integrate fate IMPORTANT
+- [ ] Integrate fate into org server and central both
 
 > TOMMOROW
 

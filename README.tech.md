@@ -46,10 +46,11 @@ Bash completions also work for linux systems
 - [x] Antd Forms
 - [ ] Todo redux or some state management
   - [ ] As of now Checking if logged in takes one request to server
+    - Data transferred over the network is not more thn 4kb per request so leaving it for later
     - And it is done on Navbar, AppInternal, Login, Logout, Register, Dashboard
       etc. So too many requests for just getting a boolean.
     - Use only one request save in the state management store then get from it
-  - [ ] Remove Org class
+  - [ ] Remove Org js class
 - [ ] Antd Tooltip
 - [ ] No tooltip on mobile
 - [ ] Scroll down to map on map icon click
