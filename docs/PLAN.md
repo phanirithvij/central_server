@@ -133,6 +133,8 @@ Incident
 - [x] List of public orgs on homepage
   - [x] Api enpoint
 
+- [ ] Integrate fate IMPORTANT
+
 > TOMMOROW
 
 - [ ] Org server url connect to central server
