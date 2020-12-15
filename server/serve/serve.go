@@ -67,6 +67,7 @@ func Serve(port int, debug bool) {
 		&models.Organization{},
 		&models.Email{},
 		&models.Server{},
+		//&models.Activity{},
 	)
 	if err != nil {
 		log.Fatalln(err)
@@ -152,6 +153,11 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		lw := w
 		// r.URL.Path += "/index.html"
 		cont, err := ioutil.ReadAll(file)
+		if err != nil {
+			lw.WriteHeader(http.StatusNotFound)
+			lw.Write([]byte("File not found"))
+			return
+		}
 		lw.Header().Set("Content-Type", "text/html")
 		lw.Write(cont)
 		return
@@ -258,18 +264,20 @@ func newOrg() *models.Organization {
 	o.Alias = "sample"
 	o.Emails = []models.Email{
 		// Main private email which is used for login
-		{Email: "emaixl@email.emailemail", Private: True(), Main: True()},
+		{Email: "main@sample.org", Private: True(), Main: True()},
 		// Secondary public email
-		{Email: "email3w@email3.email", Private: False()},
+		{Email: "public@sample.org", Private: False()},
 	}
 
 	o.Name = "Sample Organization"
 	o.OrgDetails.LocationStr = "Hyderabad"
-	o.OrgDetails.LocationLL.Latitude = "17.235650"
-	o.OrgDetails.LocationLL.Longitude = "79.124817"
+	// 17.44573010064982, 78.3497365841285
+	o.OrgDetails.LocationLL.Latitude = "17.44573010064982"
+	o.OrgDetails.LocationLL.Longitude = "78.3497365841285"
 	o.OrgDetails.Description = "Sample Description"
 	o.NewServer()
-	o.Server.URL = "http://localhost:8080"
+	o.Server.URL = "http://192.168.0.102:8080"
+	// o.Server.URL = "http://localhost:8080"
 	o.Server.Nick = "SampleDBX1"
 	return o
 }

@@ -102,6 +102,7 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 
 		// Enable CORS for react client when in dev
 		login.POST("/", credCors, func(c *gin.Context) {
+			// TODO gin provides c.BindJSON, use it
 			d := json.NewDecoder(c.Request.Body)
 			sub := &loginSubmission{}
 			err := d.Decode(&sub)
@@ -183,6 +184,8 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 					})
 					return
 				}
+				// remove password hash to go to frontend
+				o.PasswordHash = ""
 				c.JSON(http.StatusOK, o)
 				return
 			}

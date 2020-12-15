@@ -25,7 +25,10 @@ func SetupEndpoints(router *gin.Engine) *gin.RouterGroup {
 
 			orgrp := v1gp.Group("/orgs")
 			{
-				orgrp.GET("/:orgid/info", v1.OrgInfo)
+				// TODO api key in bearer auth
+				orgrp.POST("/token", v1.TokenAuth)
+				orgrp.POST("/ping", v1.Ping)
+				orgrp.GET("/info", v1.OrgInfo)
 			}
 
 			home := v1gp.Group("/home")

@@ -1,16 +1,22 @@
 package serve
 
 import (
+	"errors"
+	"fmt"
 	"log"
-	"strconv"
-
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-// On window endless library will not build so we use normal http server
+// On windows endless library will not build so we use normal http server
 func serve(router *gin.Engine, port int) {
 	log.Println("Serving on Port", port)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(port), router))
+	if err := http.ListenAndServe(":"+strconv.Itoa(port), router); err != nil {
+		if errors.Is(http.ErrServerClosed, err) {
+			return
+		}
+		log.Panicln(fmt.Errorf("unable to listen: %s", err))
+	}
 }

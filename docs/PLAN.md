@@ -114,7 +114,6 @@ Incident
 - [ ] Admin ui
   - [ ] single admin
   - [ ] simple auth
-
 - [ ] Dashboard
   - [ ] Orgs
   - [ ] Delete or Suspend orgs
@@ -123,7 +122,7 @@ Incident
     - [ ] Delete reason -> [Deletd by Organization, Banned, Suspended]
 
 - [ ] Expose Org Server Homepage so we can link to it
-  - [ ] At $serverURL/home
+  - [x] At $serverURL/home
   - [ ] (Later) Open Link in app
     - https://pub.dev/packages/uni_links
 
@@ -133,20 +132,21 @@ Incident
 - [x] List of public orgs on homepage
   - [x] Api enpoint
 
-- [ ] Integrate fate IMPORTANT
+- [ ] Integrate filebrowser from fate
+  - [ ] Integrate filebrowser like fate but don't use fate
 - [ ] Integrate fate into org server and central both
+  - [ ] Filebrowser branding subprocess call in python for org server
 
 > TOMMOROW
 
 - [ ] Org server url connect to central server
 - [ ] Dynamic DB split and serve to clients
-- [ ] Client can to login via central server
-
+- [ ] Client can login via central server
   - [ ] Server can check if client is authenticated in central server
     - [ ] If not show the org server's login page
       - [ ] Send these credentials to central server
 
 - [ ] Client sees list of available orgs/datasets
-- [ ] Client uploads to or server
+- [ ] Client uploads to org server
 
 - [ ] Sentence based mapping and analytics

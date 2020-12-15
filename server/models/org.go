@@ -21,7 +21,7 @@ import (
 
 var (
 	// ErrNoResultsFound no sql results were found
-	ErrNoResultsFound = errors.New("No results found")
+	ErrNoResultsFound = errors.New("no results found")
 )
 
 // Organization is an organization
@@ -293,7 +293,7 @@ func (s *OrgSubmission) Find() (*Organization, error) {
 
 // BeforeCreate ..
 func (o *Organization) BeforeCreate(tx *gorm.DB) error {
-	log.Println(tx.Statement.FullSaveAssociations)
+	// log.Println(tx.Statement.FullSaveAssociations)
 	return nil
 }
 
@@ -315,14 +315,14 @@ func (o *Organization) NewUpdate(n *Organization) error {
 	n.ID = o.ID
 	// remove any emails
 	removeList := []uint{}
-	orEmails := []string{}
-	newEmails := []string{}
-	for _, or := range o.Emails {
-		orEmails = append(orEmails, or.Email)
-	}
-	for _, ne := range n.Emails {
-		newEmails = append(newEmails, ne.Email)
-	}
+	// orEmails := []string{}
+	// newEmails := []string{}
+	// for _, or := range o.Emails {
+	// 	orEmails = append(orEmails, or.Email)
+	// }
+	// for _, ne := range n.Emails {
+	// 	newEmails = append(newEmails, ne.Email)
+	// }
 
 	// TODO look at https://gorm.io/docs/associations.html#Append-Associations
 	// It provides Append, Replace etc.
@@ -343,9 +343,8 @@ func (o *Organization) NewUpdate(n *Organization) error {
 					// full loop executed so not found add it to deleted
 					log.Println("Deleting email", or.Email)
 					removeList = append(removeList, or.ID)
-				} else {
-					// skip if main email
 				}
+				// else skip if main email
 			} else {
 				log.Println("Deleting email", or.Email)
 				removeList = append(removeList, or.ID)
@@ -494,6 +493,7 @@ func (b *Email) BeforeUpdate(tx *gorm.DB) (err error) {
 // Org struct conversion, use Find() if needed from db
 func (s *OrgSubmission) Org() *Organization {
 	o := NewOrganization()
+	o.ID = s.ID
 	o.Alias = s.Alias
 	o.Emails = []Email{}
 	for _, e := range s.Emails {
@@ -529,6 +529,7 @@ func (s *OrgSubmission) Org() *Organization {
 // OrgSubmission a submission for the clients
 func (o *Organization) OrgSubmission() *OrgSubmission {
 	s := new(OrgSubmission)
+	s.ID = o.ID
 	s.Alias = o.Alias
 	s.Address = o.OrgDetails.LocationStr
 	s.Emails = []EmailD{}
