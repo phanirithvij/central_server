@@ -1,3 +1,8 @@
+# ARCHIVE
+
+Could've been made to be more useful if not for time constraints.
+Tenants implemented having never heard of the concept, so it is bad.
+
 # Central Server
 
 For technical and implementation details read [./README.tech.md](./README.tech.md)
